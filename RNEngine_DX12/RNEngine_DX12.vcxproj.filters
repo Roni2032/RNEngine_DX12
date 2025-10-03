@@ -41,5 +41,8 @@
     <ClInclude Include="Window.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="project.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
