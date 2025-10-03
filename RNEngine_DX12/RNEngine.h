@@ -1,9 +1,11 @@
 #pragma once
 namespace RNEngine {
+	LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
 	class RnEngine
 	{
 	private:
-		HRESULT InitWindow(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow, const TCHAR* appName);
+		HWND InitWindow(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow, const TCHAR* appName);
 	public:
 		RnEngine() = default;
 
