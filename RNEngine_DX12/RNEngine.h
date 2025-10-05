@@ -16,6 +16,7 @@ namespace RNEngine {
 
 		void InitFeatureLevel();
 		void CreateCommandList();
+		void CreateSwapChain();
 	public:
 
 		static RnEngine* g_pInstance;

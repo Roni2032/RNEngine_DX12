@@ -133,14 +133,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RenderTarget.cpp" />
     <ClCompile Include="RNEngine.cpp" />
     <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="Vector.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="project.h" />
+    <ClInclude Include="RenderTarget.h" />
     <ClInclude Include="RNEngine.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Vector.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

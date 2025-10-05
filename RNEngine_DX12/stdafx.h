@@ -6,6 +6,7 @@
 #include <dxgi1_6.h>
 #include <d3dcompiler.h>
 #include <wrl/client.h>
+#include <DirectXMath.h>
 
 #include<tchar.h>
 #include<assert.h>
@@ -20,4 +21,5 @@
 
 using namespace std;
 using namespace Microsoft::WRL;
+using namespace DirectX;
 //using namespace RNEngine;
