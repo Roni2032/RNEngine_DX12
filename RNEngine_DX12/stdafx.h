@@ -10,6 +10,7 @@
 
 #include<tchar.h>
 #include<assert.h>
+#include <chrono>
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -22,4 +23,5 @@
 using namespace std;
 using namespace Microsoft::WRL;
 using namespace DirectX;
+using namespace std::chrono;
 //using namespace RNEngine;

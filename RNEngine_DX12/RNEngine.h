@@ -1,5 +1,9 @@
 #pragma once
+#include "stdafx.h"
 #include "Window.h"
+#include "Timer.h"
+#include "Device.h"
+#include "Renderer.h"
 
 namespace RNEngine {
 
@@ -8,7 +12,8 @@ namespace RNEngine {
 	private:
 		Window m_Window;		// ウィンドウ
 		Renderer m_Renderer;	// 描画処理
-		Device m_Device;	// デバイス
+		Device m_tDevice;		// デバイス
+		Timer m_Timer;			// タイマー
 
 		ComPtr<ID3D12Device> m_Device;
 		ComPtr<IDXGIFactory6> m_Factory;

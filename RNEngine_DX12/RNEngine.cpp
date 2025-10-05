@@ -90,7 +90,7 @@ namespace RNEngine {
 
 		InitFeatureLevel();
 		CreateCommandList();
-		CreateSwapChain();
+		//CreateSwapChain();
 	}
 	void RnEngine::Destroy() {
 		m_Window.Destroy();
@@ -108,6 +108,8 @@ namespace RNEngine {
 			if(msg.message == WM_QUIT) {
 				break;
 			}
+			m_Timer.UpdateDelta();
+			cout << "DeltaTime:" << m_Timer.GetDeltaTime() << endl;
 		}
 		Destroy();
 	}
