@@ -91,6 +91,10 @@ namespace RNEngine {
 		InitFeatureLevel();
 		CreateCommandList();
 		//CreateSwapChain();
+
+
+		//キー入力の初期化
+		Input::GetInstance().Init();
 	}
 	void RnEngine::Destroy() {
 		m_Window.Destroy();
@@ -108,7 +112,8 @@ namespace RNEngine {
 			if(msg.message == WM_QUIT) {
 				break;
 			}
-
+			// キー入力の更新
+			Input::GetInstance().Update();
 			// フレームレート制御
 			if (!m_FrameTimer.CheckTime(1.0f / m_FrameRate)) continue;
 
