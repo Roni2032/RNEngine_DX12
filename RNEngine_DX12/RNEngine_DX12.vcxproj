@@ -133,6 +133,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Device.cpp" />
+    <ClCompile Include="Input.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RNEngine.cpp" />
@@ -143,6 +144,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Device.h" />
+    <ClInclude Include="Input.h" />
+    <ClInclude Include="Singleton.h" />
     <ClInclude Include="project.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RNEngine.h" />
