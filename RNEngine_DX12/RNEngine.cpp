@@ -108,8 +108,12 @@ namespace RNEngine {
 			if(msg.message == WM_QUIT) {
 				break;
 			}
-			m_Timer.UpdateDelta();
-			cout << "DeltaTime:" << m_Timer.GetDeltaTime() << endl;
+
+			// フレームレート制御
+			if (!m_FrameTimer.CheckTime(1.0f / m_FrameRate)) continue;
+
+			m_Timer.CalcDelta();
+			cout << "DeltaTime:" << m_Timer.GetDeltaTime() << " / " << "FPS: " << 1.0f / m_Timer.GetDeltaTime() << endl;
 		}
 		Destroy();
 	}

@@ -14,6 +14,9 @@ namespace RNEngine {
 		Renderer m_Renderer;	// 描画処理
 		Device m_tDevice;		// デバイス
 		Timer m_Timer;			// タイマー
+		Timer m_FrameTimer;		// フレームタイマー
+
+		float m_FrameRate;		// フレームレート
 
 		ComPtr<ID3D12Device> m_Device;
 		ComPtr<IDXGIFactory6> m_Factory;
@@ -29,7 +32,7 @@ namespace RNEngine {
 
 		static RnEngine* g_pInstance;
 
-		RnEngine() : m_Window() { g_pInstance = this; }
+		RnEngine() : m_Window(),m_FrameRate(120.0f) { g_pInstance = this; }
 		~RnEngine() { delete g_pInstance; }
 
 		/// <summary>
