@@ -6,7 +6,10 @@ namespace RNEngine {
 	class RnEngine
 	{
 	private:
-		Window m_Window;
+		Window m_Window;		// ウィンドウ
+		Renderer m_Renderer;	// 描画処理
+		Device m_Device;	// デバイス
+
 		ComPtr<ID3D12Device> m_Device;
 		ComPtr<IDXGIFactory6> m_Factory;
 		ComPtr<IDXGISwapChain4> m_SwapChain;
