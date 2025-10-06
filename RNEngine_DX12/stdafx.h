@@ -1,9 +1,16 @@
 #pragma once
 
 #include <iostream>
+#include<Windows.h>
 #include <d3d12.h>
-#include <dxgi1_4.h>
+#include <dxgi1_6.h>
 #include <d3dcompiler.h>
+#include <wrl/client.h>
+#include <DirectXMath.h>
+
+#include<tchar.h>
+#include<assert.h>
+#include <chrono>
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -14,4 +21,7 @@
 #endif
 
 using namespace std;
+using namespace Microsoft::WRL;
+using namespace DirectX;
+using namespace std::chrono;
 //using namespace RNEngine;

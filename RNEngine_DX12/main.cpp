@@ -1,5 +1,5 @@
 #include"stdafx.h"
-#include "RNEngine.h"
+#include "project.h"
 using namespace RNEngine;
 #ifdef _DEBUG
 int main() {
@@ -10,7 +10,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	RnEngine engine = RnEngine();
 	engine.Init();
 
-
+	engine.Update();
 
 	engine.Destroy();
 	return 0;
