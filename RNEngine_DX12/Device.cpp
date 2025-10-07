@@ -8,6 +8,9 @@ namespace RNEngine {
 		m_CommandQueue = CommandQueue(m_Device);
 		m_SwapChain = SwapChain(m_Factory,m_CommandQueue.GetQueue(),_window);
 	}
+	void Device::Update() {
+
+	}
 
 	void Device::InitFeatureLevel() {
 		D3D_FEATURE_LEVEL levels[] = {

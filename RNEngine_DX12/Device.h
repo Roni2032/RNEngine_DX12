@@ -19,10 +19,12 @@ namespace RNEngine {
 		SwapChain() {}
 		SwapChain(ComPtr<IDXGIFactory6>& _factory, ComPtr<ID3D12CommandQueue> _queue, const Window& _window) { Init(_factory, _queue, _window); }
 		~SwapChain() {}
+
+		ComPtr<IDXGISwapChain4>& GetSwapChain() { return m_SwapChain; }
 	};
 	class CommandQueue {
 		ComPtr<ID3D12CommandAllocator> m_CmdAllocator;
-		ComPtr<ID3D12CommandList> m_CmdList;
+		ComPtr<ID3D12GraphicsCommandList> m_CmdList;
 		ComPtr<ID3D12CommandQueue> m_CmdQueue;
 
 		void Init(ComPtr<ID3D12Device>& _dev);
@@ -32,9 +34,9 @@ namespace RNEngine {
 		~CommandQueue() {}
 
 
-		ComPtr<ID3D12CommandAllocator> GetAllocator()const { return m_CmdAllocator; }
-		ComPtr<ID3D12CommandList> GetList()const { return m_CmdList; }
-		ComPtr<ID3D12CommandQueue> GetQueue()const { return m_CmdQueue; }
+		ComPtr<ID3D12CommandAllocator>& GetAllocator() { return m_CmdAllocator; }
+		ComPtr<ID3D12GraphicsCommandList>& GetList() { return m_CmdList; }
+		ComPtr<ID3D12CommandQueue>& GetQueue() { return m_CmdQueue; }
 	};
 
 
@@ -55,11 +57,12 @@ namespace RNEngine {
 		~Device() {}
 
 		void Init(const Window& _window);
+		void Update();
 
-		ComPtr<ID3D12Device> GetDivece()const { return m_Device; }
-		ComPtr<IDXGIFactory6> GetFactory()const { return m_Factory; }
+		ComPtr<ID3D12Device>& GetDivece(){ return m_Device; }
+		ComPtr<IDXGIFactory6>& GetFactory() { return m_Factory; }
 
-		SwapChain GetSwapChain()const { return m_SwapChain; }
-		CommandQueue GetCommandQueue()const { return m_CommandQueue; }
+		SwapChain& GetSwapChain() { return m_SwapChain; }
+		CommandQueue& GetCommandQueue() { return m_CommandQueue; }
 	};
 }

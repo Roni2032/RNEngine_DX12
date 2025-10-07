@@ -11,6 +11,7 @@
 #include<tchar.h>
 #include<assert.h>
 #include <chrono>
+#include <vector>
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")

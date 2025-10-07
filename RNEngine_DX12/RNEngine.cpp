@@ -9,6 +9,7 @@ namespace RNEngine {
 		m_Window = Window(L"RNEngine", 1280, 720);
 
 		m_Device.Init(m_Window);
+		m_Renderer.Init(m_Device, m_Window);
 
 		//ƒL[“ü—Í‚Ì‰Šú‰»
 		Input::GetInstance().Init();
