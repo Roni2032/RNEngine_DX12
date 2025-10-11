@@ -8,3 +8,4 @@
 #include "Timer.h"
 #include "Input.h"
 #include "Singleton.h"
+#include "Buffer.h"
