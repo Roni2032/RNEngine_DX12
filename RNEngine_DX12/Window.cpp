@@ -12,7 +12,7 @@ namespace RNEngine {
 		return DefWindowProc(hwnd, msg, wparam, lparam);//ãKíËÇÃèàóùÇçsÇ§
 	}
 
-	void Window::Init(const TCHAR* appName, UINT width, UINT height) {
+	void Window::Create(const wstring& appName, UINT width, UINT height) {
 
 		auto result = CoInitializeEx(0, COINIT_MULTITHREADED);
 		assert(SUCCEEDED(result));
@@ -24,13 +24,13 @@ namespace RNEngine {
 			0,0,
 			GetModuleHandle(NULL),
 			NULL,NULL,NULL,NULL,
-			appName,
+			appName.c_str(),
 			NULL
 		};
 		RegisterClassEx(&w);
 
 		m_Hwnd = CreateWindow(
-			appName, appName,
+			appName.c_str(), appName.c_str(),
 			WS_OVERLAPPEDWINDOW,
 			CW_USEDEFAULT, CW_USEDEFAULT,
 			width, height,
@@ -40,7 +40,7 @@ namespace RNEngine {
 		);
 		ShowWindow(m_Hwnd, SW_SHOW);
 
-		m_AppName = const_cast<TCHAR*>(appName);
+		m_AppName = appName;
 		m_Instance = w.hInstance;
 	}
 }
