@@ -12,6 +12,8 @@ namespace RNEngine
 
 		void LoadVS(const wstring& filename,const wstring& entryPoint);
 		void LoadPS(const wstring& filename, const wstring& entryPoint);
+
+		ComPtr<ID3DBlob> GetBlob()const { return m_Blob; }
 	};
 
 	struct InputLayout {

@@ -70,13 +70,33 @@ namespace RNEngine {
 		resDesc.Format = DXGI_FORMAT_UNKNOWN;
 		resDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-		auto result = _dev->CreateCommittedResource(
+		//auto result = _dev->CreateCommittedResource(
+		//	&heapProp,
+		//	D3D12_HEAP_FLAG_NONE,
+		//	&resDesc,
+		//	D3D12_RESOURCE_STATE_GENERIC_READ,
+		//	nullptr,
+		//	IID_PPV_ARGS(m_VertexBuffer.GetAddressOf()));
+		////assert(SUCCEEDED(result));
+		//if(FAILED(result)){
+		//	_com_error err(result);
+		//	cout << "create Vertex error : " << err.ErrorMessage();
+		//	//頂点バッファの作成に失敗した。
+		//	assert(false);
+		//}
+		HRESULT result = _dev->CreateCommittedResource(
 			&heapProp,
 			D3D12_HEAP_FLAG_NONE,
 			&resDesc,
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr,
 			IID_PPV_ARGS(m_VertexBuffer.GetAddressOf()));
+
+		if (FAILED(result)) {
+			_com_error err(result);
+			wprintf(L"CreateCommittedResource failed: 0x%08X (%s)\n", result, err.ErrorMessage());
+		}
+		assert(SUCCEEDED(result));
 
 		XMFLOAT3* vertMap = nullptr;
 

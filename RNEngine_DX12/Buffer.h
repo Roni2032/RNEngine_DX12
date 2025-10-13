@@ -49,15 +49,18 @@ namespace RNEngine {
 
 	class VertexBuffer {
 		ComPtr<ID3D12Resource> m_VertexBuffer;
-		D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
 
 		void InitVertexBufferView(const vector<XMFLOAT3>& vertex);
 		void CreateVertexBuffer(ComPtr<ID3D12Device>& _dev, const vector<XMFLOAT3>& vertex);
 	public:
+		D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
+
 		VertexBuffer() {}
 		~VertexBuffer() {}
 
 		void Create(ComPtr<ID3D12Device>& _dev, const vector<XMFLOAT3>& vertex);
+
+		ComPtr<ID3D12Resource>& GetBuffer() { return m_VertexBuffer; }
 	};
 	class IndexBuffer {
 		ComPtr<ID3D12Resource> m_IndexBuffer;
