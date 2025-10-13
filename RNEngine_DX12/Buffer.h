@@ -1,4 +1,5 @@
 #pragma once
+#include "stdafx.h"
 namespace RNEngine {
 
 	class Buffer
@@ -28,7 +29,7 @@ namespace RNEngine {
 		void Init(ComPtr<ID3D12Device>& _dev,SwapChain& _swapChain);
 
 		ComPtr<ID3D12Resource>& GetBackBuffer(size_t index) {
-			if (m_BackBuffer.size() <= index) return;
+			if (m_BackBuffer.size() <= index) throw;
 			return m_BackBuffer[index];
 		}
 		DescriptorHeap& GetDecsriptorHeap() { return m_RTVHeap; }
@@ -44,6 +45,23 @@ namespace RNEngine {
 
 		DescriptorHeap& GetDecsriptorHeap() { return m_DSVHeap; }
 
+	};
+
+	class VertexBuffer {
+		ComPtr<ID3D12Resource> m_VertexBuffer;
+		D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
+
+		void InitVertexBufferView(const vector<XMFLOAT3>& vertex);
+		void CreateVertexBuffer(ComPtr<ID3D12Device>& _dev, const vector<XMFLOAT3>& vertex);
+	public:
+		VertexBuffer() {}
+		~VertexBuffer() {}
+
+		void Create(ComPtr<ID3D12Device>& _dev, const vector<XMFLOAT3>& vertex);
+	};
+	class IndexBuffer {
+		ComPtr<ID3D12Resource> m_IndexBuffer;
+		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
 	};
 }
 
