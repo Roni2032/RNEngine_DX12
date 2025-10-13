@@ -5,12 +5,23 @@ namespace RNEngine {
 
 	RnEngine* RnEngine::g_pInstance = nullptr;
 
+	void RnEngine::EnableDebugLayer() {
+		ID3D12Debug* debugLayer = nullptr;
+		auto result = D3D12GetDebugInterface(IID_PPV_ARGS(&debugLayer));
+
+		debugLayer->EnableDebugLayer();
+		debugLayer->Release();
+	}
 	void RnEngine::Init() {
 		m_Window = Window(L"RNEngine", 1280, 720);
 
+#ifdef _DEBUG
+		EnableDebugLayer();
+#endif
+
 		m_Device.Init(m_Window);
 		m_Renderer.Init(m_Device, m_Window);
-
+		m_Renderer.SetClearColor(0.1f, 0.25f, 0.5f, 1.0f);
 		//キー入力の初期化
 		Input::GetInstance().Init();
 	}
@@ -20,16 +31,8 @@ namespace RNEngine {
 
 	void RnEngine::Update() {
 		MSG msg{};
-
-		while (true) {
-			if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-
-			if(msg.message == WM_QUIT) {
-				break;
-			}
+		while (m_Window.ProcessMessage()) {
+			m_Renderer.BeginRenderer();
 			// キー入力の更新
 			Input::GetInstance().Update();
 			// フレームレート制御
@@ -37,6 +40,8 @@ namespace RNEngine {
 
 			m_Timer.CalcDelta();
 			cout << "DeltaTime:" << m_Timer.GetDeltaTime() << " / " << "FPS: " << 1.0f / m_Timer.GetDeltaTime() << endl;
+
+			m_Renderer.EndRenderer();
 		}
 		Destroy();
 	}

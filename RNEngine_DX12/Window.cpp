@@ -43,4 +43,15 @@ namespace RNEngine {
 		m_AppName = appName;
 		m_Instance = w.hInstance;
 	}
+
+	bool Window::ProcessMessage() {
+		MSG msg{};
+
+		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		return msg.message != WM_QUIT;
+	}
 }

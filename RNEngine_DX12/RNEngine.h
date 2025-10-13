@@ -18,12 +18,13 @@ namespace RNEngine {
 
 		float m_FrameRate;		// フレームレート
 
+		void EnableDebugLayer();
 	public:
 
 		static RnEngine* g_pInstance;
 
 		RnEngine() : m_Window(),m_FrameRate(120.0f) { g_pInstance = this; }
-		~RnEngine() { delete g_pInstance; }
+		~RnEngine() {}
 
 		/// <summary>
 		/// 初期化

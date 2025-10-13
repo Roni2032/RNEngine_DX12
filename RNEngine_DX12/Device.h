@@ -1,4 +1,5 @@
 #pragma once
+#include "stdafx.h"
 namespace RNEngine {
 
 	///----------------------------------------------------------------
@@ -37,6 +38,36 @@ namespace RNEngine {
 		ComPtr<ID3D12CommandAllocator>& GetAllocator() { return m_CmdAllocator; }
 		ComPtr<ID3D12GraphicsCommandList>& GetList() { return m_CmdList; }
 		ComPtr<ID3D12CommandQueue>& GetQueue() { return m_CmdQueue; }
+	};
+
+	class Fence {
+		ComPtr<ID3D12Fence> m_Fence;
+		UINT64 m_FenceVal;
+		HANDLE m_FenceEvent;
+	public:
+		Fence() :m_FenceVal(0), m_FenceEvent(0){}
+		Fence(ComPtr<ID3D12Device>& _dev) :m_FenceVal(0) { Init(_dev); }
+		~Fence() {}
+
+		void Init(ComPtr<ID3D12Device>& _dev);
+		void Signal(ComPtr<ID3D12CommandQueue>& _queue);
+	};
+
+	class Barrier {
+		D3D12_RESOURCE_BARRIER m_Barrier;
+
+	public:
+		Barrier(){}
+		~Barrier() {}
+
+		void Init(ComPtr<ID3D12GraphicsCommandList> _list, ComPtr<ID3D12Resource> _backBuffer);
+
+		void Transition(ComPtr<ID3D12GraphicsCommandList> _list,D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
+			m_Barrier.Transition.StateBefore = before;
+			m_Barrier.Transition.StateAfter = after;
+
+			_list->ResourceBarrier(1, &m_Barrier);
+		}
 	};
 
 
