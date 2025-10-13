@@ -24,12 +24,12 @@ namespace RNEngine {
 		/// <summary>
 		/// –ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚é
 		/// </summary>
-		virtual void Update() {}
+		virtual void Update(float delta) {}
 
 		/// <summary>
 		/// ‚·‚×‚Ä‚ÌUpdate()‚ªI‚í‚Á‚½Œã‚ÉŒÄ‚Î‚ê‚é
 		/// </summary>
-		virtual void LateUpdate() {}
+		virtual void LateUpdate(float delta) {}
 
 		/// <summary>
 		/// •`‰æˆ—‚ÌÛ‚ÉŒÄ‚Î‚ê‚é

@@ -57,7 +57,7 @@ namespace RNEngine {
 		D3D12_RESOURCE_BARRIER m_Barrier;
 
 	public:
-		Barrier(){}
+		Barrier() noexcept { ZeroMemory(&m_Barrier, sizeof(m_Barrier)); }
 		~Barrier() {}
 
 		void Init(ComPtr<ID3D12GraphicsCommandList> _list, ComPtr<ID3D12Resource> _backBuffer);

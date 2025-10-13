@@ -17,7 +17,7 @@ namespace RNEngine
 
 		void Create(const wstring& appName, UINT width, UINT height);
 	public:
-		Window() :m_Hwnd(NULL),m_Height(0),m_Width(0) {}
+		Window() : m_Hwnd(NULL),m_Height(0),m_Width(0) {}
 		Window(const wstring& appName, UINT width, UINT height):m_Width(width), m_Height(height) {
 			Create(appName, width, height);
 		}

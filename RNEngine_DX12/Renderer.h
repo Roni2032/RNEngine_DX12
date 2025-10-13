@@ -39,7 +39,7 @@ namespace RNEngine {
 	class Viewport {
 		D3D12_VIEWPORT m_Viewport;
 	public:
-		Viewport() {}
+		Viewport() noexcept { ZeroMemory(&m_Viewport, sizeof(m_Viewport)); }
 		~Viewport() {}
 
 		void Create(const Window& _window);
@@ -54,10 +54,10 @@ namespace RNEngine {
 	class SicssorRect {
 		D3D12_RECT m_Rect;
 	public:
-		SicssorRect() {}
+		SicssorRect() noexcept { ZeroMemory(&m_Rect, sizeof(m_Rect)); }
 		~SicssorRect() {}
 		void Create(const Viewport& _viewport) {
-			Create(_viewport.GetTopX(), _viewport.GetTopY(), _viewport.GetWidth(), _viewport.GetHeight());
+			Create((UINT)_viewport.GetTopX(), (UINT)_viewport.GetTopY(), (UINT)_viewport.GetWidth(), (UINT)_viewport.GetHeight());
 		}
 		void Create(int left, int top, int right, int bottom) {
 			m_Rect.left = left;
@@ -77,7 +77,7 @@ namespace RNEngine {
 		Shader m_VSShader;
 		D3D12_BLEND_DESC m_BlendState;
 	public:
-		PipelineState() {}
+		PipelineState() noexcept { ZeroMemory(&m_BlendState, sizeof(m_BlendState)); }
 		~PipelineState() {}
 
 		void SetInputLayout(const InputLayout& layout) { m_InputLayout = layout; }

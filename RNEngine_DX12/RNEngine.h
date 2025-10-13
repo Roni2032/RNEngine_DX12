@@ -4,6 +4,8 @@
 #include "Timer.h"
 #include "Device.h"
 #include "Renderer.h"
+#include "GameObject.h"
+#include "Component.h"
 
 namespace RNEngine {
 
@@ -17,6 +19,10 @@ namespace RNEngine {
 		Timer m_FrameTimer;		// フレームタイマー
 
 		float m_FrameRate;		// フレームレート
+
+		//仮のデータ配列(後々シーンクラスが持つ)
+		vector<GameObject*> m_GameObjects; // ゲームオブジェクトの配列
+		vector<Component*> m_Components; // コンポーネントの配列
 
 		void EnableDebugLayer();
 	public:
