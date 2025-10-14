@@ -23,8 +23,12 @@ namespace RNEngine {
 		D3D_FEATURE_LEVEL featureLevel;
 		ComPtr<IDXGIAdapter> adapter;
 		HRESULT result;
-
+		///DXGI系統のエラーが出るようにifdef処理
+#ifdef _DEBUG
+		result = CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(m_Factory.GetAddressOf()));
+#else
 		result = CreateDXGIFactory1(IID_PPV_ARGS(m_Factory.GetAddressOf()));
+#endif
 		assert(SUCCEEDED(result));
 
 		// 高性能GPUを優先的に使用する
@@ -62,8 +66,35 @@ namespace RNEngine {
 
 		result = _dev->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(m_CmdQueue.GetAddressOf()));
 	}
+	void Fence::Init(ComPtr<ID3D12Device>& _dev) {
+		m_FenceVal = 0;
+		auto result = _dev->CreateFence(m_FenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_Fence.GetAddressOf()));
+	}
+	void Fence::Signal(ComPtr<ID3D12CommandQueue>& _queue) {
+		_queue->Signal(m_Fence.Get(), ++m_FenceVal);
+		// GPUが処理を終えるまで待機
+		if(m_Fence->GetCompletedValue() != m_FenceVal){
+			m_FenceEvent = CreateEvent(nullptr, false, false, nullptr);
+			m_Fence->SetEventOnCompletion(m_FenceVal, m_FenceEvent);
+			WaitForSingleObject(m_FenceEvent, INFINITE);
+			CloseHandle(m_FenceEvent);
+		}
+	}
+	void Barrier::Init(ComPtr<ID3D12GraphicsCommandList> _list,ComPtr<ID3D12Resource> _backBuffer) {
+		//m_Barrier = CD3D12_RESOURCE_BARRIER::Transition(_backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
+		//CD3DX12_RESOURCE_BARRIERが使えないので手動で初期化
+		m_Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		m_Barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		m_Barrier.Transition.pResource = _backBuffer.Get();
+		m_Barrier.Transition.Subresource = 0;
+
+		Transition(_list,D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+	}
 	void SwapChain::Init(ComPtr<IDXGIFactory6>& _factory, ComPtr<ID3D12CommandQueue> _queue, const Window& _window) {
+		m_SwapChain.Reset();
+
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 
 		swapChainDesc.Width = _window.GetWidth();

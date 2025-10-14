@@ -17,14 +17,16 @@ namespace RNEngine
 
 		void Create(const wstring& appName, UINT width, UINT height);
 	public:
-		Window() :m_Hwnd(NULL),m_Height(0),m_Width(0) {}
-		Window(const wstring& appName, UINT width, UINT height) {
+		Window() : m_Hwnd(NULL),m_Height(0),m_Width(0) {}
+		Window(const wstring& appName, UINT width, UINT height):m_Width(width), m_Height(height) {
 			Create(appName, width, height);
 		}
 
 		void Destroy() {
 			UnregisterClass(m_AppName.c_str(), m_Instance);
 		}
+
+		bool ProcessMessage();
 
 		HWND GetHwnd()const { return m_Hwnd; }
 		UINT GetWidth()const { return m_Width; }

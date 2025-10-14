@@ -1,5 +1,6 @@
 #include "stdafx.h"
-#include "Vector.h"
+#include "Component.h"
+
 namespace RNEngine {
 
 }
