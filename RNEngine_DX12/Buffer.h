@@ -2,10 +2,6 @@
 #include "stdafx.h"
 namespace RNEngine {
 
-	class Buffer
-	{
-	};
-
 	class DescriptorHeap {
 		ComPtr<ID3D12DescriptorHeap> m_Heap;
 		UINT m_HeapSize;
@@ -28,7 +24,7 @@ namespace RNEngine {
 
 		void Init(ComPtr<ID3D12Device>& _dev,SwapChain& _swapChain);
 
-		ComPtr<ID3D12Resource>& GetBackBuffer(size_t index) {
+		ComPtr<ID3D12Resource> GetBackBuffer(size_t index) {
 			if (m_BackBuffer.size() <= index) throw;
 			return m_BackBuffer[index];
 		}
@@ -60,7 +56,7 @@ namespace RNEngine {
 
 		void Create(ComPtr<ID3D12Device>& _dev, const vector<XMFLOAT3>& vertex);
 
-		ComPtr<ID3D12Resource>& GetBuffer() { return m_VertexBuffer; }
+		ComPtr<ID3D12Resource> GetBuffer() { return m_VertexBuffer; }
 	};
 	class IndexBuffer {
 		ComPtr<ID3D12Resource> m_IndexBuffer;

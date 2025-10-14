@@ -7,7 +7,7 @@ namespace RNEngine {
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 		m_RootSignature.Create(_dev);
 
-		psoDesc.pRootSignature = m_RootSignature.GetRootSignature().Get();
+		psoDesc.pRootSignature = m_RootSignature.GetPtr().Get();
 
 		psoDesc.VS = { vs.GetBlob()->GetBufferPointer(), vs.GetBlob()->GetBufferSize() };
 		psoDesc.PS = { ps.GetBlob()->GetBufferPointer(), ps.GetBlob()->GetBufferSize() };
@@ -78,14 +78,14 @@ namespace RNEngine {
 
     void Renderer::Init(Device& _dev,const Window& _window)
     {
-		m_Device = _dev.GetDivece();
+		m_Device = _dev.GetPtr();
 		m_CommandList = _dev.GetCommandQueue().GetList();
 		m_CommandQueue = _dev.GetCommandQueue().GetQueue();
 		m_CommandAllocator = _dev.GetCommandQueue().GetAllocator();
 
-        m_SwapChain = _dev.GetSwapChain().GetSwapChain();
+        m_SwapChain = _dev.GetSwapChain().GetPtr();
         m_RTVBuffer.Init(m_Device, _dev.GetSwapChain());
-        //m_DSVBuffer.Init(_dev.GetDivece(), _window);
+        //m_DSVBuffer.Init(_dev.GetPtr(), _window);
 
 		m_Fence = Fence(m_Device);
 
@@ -107,7 +107,7 @@ namespace RNEngine {
 
 		m_Barrier.Init(m_CommandList, m_RTVBuffer.GetBackBuffer(idx));
 
-		m_CommandList->SetPipelineState(m_PipelineState.GetPipelineState().Get());
+		m_CommandList->SetPipelineState(m_PipelineState.GetPtr().Get());
 
         auto rtvH = m_RTVBuffer.GetDecsriptorHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart();
         rtvH.ptr += idx * m_RTVBuffer.GetDecsriptorHeap().GetHeapSize();
@@ -118,7 +118,7 @@ namespace RNEngine {
 
 		m_CommandList->RSSetViewports(1, &m_ViewPort.GetViewport());;
 		m_CommandList->RSSetScissorRects(1, &m_Sicssor.GetRect());
-		m_CommandList->SetGraphicsRootSignature(m_PipelineState.GetRootSignature().GetRootSignature().Get());
+		m_CommandList->SetGraphicsRootSignature(m_PipelineState.GetRootSignature().GetPtr().Get());
 		m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		//テスト用
 		static VertexBuffer vertexBuffer;

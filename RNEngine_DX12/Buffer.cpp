@@ -29,13 +29,13 @@ namespace RNEngine {
 		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_RTVHeap.GetHeap()->GetCPUDescriptorHandleForHeapStart();
 
 		DXGI_SWAP_CHAIN_DESC swapDesc;
-		auto result = _swapChian.GetSwapChain()->GetDesc(&swapDesc);
+		auto result = _swapChian.GetPtr()->GetDesc(&swapDesc);
 		assert(SUCCEEDED(result));
 
 		m_BackBuffer.resize(swapDesc.BufferCount);
 		//フロントバッファをバックバッファ用のRTVを作成。
 		for (UINT n = 0; n < frameBufferCount; n++) {
-			_swapChian.GetSwapChain()->GetBuffer(n, IID_PPV_ARGS(&m_BackBuffer[n]));
+			_swapChian.GetPtr()->GetBuffer(n, IID_PPV_ARGS(&m_BackBuffer[n]));
 			_dev->CreateRenderTargetView(
 				m_BackBuffer[n].Get(), nullptr, rtvHandle
 			);

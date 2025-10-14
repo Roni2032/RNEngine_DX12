@@ -42,7 +42,7 @@ namespace RNEngine {
 			float deltaTime = m_Timer.GetDeltaTime();
 			cout << "DeltaTime:" << deltaTime << " / " << "FPS: " << 1.0f / deltaTime << endl;
 
-			for(auto it = m_GameObjects.begin(); it != m_GameObjects.end(); ++it){
+			/*for(auto it = m_GameObjects.begin(); it != m_GameObjects.end(); ++it){
 				(*it)->Update(deltaTime);
 			}
 			for (auto it = m_GameObjects.begin(); it != m_GameObjects.end(); ++it) {
@@ -53,7 +53,7 @@ namespace RNEngine {
 			}
 			for(auto it = m_Components.begin(); it != m_Components.end(); ++it){
 				(*it)->LateUpdate(deltaTime);
-			}
+			}*/
 			m_Renderer.EndRenderer();
 		}
 		Destroy();

@@ -26,7 +26,7 @@ namespace RNEngine {
 		RootSignature() {}
 		~RootSignature() {}
 
-		ComPtr<ID3D12RootSignature>& GetRootSignature() { return m_RootSignature; }
+		ComPtr<ID3D12RootSignature> GetPtr() { return m_RootSignature; }
 
 		void Create(ComPtr<ID3D12Device>& _dev);
 
@@ -88,7 +88,7 @@ namespace RNEngine {
 		void SetVSShader(const Shader& shader) { m_VSShader = shader; }
 		void SetPSShader(const Shader& shader) { m_PSShader = shader; }
 
-		ComPtr<ID3D12PipelineState>& GetPipelineState() { return m_PipelineState; }
+		ComPtr<ID3D12PipelineState> GetPtr() { return m_PipelineState; }
 		RootSignature& GetRootSignature() { return m_RootSignature; }
 	};
 

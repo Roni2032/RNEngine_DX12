@@ -21,8 +21,8 @@ namespace RNEngine {
 		float m_FrameRate;		// フレームレート
 
 		//仮のデータ配列(後々シーンクラスが持つ)
-		vector<GameObject*> m_GameObjects; // ゲームオブジェクトの配列
-		vector<Component*> m_Components; // コンポーネントの配列
+		//vector<GameObject*> m_GameObjects; // ゲームオブジェクトの配列
+		//vector<Component*> m_Components; // コンポーネントの配列
 
 		void EnableDebugLayer();
 	public:

@@ -21,7 +21,7 @@ namespace RNEngine {
 		SwapChain(ComPtr<IDXGIFactory6>& _factory, ComPtr<ID3D12CommandQueue> _queue, const Window& _window) { Init(_factory, _queue, _window); }
 		~SwapChain() {}
 
-		ComPtr<IDXGISwapChain4>& GetSwapChain() { return m_SwapChain; }
+		ComPtr<IDXGISwapChain4> GetPtr() { return m_SwapChain; }
 	};
 	class CommandQueue {
 		ComPtr<ID3D12CommandAllocator> m_CmdAllocator;
@@ -35,9 +35,9 @@ namespace RNEngine {
 		~CommandQueue() {}
 
 
-		ComPtr<ID3D12CommandAllocator>& GetAllocator() { return m_CmdAllocator; }
-		ComPtr<ID3D12GraphicsCommandList>& GetList() { return m_CmdList; }
-		ComPtr<ID3D12CommandQueue>& GetQueue() { return m_CmdQueue; }
+		ComPtr<ID3D12CommandAllocator> GetAllocator() { return m_CmdAllocator; }
+		ComPtr<ID3D12GraphicsCommandList> GetList() { return m_CmdList; }
+		ComPtr<ID3D12CommandQueue> GetQueue() { return m_CmdQueue; }
 	};
 
 	class Fence {
@@ -51,6 +51,8 @@ namespace RNEngine {
 
 		void Init(ComPtr<ID3D12Device>& _dev);
 		void Signal(ComPtr<ID3D12CommandQueue>& _queue);
+
+		ComPtr<ID3D12Fence> GetPtr() { return m_Fence; }
 	};
 
 	class Barrier {
@@ -90,8 +92,8 @@ namespace RNEngine {
 		void Init(const Window& _window);
 		void Update();
 
-		ComPtr<ID3D12Device>& GetDivece(){ return m_Device; }
-		ComPtr<IDXGIFactory6>& GetFactory() { return m_Factory; }
+		ComPtr<ID3D12Device> GetPtr(){ return m_Device; }
+		ComPtr<IDXGIFactory6> GetFactory() { return m_Factory; }
 
 		SwapChain& GetSwapChain() { return m_SwapChain; }
 		CommandQueue& GetCommandQueue() { return m_CommandQueue; }
