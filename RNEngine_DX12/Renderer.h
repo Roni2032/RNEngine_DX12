@@ -9,9 +9,6 @@ namespace RNEngine {
 	/// 
 	/// Renderer クラス
 	/// PipelineState クラス
-	/// Shader クラス
-	/// Buffer クラス
-	/// Texture クラス
 	/// CommandContext クラス
 	///		:
 	/// 

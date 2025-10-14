@@ -26,6 +26,7 @@ namespace RNEngine {
 		Input::GetInstance().Init();
 	}
 	void RnEngine::Destroy() {
+		m_Renderer.EndRenderer();
 		m_Window.Destroy();
 	}
 

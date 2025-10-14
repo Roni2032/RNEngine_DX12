@@ -80,17 +80,10 @@ namespace RNEngine {
 			CloseHandle(m_FenceEvent);
 		}
 	}
-	void Barrier::Init(ComPtr<ID3D12GraphicsCommandList> _list,ComPtr<ID3D12Resource> _backBuffer) {
-		//m_Barrier = CD3D12_RESOURCE_BARRIER::Transition(_backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	void Barrier::Transition(ComPtr<ID3D12GraphicsCommandList> _list,ComPtr<ID3D12Resource> _backBuffer, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
+		m_Barrier = CD3DX12_RESOURCE_BARRIER::Transition(_backBuffer.Get(), before, after);
 
-		//CD3DX12_RESOURCE_BARRIER‚ªŽg‚¦‚È‚¢‚Ì‚ÅŽè“®‚Å‰Šú‰»
-		m_Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		m_Barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		m_Barrier.Transition.pResource = _backBuffer.Get();
-		m_Barrier.Transition.Subresource = 0;
-
-		Transition(_list,D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-
+		_list->ResourceBarrier(1, &m_Barrier);
 	}
 	void SwapChain::Init(ComPtr<IDXGIFactory6>& _factory, ComPtr<ID3D12CommandQueue> _queue, const Window& _window) {
 		m_SwapChain.Reset();

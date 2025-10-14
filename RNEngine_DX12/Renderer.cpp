@@ -19,15 +19,11 @@ namespace RNEngine {
 		psoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
 		psoDesc.RasterizerState.DepthClipEnable = true;
 
-		m_BlendState.AlphaToCoverageEnable = false;
-		m_BlendState.IndependentBlendEnable = false;
-
-		D3D12_RENDER_TARGET_BLEND_DESC renderTargetBlendDesc = {};
-		renderTargetBlendDesc.BlendEnable = false;
-		renderTargetBlendDesc.LogicOpEnable = false;
-		renderTargetBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-		m_BlendState.RenderTarget[0] = renderTargetBlendDesc;
+		m_BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+		m_BlendState.RenderTarget->BlendEnable = true;
+		m_BlendState.RenderTarget->SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		m_BlendState.RenderTarget->DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+		m_BlendState.RenderTarget->BlendOp = D3D12_BLEND_OP_ADD;
 		psoDesc.BlendState = m_BlendState;
 
 		psoDesc.InputLayout.pInputElementDescs = m_InputLayout.m_Layout.data();
@@ -104,8 +100,8 @@ namespace RNEngine {
 
     void Renderer::BeginRenderer() {
         auto idx = m_SwapChain->GetCurrentBackBufferIndex();
-
-		m_Barrier.Init(m_CommandList, m_RTVBuffer.GetBackBuffer(idx));
+		
+		m_Barrier.Transition(m_CommandList, m_RTVBuffer.GetBackBuffer(idx), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 		m_CommandList->SetPipelineState(m_PipelineState.GetPtr().Get());
 
@@ -116,7 +112,7 @@ namespace RNEngine {
 
 		m_CommandList->ClearRenderTargetView(rtvH, m_ClearColor.data(), 0, nullptr);
 
-		m_CommandList->RSSetViewports(1, &m_ViewPort.GetViewport());;
+		m_CommandList->RSSetViewports(1, &m_ViewPort.GetViewport());
 		m_CommandList->RSSetScissorRects(1, &m_Sicssor.GetRect());
 		m_CommandList->SetGraphicsRootSignature(m_PipelineState.GetRootSignature().GetPtr().Get());
 		m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -135,7 +131,8 @@ namespace RNEngine {
 
     }
     void Renderer::EndRenderer() {
-		m_Barrier.Transition(m_CommandList,D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		auto idx = m_SwapChain->GetCurrentBackBufferIndex();
+		m_Barrier.Transition(m_CommandList, m_RTVBuffer.GetBackBuffer(idx),D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
         m_CommandList->Close();
 
 		ID3D12CommandList* cmdLists[] = { m_CommandList.Get() };

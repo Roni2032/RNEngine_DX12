@@ -62,14 +62,7 @@ namespace RNEngine {
 		Barrier() noexcept { ZeroMemory(&m_Barrier, sizeof(m_Barrier)); }
 		~Barrier() {}
 
-		void Init(ComPtr<ID3D12GraphicsCommandList> _list, ComPtr<ID3D12Resource> _backBuffer);
-
-		void Transition(ComPtr<ID3D12GraphicsCommandList> _list,D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
-			m_Barrier.Transition.StateBefore = before;
-			m_Barrier.Transition.StateAfter = after;
-
-			_list->ResourceBarrier(1, &m_Barrier);
-		}
+		void Transition(ComPtr<ID3D12GraphicsCommandList> _list, ComPtr<ID3D12Resource> _backBuffer, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
 	};
 
 
