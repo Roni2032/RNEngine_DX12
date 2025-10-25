@@ -109,7 +109,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)\include\DirectXTex\Bin\Desktop_2022_Win10\x64\Debug;$(WindowsSDKDir)Lib\10.0.xxxxx.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\wiz\ゲーム制作\RNEngine_DX12\RNEngine_DX12\include\DirectXTex\Lib\DebugLib;$(WindowsSDKDir)Lib\10.0.xxxxx.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>d3d12.lib;dxgi.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -128,7 +128,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d3d12.lib;dxgi.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)\include\DirectXTex\Bin\Desktop_2022_Win10\x64\Release;$(WindowsSDKDir)Lib\10.0.xxxxx.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\wiz\ゲーム制作\RNEngine_DX12\RNEngine_DX12\include\DirectXTex\Lib\ReleaseLib;$(WindowsSDKDir)Lib\10.0.xxxxx.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
