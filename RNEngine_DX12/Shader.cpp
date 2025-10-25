@@ -2,16 +2,13 @@
 #include "project.h"
 
 namespace RNEngine {
-
-	void Shader::Load(const wstring& filename, const wstring& entryPoint, const wstring& target) {
-		string entry = string(entryPoint.begin(), entryPoint.end());
-		string targ = string(target.begin(), target.end());
+	void Shader::Load(const wstring& filename, const string& entryPoint, const string& target) {
 		auto result = D3DCompileFromFile(
 			filename.c_str(),
 			nullptr,
 			D3D_COMPILE_STANDARD_FILE_INCLUDE,
-			entry.c_str(),
-			targ.c_str(),
+			entryPoint.c_str(),
+			target.c_str(),
 			D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
 			0,
 			m_Blob.GetAddressOf(),
@@ -28,11 +25,11 @@ namespace RNEngine {
 			assert(false);
 		}
 	}
-	void Shader::LoadVS(const wstring& filename, const wstring& entryPoint) {
-		Load(filename, entryPoint, L"vs_5_0");
+	void Shader::LoadVS(const wstring& filename, const string& entryPoint) {
+		Load(filename, entryPoint, "vs_5_0");
 	}
-	void Shader::LoadPS(const wstring& filename, const wstring& entryPoint) {
-		Load(filename, entryPoint, L"ps_5_0");
+	void Shader::LoadPS(const wstring& filename, const string& entryPoint) {
+		Load(filename, entryPoint, "ps_5_0");
 	}
 
 //------------------------------InputLayoutテンプレート----------------------------------

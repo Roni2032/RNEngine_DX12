@@ -1,29 +1,40 @@
 #pragma once
 
+//ComPtr
+#include <wrl/client.h>
+
+//std系統
 #include <iostream>
 #include<Windows.h>
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <d3dcompiler.h>
-#include <wrl/client.h>
-#include <DirectXMath.h>
-#include <comdef.h>
-
 #include<tchar.h>
 #include<assert.h>
 #include <chrono>
 #include <vector>
 #include <map>
+#include <array>
+
+//DirectX系統
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <d3dcompiler.h>
+#include <DirectXMath.h>
+#include<DirectXTex.h>
+#include<d3dx12.h>
+#include<DirectXColors.h>
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
+#pragma comment(lib,"DirectXTex.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "comsuppwd.lib")
 
+//デバッグ系統
 #ifdef _DEBUG
 #include <dxgidebug.h>
 #endif
+#include <comdef.h>
 
+//名前空間定義
 using namespace std;
 using namespace Microsoft::WRL;
 using namespace DirectX;

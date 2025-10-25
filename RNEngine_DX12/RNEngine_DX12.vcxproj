@@ -103,13 +103,13 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Create</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(ProjectDir)include\DirectX;$(WindowsSDKDir)Include\um;$(WindowsSDKDir)Include\shared;$(WindowsSDKDir)Include\ucrt</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include\DirectXTex;$(WindowsSDKDir)Include\um;$(WindowsSDKDir)Include\shared;$(WindowsSDKDir)Include\ucrt</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>stdafx.h;</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(WindowsSDKDir)Lib\10.0.xxxxx.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)\include\DirectXTex\Bin\Desktop_2022_Win10\x64\Debug;$(WindowsSDKDir)Lib\10.0.xxxxx.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>d3d12.lib;dxgi.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -122,13 +122,13 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Create</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(ProjectDir)include\DirectX;$(WindowsSDKDir)Include\ucrt;$(WindowsSDKDir)Include\shared;$(WindowsSDKDir)Include\um;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include\DirectXTex;$(WindowsSDKDir)Include\ucrt;$(WindowsSDKDir)Include\shared;$(WindowsSDKDir)Include\um;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d3d12.lib;dxgi.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(WindowsSDKDir)Lib\10.0.xxxxx.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)\include\DirectXTex\Bin\Desktop_2022_Win10\x64\Release;$(WindowsSDKDir)Lib\10.0.xxxxx.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
