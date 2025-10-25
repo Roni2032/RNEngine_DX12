@@ -13,26 +13,30 @@ namespace RNEngine {
 		debugLayer->Release();
 	}
 	void RnEngine::Init() {
-		m_Window = Window(L"RNEngine", 1280, 720);
+		m_Window = make_unique<Window>(L"RNEngine", 1280, 720);
 
 #ifdef _DEBUG
 		EnableDebugLayer();
 #endif
+		m_Device = make_unique<Device>();
+		m_Renderer = make_unique<Renderer>();
 
-		m_Device.Init(m_Window);
-		m_Renderer.Init(m_Device, m_Window);
-		m_Renderer.SetClearColor(0.1f, 0.25f, 0.5f, 1.0f);
+		m_Device->Init(m_Window);
+		m_Renderer->Init(m_Device, m_Window);
+		m_Renderer->SetClearColor(0.1f, 0.25f, 0.5f, 1.0f);
 		//キー入力の初期化
 		Input::GetInstance().Init();
 	}
 	void RnEngine::Destroy() {
-		m_Window.Destroy();
+		//m_Renderer->EndRenderer();
+		m_Renderer->WaitGPU();
+		m_Window->Destroy();
 	}
 
 	void RnEngine::Update() {
 		MSG msg{};
-		while (m_Window.ProcessMessage()) {
-			m_Renderer.BeginRenderer();
+		while (m_Window->ProcessMessage()) {
+			m_Renderer->BeginRenderer();
 			// キー入力の更新
 			Input::GetInstance().Update();
 			// フレームレート制御
@@ -42,7 +46,7 @@ namespace RNEngine {
 			float deltaTime = m_Timer.GetDeltaTime();
 			cout << "DeltaTime:" << deltaTime << " / " << "FPS: " << 1.0f / deltaTime << endl;
 
-			for(auto it = m_GameObjects.begin(); it != m_GameObjects.end(); ++it){
+			/*for(auto it = m_GameObjects.begin(); it != m_GameObjects.end(); ++it){
 				(*it)->Update(deltaTime);
 			}
 			for (auto it = m_GameObjects.begin(); it != m_GameObjects.end(); ++it) {
@@ -53,9 +57,8 @@ namespace RNEngine {
 			}
 			for(auto it = m_Components.begin(); it != m_Components.end(); ++it){
 				(*it)->LateUpdate(deltaTime);
-			}
-			m_Renderer.EndRenderer();
+			}*/
+			m_Renderer->EndRenderer();
 		}
-		Destroy();
 	}
 }

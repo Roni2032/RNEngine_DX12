@@ -3,10 +3,10 @@
 
 namespace RNEngine {
 
-	void Device::Init(const Window& _window) {
+	void Device::Init(const unique_ptr<Window>& _window) {
 		InitFeatureLevel();
-		m_CommandQueue = CommandQueue(m_Device);
-		m_SwapChain = SwapChain(m_Factory,m_CommandQueue.GetQueue(),_window);
+		m_CommandContext = make_unique<CommandContext>(m_Device);
+		m_SwapChain = make_unique<SwapChain>(m_Factory,m_CommandContext->GetQueue(),_window);
 	}
 	void Device::Update() {
 
@@ -51,7 +51,7 @@ namespace RNEngine {
 			}
 		}
 	}
-	void CommandQueue::Init(ComPtr<ID3D12Device>& _dev) {
+	void CommandContext::Init(ComPtr<ID3D12Device>& _dev) {
 		auto result = _dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(m_CmdAllocator.GetAddressOf()));
 		assert(SUCCEEDED(result));
 
@@ -70,7 +70,7 @@ namespace RNEngine {
 		m_FenceVal = 0;
 		auto result = _dev->CreateFence(m_FenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_Fence.GetAddressOf()));
 	}
-	void Fence::Signal(ComPtr<ID3D12CommandQueue>& _queue) {
+	void Fence::WaitGPU(ComPtr<ID3D12CommandQueue>& _queue) {
 		_queue->Signal(m_Fence.Get(), ++m_FenceVal);
 		// GPU‚ªˆ—‚ðI‚¦‚é‚Ü‚Å‘Ò‹@
 		if(m_Fence->GetCompletedValue() != m_FenceVal){
@@ -80,25 +80,18 @@ namespace RNEngine {
 			CloseHandle(m_FenceEvent);
 		}
 	}
-	void Barrier::Init(ComPtr<ID3D12GraphicsCommandList> _list,ComPtr<ID3D12Resource> _backBuffer) {
-		//m_Barrier = CD3D12_RESOURCE_BARRIER::Transition(_backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	void Barrier::Transition(ComPtr<ID3D12GraphicsCommandList> _list,ComPtr<ID3D12Resource> _backBuffer, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
+		m_Barrier = CD3DX12_RESOURCE_BARRIER::Transition(_backBuffer.Get(), before, after);
 
-		//CD3DX12_RESOURCE_BARRIER‚ªŽg‚¦‚È‚¢‚Ì‚ÅŽè“®‚Å‰Šú‰»
-		m_Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		m_Barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		m_Barrier.Transition.pResource = _backBuffer.Get();
-		m_Barrier.Transition.Subresource = 0;
-
-		Transition(_list,D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-
+		_list->ResourceBarrier(1, &m_Barrier);
 	}
-	void SwapChain::Init(ComPtr<IDXGIFactory6>& _factory, ComPtr<ID3D12CommandQueue> _queue, const Window& _window) {
+	void SwapChain::Init(ComPtr<IDXGIFactory6>& _factory, ComPtr<ID3D12CommandQueue> _queue, const unique_ptr<Window>& _window) {
 		m_SwapChain.Reset();
 
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 
-		swapChainDesc.Width = _window.GetWidth();
-		swapChainDesc.Height = _window.GetHeight();
+		swapChainDesc.Width = _window->GetWidth();
+		swapChainDesc.Height = _window->GetHeight();
 		swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		swapChainDesc.Stereo = false;
 		swapChainDesc.SampleDesc.Count = 1;
@@ -114,7 +107,7 @@ namespace RNEngine {
 
 		auto result = _factory->CreateSwapChainForHwnd(
 			_queue.Get(),
-			_window.GetHwnd(),
+			_window->GetHwnd(),
 			&swapChainDesc,
 			nullptr,
 			nullptr,

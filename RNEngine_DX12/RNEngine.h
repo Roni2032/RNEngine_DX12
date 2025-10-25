@@ -12,17 +12,17 @@ namespace RNEngine {
 	class RnEngine
 	{
 	private:
-		Window m_Window;		// ウィンドウ
-		Renderer m_Renderer;	// 描画処理
-		Device m_Device;		// デバイス
+		unique_ptr<Window> m_Window;		// ウィンドウ
+		unique_ptr <Renderer> m_Renderer;	// 描画処理
+		unique_ptr<Device> m_Device;		// デバイス
 		Timer m_Timer;			// タイマー
 		Timer m_FrameTimer;		// フレームタイマー
 
 		float m_FrameRate;		// フレームレート
 
 		//仮のデータ配列(後々シーンクラスが持つ)
-		vector<GameObject*> m_GameObjects; // ゲームオブジェクトの配列
-		vector<Component*> m_Components; // コンポーネントの配列
+		//vector<GameObject*> m_GameObjects; // ゲームオブジェクトの配列
+		//vector<Component*> m_Components; // コンポーネントの配列
 
 		void EnableDebugLayer();
 	public:
@@ -47,9 +47,9 @@ namespace RNEngine {
 		/// </summary>
 		void Update();
 
-		Device GetDevice() { return m_Device; }
-		Renderer GetRenderer() { return m_Renderer; }
-		Window GetWindow() { return m_Window; }
+		unique_ptr <Device>& GetDevice() { return m_Device; }
+		unique_ptr <Renderer>& GetRenderer() { return m_Renderer; }
+		unique_ptr<Window>& GetWindow() { return m_Window; }
 
 		float GetFrameRate() {
 			return m_FrameRate;

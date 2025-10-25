@@ -7,11 +7,13 @@ int main() {
 #include<Windows.h>
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #endif
-	RnEngine engine = RnEngine();
-	engine.Init();
+	RnEngine* engine = new RnEngine();
+	engine->Init();
 
-	engine.Update();
+	engine->Update();
 
-	engine.Destroy();
+	engine->Destroy();
+
+	delete engine;
 	return 0;
 }
