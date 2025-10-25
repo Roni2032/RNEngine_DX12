@@ -5,15 +5,16 @@ namespace RNEngine
 	{
 		ComPtr<ID3DBlob> m_Blob;
 		ComPtr<ID3DBlob> m_ErrorBlob;
-		void Load(const wstring& filename, const wstring& entryPoint, const wstring& target);
+		void Load(const wstring& filename, const string& entryPoint, const string& target);
 	public:
 		Shader(){}
 		~Shader(){}
 
-		void LoadVS(const wstring& filename,const wstring& entryPoint);
-		void LoadPS(const wstring& filename, const wstring& entryPoint);
+		void LoadVS(const wstring& filename,const string& entryPoint);
+		void LoadPS(const wstring& filename, const string& entryPoint);
 
-		ComPtr<ID3DBlob> GetBlob()const { return m_Blob; }
+		const ComPtr<ID3DBlob> GetBlob()const { return m_Blob; }
+		D3D12_SHADER_BYTECODE GetBytecode()const { return { m_Blob->GetBufferPointer(), m_Blob->GetBufferSize() }; }
 	};
 
 	struct InputLayout {

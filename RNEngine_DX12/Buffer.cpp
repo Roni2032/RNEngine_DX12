@@ -20,32 +20,34 @@ namespace RNEngine {
 		return true;
 	}
 
-	void RTVBuffer::Init(ComPtr<ID3D12Device>& _dev,SwapChain& _swapChian) {
+	void RTVBuffer::Init(ComPtr<ID3D12Device>& _dev,unique_ptr<SwapChain>& _swapChian) {
 		UINT frameBufferCount = 2;
 
-		m_RTVHeap = DescriptorHeap();
-		m_RTVHeap.Init(_dev, frameBufferCount, D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		m_RTVHeap = new DescriptorHeap();
+		m_RTVHeap->Init(_dev, frameBufferCount, D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_RTVHeap.GetHeap()->GetCPUDescriptorHandleForHeapStart();
+		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_RTVHeap->GetHeap()->GetCPUDescriptorHandleForHeapStart();
 
 		DXGI_SWAP_CHAIN_DESC swapDesc;
-		auto result = _swapChian.GetPtr()->GetDesc(&swapDesc);
+		auto result = _swapChian->GetPtr()->GetDesc(&swapDesc);
 		assert(SUCCEEDED(result));
 
 		m_BackBuffer.resize(swapDesc.BufferCount);
+		m_BufferStates.resize(swapDesc.BufferCount);
 		//フロントバッファをバックバッファ用のRTVを作成。
 		for (UINT n = 0; n < frameBufferCount; n++) {
-			_swapChian.GetPtr()->GetBuffer(n, IID_PPV_ARGS(&m_BackBuffer[n]));
+			_swapChian->GetPtr()->GetBuffer(n, IID_PPV_ARGS(&m_BackBuffer[n]));
 			_dev->CreateRenderTargetView(
 				m_BackBuffer[n].Get(), nullptr, rtvHandle
 			);
-			rtvHandle.ptr += m_RTVHeap.GetHeapSize();
+			m_BufferStates[n] = D3D12_RESOURCE_STATE_PRESENT;
+			rtvHandle.ptr += m_RTVHeap->GetHeapSize();
 		}
 	}
 
-	void DSVBuffer::Init(ComPtr<ID3D12Device>& _dev, const Window& _window) {
-		m_DSVHeap = DescriptorHeap();
-		m_DSVHeap.Init(_dev, 1, D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	void DSVBuffer::Init(ComPtr<ID3D12Device>& _dev, const Window* _window) {
+		m_DSVHeap = new DescriptorHeap();
+		m_DSVHeap->Init(_dev, 1, D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	}
 
 	void VertexBuffer::InitVertexBufferView(const vector<XMFLOAT3>& vertex) {
@@ -70,20 +72,6 @@ namespace RNEngine {
 		resDesc.Format = DXGI_FORMAT_UNKNOWN;
 		resDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-		//auto result = _dev->CreateCommittedResource(
-		//	&heapProp,
-		//	D3D12_HEAP_FLAG_NONE,
-		//	&resDesc,
-		//	D3D12_RESOURCE_STATE_GENERIC_READ,
-		//	nullptr,
-		//	IID_PPV_ARGS(m_VertexBuffer.GetAddressOf()));
-		////assert(SUCCEEDED(result));
-		//if(FAILED(result)){
-		//	_com_error err(result);
-		//	cout << "create Vertex error : " << err.ErrorMessage();
-		//	//頂点バッファの作成に失敗した。
-		//	assert(false);
-		//}
 		HRESULT result = _dev->CreateCommittedResource(
 			&heapProp,
 			D3D12_HEAP_FLAG_NONE,

@@ -11,6 +11,7 @@
 #include <chrono>
 #include <vector>
 #include <map>
+#include <array>
 
 //DirectXŒn“
 #include <d3d12.h>

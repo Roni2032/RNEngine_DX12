@@ -3,14 +3,15 @@
 
 namespace RNEngine {
 
-    void PipelineState::Create(ComPtr<ID3D12Device>& _dev,const Shader& vs, const Shader& ps) {
+    void PipelineState::Create(ComPtr<ID3D12Device>& _dev,const Shader* vs, const Shader* ps) {
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-		m_RootSignature.Create(_dev);
+		m_RootSignature = new RootSignature();
+		m_RootSignature->Create(_dev);
 
-		psoDesc.pRootSignature = m_RootSignature.GetPtr().Get();
+		psoDesc.pRootSignature = m_RootSignature->GetPtr().Get();
 
-		psoDesc.VS = { vs.GetBlob()->GetBufferPointer(), vs.GetBlob()->GetBufferSize() };
-		psoDesc.PS = { ps.GetBlob()->GetBufferPointer(), ps.GetBlob()->GetBufferSize() };
+		psoDesc.VS = vs->GetBytecode();
+		psoDesc.PS = ps->GetBytecode();
 
 
 		psoDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
@@ -60,8 +61,8 @@ namespace RNEngine {
 		if (erorBlob) erorBlob->Release();
 	}
 
-	void Viewport::Create(const Window& _window) {
-		Create(_window.GetWidth(), _window.GetHeight(), 0, 0);
+	void Viewport::Create(const unique_ptr<Window>& _window) {
+		Create(_window->GetWidth(), _window->GetHeight(), 0, 0);
 	}
 	void Viewport::Create(UINT width, UINT height, float topX, float topY) {
 		m_Viewport.TopLeftX = topX;
@@ -71,78 +72,94 @@ namespace RNEngine {
 		m_Viewport.MinDepth = 0.0f;
 		m_Viewport.MaxDepth = 1.0f;
 	}
-
-    void Renderer::Init(Device& _dev,const Window& _window)
+    void Renderer::Init(unique_ptr<Device>& _dev,const unique_ptr<Window>& _window)
     {
-		m_Device = _dev.GetPtr();
-		m_CommandList = _dev.GetCommandQueue().GetList();
-		m_CommandQueue = _dev.GetCommandQueue().GetQueue();
-		m_CommandAllocator = _dev.GetCommandQueue().GetAllocator();
+		m_Device = _dev->GetPtr();
+		m_CommandList = _dev->GetCommandContext()->GetList();
+		m_CommandQueue = _dev->GetCommandContext()->GetQueue();
+		m_CommandAllocator = _dev->GetCommandContext()->GetAllocator();
 
-        m_SwapChain = _dev.GetSwapChain().GetPtr();
-        m_RTVBuffer.Init(m_Device, _dev.GetSwapChain());
+        m_SwapChain = _dev->GetSwapChain()->GetPtr();
+		m_RTVBuffer = make_unique<RTVBuffer>();
+        m_RTVBuffer->Init(m_Device, _dev->GetSwapChain());
         //m_DSVBuffer.Init(_dev.GetPtr(), _window);
 
-		m_Fence = Fence(m_Device);
+		m_Fence = new Fence(m_Device);
+		m_Barrier = new Barrier();
 
 		Shader vs, ps;
-		vs.LoadVS(L"SampleVertexShader.hlsl", L"VSMain");
-		ps.LoadPS(L"SamplePixelShader.hlsl", L"PSMain");
-		m_PipelineState = PipelineState();
-		m_PipelineState.SetInputLayout(InputLayout::P);
-		m_PipelineState.Create(m_Device, vs, ps);
+		vs.LoadVS(L"SampleVertexShader.hlsl", "VSMain");
+		ps.LoadPS(L"SamplePixelShader.hlsl", "PSMain");
+		m_PipelineState = new PipelineState();
+		m_PipelineState->SetInputLayout(InputLayout::P);
+		m_PipelineState->Create(m_Device, &vs, &ps);
 
-		m_ViewPort.Create(_window);
-		m_Sicssor.Create(m_ViewPort);
+
+		m_ViewPort = new Viewport();
+		m_Sicssor = new SicssorRect();
+		m_ViewPort->Create(_window);
+		m_Sicssor->Create(m_ViewPort);
         //灰色に初期化
 		m_ClearColor = { 0.5f,0.5f,0.5f,1.0f };
-    }
-
-    void Renderer::BeginRenderer() {
-        auto idx = m_SwapChain->GetCurrentBackBufferIndex();
-		
-		m_Barrier.Transition(m_CommandList, m_RTVBuffer.GetBackBuffer(idx), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-
-		m_CommandList->SetPipelineState(m_PipelineState.GetPtr().Get());
-
-        auto rtvH = m_RTVBuffer.GetDecsriptorHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart();
-        rtvH.ptr += idx * m_RTVBuffer.GetDecsriptorHeap().GetHeapSize();
-
-        m_CommandList->OMSetRenderTargets(1, &rtvH, true, nullptr);
-
-		m_CommandList->ClearRenderTargetView(rtvH, m_ClearColor.data(), 0, nullptr);
-
-		m_CommandList->RSSetViewports(1, &m_ViewPort.GetViewport());
-		m_CommandList->RSSetScissorRects(1, &m_Sicssor.GetRect());
-		m_CommandList->SetGraphicsRootSignature(m_PipelineState.GetRootSignature().GetPtr().Get());
-		m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_TempVertex = new VertexBuffer();
 		//テスト用
-		static VertexBuffer vertexBuffer;
 		//仮の三角形データ
 		vector<XMFLOAT3> vertex = {
 			{0.0f,0.5f,0.0f},
 			{0.5f,-0.5f,0.0f},
 			{-0.5f,-0.5f,0.0f}
 		};
-		vertexBuffer.Create(m_Device, vertex);
-		m_CommandList->IASetVertexBuffers(0, 1, &vertexBuffer.m_VertexBufferView);
+		m_TempVertex->Create(m_Device, vertex);
+
+    }
+
+    void Renderer::BeginRenderer() {
+        auto idx = m_SwapChain->GetCurrentBackBufferIndex();
+		D3D12_RESOURCE_STATES currentState = m_RTVBuffer->GetBufferState(idx);
+		
+		if (currentState != D3D12_RESOURCE_STATE_RENDER_TARGET) {
+			m_Barrier->Transition(m_CommandList, m_RTVBuffer->GetBackBuffer(idx), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+			m_RTVBuffer->SetBufferState(idx, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		}
+
+		m_CommandList->SetPipelineState(m_PipelineState->GetPtr().Get());
+
+        auto rtvH = m_RTVBuffer->GetDecsriptorHeap()->GetHeap()->GetCPUDescriptorHandleForHeapStart();
+        rtvH.ptr += idx * m_RTVBuffer->GetDecsriptorHeap()->GetHeapSize();
+
+        m_CommandList->OMSetRenderTargets(1, &rtvH, true, nullptr);
+
+		m_CommandList->ClearRenderTargetView(rtvH, m_ClearColor.data(), 0, nullptr);
+
+		m_CommandList->RSSetViewports(1, &m_ViewPort->GetViewport());
+		m_CommandList->RSSetScissorRects(1, &m_Sicssor->GetRect());
+		m_CommandList->SetGraphicsRootSignature(m_PipelineState->GetRootSignature()->GetPtr().Get());
+		m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		
+		m_CommandList->IASetVertexBuffers(0, 1, &m_TempVertex->m_VertexBufferView);
 
 		m_CommandList->DrawInstanced(3, 1, 0, 0);
 
     }
     void Renderer::EndRenderer() {
 		auto idx = m_SwapChain->GetCurrentBackBufferIndex();
-		m_Barrier.Transition(m_CommandList, m_RTVBuffer.GetBackBuffer(idx),D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		m_Barrier->Transition(m_CommandList, m_RTVBuffer->GetBackBuffer(idx),D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		m_RTVBuffer->SetBufferState(idx, D3D12_RESOURCE_STATE_PRESENT);
         m_CommandList->Close();
 
 		ID3D12CommandList* cmdLists[] = { m_CommandList.Get() };
 		m_CommandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
         
-		m_Fence.Signal(m_CommandQueue);
+		WaitGPU();
 
 		m_CommandAllocator->Reset();
 		m_CommandList->Reset(m_CommandAllocator.Get(), nullptr);
 
-        m_SwapChain->Present(1, 0);
+		m_SwapChain->Present(1, 0);
+
+	}
+
+	void Renderer::WaitGPU() {
+		m_Fence->WaitGPU(m_CommandQueue);
 	}
 }
