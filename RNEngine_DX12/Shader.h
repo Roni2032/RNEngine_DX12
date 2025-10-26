@@ -25,6 +25,7 @@ namespace RNEngine
 		//頂点レイアウトテンプレート
 		const static vector<D3D12_INPUT_ELEMENT_DESC> P;//位置
 		const static vector<D3D12_INPUT_ELEMENT_DESC> PC;//位置、色
+		const static vector<D3D12_INPUT_ELEMENT_DESC> PUV;//位置、色
 		const static vector<D3D12_INPUT_ELEMENT_DESC> PCUV;//位置、色、UV
 		const static vector<D3D12_INPUT_ELEMENT_DESC> PN;//位置、法線
 		const static vector<D3D12_INPUT_ELEMENT_DESC> PNUV;//位置、法線、UV
@@ -40,5 +41,11 @@ namespace RNEngine
 		const static D3D12_INPUT_ELEMENT_DESC TANGENT;
 		const static D3D12_INPUT_ELEMENT_DESC BINORMAL;
 
+	};
+
+
+	struct Vertex {
+		XMFLOAT3 m_Position;
+		XMFLOAT2 m_Uv;
 	};
 }
