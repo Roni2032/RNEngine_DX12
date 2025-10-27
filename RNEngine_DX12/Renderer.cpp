@@ -5,7 +5,7 @@ namespace RNEngine {
 
     void PipelineState::Create(ComPtr<ID3D12Device>& _dev,const Shader* vs, const Shader* ps) {
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-		m_RootSignature = new RootSignature();
+		m_RootSignature = make_unique<RootSignature>();
 		m_RootSignature->Create(_dev);
 
 		psoDesc.pRootSignature = m_RootSignature->GetPtr().Get();
@@ -49,6 +49,16 @@ namespace RNEngine {
 
 		rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
+		m_DescriptorTable = make_unique<DescriptorTable>();
+		m_DescriptorTable->Create(D3D12_SHADER_VISIBILITY_ALL);
+		rootSignatureDesc.pParameters = &m_DescriptorTable->GetRootParameter();
+		rootSignatureDesc.NumParameters = 1;
+
+		m_Sampler = make_unique<Sampler>();
+		m_Sampler->Create();
+		rootSignatureDesc.pStaticSamplers = &m_Sampler->GetDesc();
+		rootSignatureDesc.NumStaticSamplers = 1;
+
 		ID3DBlob* erorBlob;
 		ID3DBlob* signatureBlob;
 		auto result = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &signatureBlob, &erorBlob);
@@ -59,6 +69,38 @@ namespace RNEngine {
 
 		signatureBlob->Release();
 		if (erorBlob) erorBlob->Release();
+	}
+
+	void DescriptorTable::AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE type, UINT numDescriptor) {
+		D3D12_DESCRIPTOR_RANGE range = {};
+		range.NumDescriptors = numDescriptor;
+		range.RangeType = type;
+		range.BaseShaderRegister = 0;
+		range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+		m_DescriptorRanges.push_back(range);
+	}
+	void DescriptorTable::Create(D3D12_SHADER_VISIBILITY visibility) {
+		//AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1);
+		AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1);
+
+		m_Parameters.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		m_Parameters.ShaderVisibility = visibility;
+		m_Parameters.DescriptorTable.pDescriptorRanges = &m_DescriptorRanges[0];
+		m_Parameters.DescriptorTable.NumDescriptorRanges = (UINT)m_DescriptorRanges.size();
+	}
+
+	void Sampler::Create() {
+		ZeroMemory(&m_SamplerDesc, sizeof(m_SamplerDesc));
+		m_SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		m_SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		m_SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		m_SamplerDesc.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+		m_SamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+		m_SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+		m_SamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
+		m_SamplerDesc.MinLOD = 0.0f;
+		m_SamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	}
 
 	void Viewport::Create(const unique_ptr<Window>& _window) {
@@ -84,33 +126,43 @@ namespace RNEngine {
         m_RTVBuffer->Init(m_Device, _dev->GetSwapChain());
         //m_DSVBuffer.Init(_dev.GetPtr(), _window);
 
-		m_Fence = new Fence(m_Device);
-		m_Barrier = new Barrier();
+		m_Fence = make_unique<Fence>(m_Device);
+		m_Barrier = make_unique<Barrier>();
 
 		Shader vs, ps;
 		vs.LoadVS(L"SampleVertexShader.hlsl", "VSMain");
 		ps.LoadPS(L"SamplePixelShader.hlsl", "PSMain");
-		m_PipelineState = new PipelineState();
-		m_PipelineState->SetInputLayout(InputLayout::P);
+		m_PipelineState = make_unique<PipelineState>();
+		m_PipelineState->SetInputLayout(InputLayout::PUV);
 		m_PipelineState->Create(m_Device, &vs, &ps);
 
 
-		m_ViewPort = new Viewport();
-		m_Sicssor = new SicssorRect();
+		m_ViewPort = make_unique<Viewport>();
+		m_Sicssor = make_unique<SicssorRect>();
 		m_ViewPort->Create(_window);
-		m_Sicssor->Create(m_ViewPort);
+		m_Sicssor->Create(m_ViewPort.get());
         //灰色に初期化
 		m_ClearColor = { 0.5f,0.5f,0.5f,1.0f };
-		m_TempVertex = new VertexBuffer();
+		m_TempVertex = make_unique<VertexBuffer>();
 		//テスト用
 		//仮の三角形データ
-		vector<XMFLOAT3> vertex = {
-			{0.0f,0.5f,0.0f},
-			{0.5f,-0.5f,0.0f},
-			{-0.5f,-0.5f,0.0f}
+		vector<Vertex> vertex = {
+			{ {-0.4f,-0.7f,0.0f},{0.0f,1.0f}},
+			{ {-0.4f, 0.7f,0.0f},{0.0f,0.0f}},
+			{ { 0.4f,-0.7f,0.0f},{1.0f,1.0f}},
+			{ { 0.4f, 0.7f,0.0f},{1.0f,0.0f}}
 		};
 		m_TempVertex->Create(m_Device, vertex);
 
+		m_TempIndex = make_unique<IndexBuffer>();
+		vector<UINT> index = {
+			0,1,2,
+			2,1,3
+		};
+		m_TempIndex->Create(m_Device, index);
+
+		m_TempTexture = make_unique<TextureBuffer>();
+		m_TempTexture->Create(m_Device, L"../Assets/Textures/test.jpg");
     }
 
     void Renderer::BeginRenderer() {
@@ -134,11 +186,14 @@ namespace RNEngine {
 		m_CommandList->RSSetViewports(1, &m_ViewPort->GetViewport());
 		m_CommandList->RSSetScissorRects(1, &m_Sicssor->GetRect());
 		m_CommandList->SetGraphicsRootSignature(m_PipelineState->GetRootSignature()->GetPtr().Get());
+		m_CommandList->SetDescriptorHeaps(1, m_TempTexture->GetSRV()->GetDecsriptorHeap()->GetHeap().GetAddressOf());
+		m_CommandList->SetGraphicsRootDescriptorTable(0, m_TempTexture->GetSRV()->GetDecsriptorHeap()->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 		m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
 		m_CommandList->IASetVertexBuffers(0, 1, &m_TempVertex->m_VertexBufferView);
+		m_CommandList->IASetIndexBuffer(&m_TempIndex->m_IndexBufferView);
 
-		m_CommandList->DrawInstanced(3, 1, 0, 0);
+		m_CommandList->DrawIndexedInstanced(m_TempIndex->GetIndexCount(), 1, 0, 0, 0);
 
     }
     void Renderer::EndRenderer() {
@@ -161,5 +216,9 @@ namespace RNEngine {
 
 	void Renderer::WaitGPU() {
 		m_Fence->WaitGPU(m_CommandQueue);
+	}
+
+	void Renderer::RegisterTextureBuffer(const TextureBuffer& texBuffer) {
+
 	}
 }

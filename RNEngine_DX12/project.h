@@ -16,4 +16,3 @@
 
 #include "GameObject.h"
 #include "Component.h"
-#include "Image.h"
