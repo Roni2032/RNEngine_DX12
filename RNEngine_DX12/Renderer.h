@@ -16,9 +16,13 @@ namespace RNEngine {
 	class PipelineState;
 	class RootSignature;
 	class RenderTarget;
+	class DescriptorTable;
+	class Sampler;
 
 	class RootSignature {
 		ComPtr<ID3D12RootSignature> m_RootSignature;
+		unique_ptr<DescriptorTable> m_DescriptorTable;
+		unique_ptr<Sampler> m_Sampler;
 	public:
 		RootSignature() {}
 		~RootSignature() {}
@@ -28,7 +32,31 @@ namespace RNEngine {
 		void Create(ComPtr<ID3D12Device>& _dev);
 
 	};
+	class DescriptorTable {
+		D3D12_ROOT_PARAMETER m_Parameters;
+		vector<D3D12_DESCRIPTOR_RANGE> m_DescriptorRanges;
 
+		void AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE type, UINT numDescriptor);
+	public:
+		DescriptorTable() {}
+		~DescriptorTable() {}
+
+		void Create(D3D12_SHADER_VISIBILITY visibility);
+
+		D3D12_ROOT_PARAMETER& GetRootParameter() { return m_Parameters; }
+		const vector<D3D12_DESCRIPTOR_RANGE>& GetDescriptorRanges() { return m_DescriptorRanges; }
+		size_t GetRangeSize()const { return m_DescriptorRanges.size(); }
+	};
+	class Sampler {
+		D3D12_STATIC_SAMPLER_DESC m_SamplerDesc;
+	public:
+		Sampler(){}
+		~Sampler() {}
+
+		void Create();
+
+		D3D12_STATIC_SAMPLER_DESC& GetDesc() { return m_SamplerDesc; }
+	};
 	class RenderTarget {
 		ComPtr<ID3D12Resource> m_RenderTarget;
 	};
@@ -68,17 +96,14 @@ namespace RNEngine {
 
 	class PipelineState {
 		ComPtr<ID3D12PipelineState> m_PipelineState;
-		RootSignature* m_RootSignature;
+		unique_ptr<RootSignature> m_RootSignature;
 		InputLayout m_InputLayout;
-		Shader* m_PSShader;
-		Shader* m_VSShader;
+		shared_ptr<Shader> m_PSShader;
+		shared_ptr<Shader> m_VSShader;
 		D3D12_BLEND_DESC m_BlendState;
 	public:
 		PipelineState() noexcept { ZeroMemory(&m_BlendState, sizeof(m_BlendState)); }
 		~PipelineState() {
-			delete m_RootSignature;
-			delete m_PSShader;
-			delete m_VSShader;
 		}
 
 		void SetInputLayout(const InputLayout& layout) { m_InputLayout = layout; }
@@ -86,11 +111,11 @@ namespace RNEngine {
 
 		void Create(ComPtr<ID3D12Device>& _dev,const Shader* vs,const Shader* ps);
 
-		void SetVSShader( Shader* shader) { m_VSShader = shader; }
-		void SetPSShader( Shader* shader) { m_PSShader = shader; }
+		void SetVSShader( Shader* shader) { m_VSShader = make_shared<Shader>(*shader); }
+		void SetPSShader( Shader* shader) { m_PSShader = make_shared<Shader>(*shader); }
 
 		ComPtr<ID3D12PipelineState> GetPtr() { return m_PipelineState; }
-		RootSignature* GetRootSignature() { return m_RootSignature; }
+		unique_ptr<RootSignature>& GetRootSignature() { return m_RootSignature; }
 	};
 
 	/// <summary>
@@ -101,29 +126,25 @@ namespace RNEngine {
 
 		unique_ptr<RTVBuffer> m_RTVBuffer;	//レンダーターゲットビュー用のヒープ
 		unique_ptr<DSVBuffer> m_DSVBuffer;	//深度バッファ用のヒープ
-		Viewport* m_ViewPort;
-		SicssorRect* m_Sicssor;
+		unique_ptr<SRVBuffer> m_SRVBuffer;	//シェーダーリソースビュー用のヒープ
+		unique_ptr<Viewport> m_ViewPort;
+		unique_ptr<SicssorRect> m_Sicssor;
 		ComPtr<ID3D12GraphicsCommandList> m_CommandList;
 		ComPtr<ID3D12CommandQueue> m_CommandQueue;
 		ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 		ComPtr<IDXGISwapChain4> m_SwapChain;
-		Fence* m_Fence;
-		Barrier* m_Barrier;
-		PipelineState* m_PipelineState;
+		unique_ptr<Fence> m_Fence;
+		unique_ptr<Barrier> m_Barrier;
+		unique_ptr<PipelineState> m_PipelineState;
 		array<float, 4> m_ClearColor;
 
-		VertexBuffer* m_TempVertex;
+		unique_ptr<VertexBuffer> m_TempVertex;
+		unique_ptr<IndexBuffer> m_TempIndex;
+		unique_ptr<TextureBuffer> m_TempTexture;
 
 	public:
 		Renderer(){}
-		~Renderer() {
-			delete m_ViewPort;
-			delete m_Sicssor;
-			delete m_Fence;
-			delete m_Barrier;
-			delete m_PipelineState;
-			delete m_TempVertex;
-		}
+		~Renderer() {}
 
 		void Init(unique_ptr<Device>& _dev, const unique_ptr<Window>& _window);
 		void BeginRenderer();
@@ -134,6 +155,8 @@ namespace RNEngine {
 		void SetClearColor(float r, float g, float b, float a) {
 			m_ClearColor = { r,g,b,a };
 		}
+
+		void RegisterTextureBuffer(const TextureBuffer& texBuffer);
 	};
 
 }

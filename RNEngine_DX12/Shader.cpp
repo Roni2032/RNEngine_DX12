@@ -55,6 +55,7 @@ namespace RNEngine {
 
 	const vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::P = { POSITION };//位置
 	const vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::PC = { POSITION,COLOR };//位置、色
+	const vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::PUV = { POSITION,UV };//位置、色
 	const vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::PCUV = { POSITION,COLOR,UV };//位置、色、UV
 	const vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::PN = { POSITION,NORMAL };//位置、法線
 	const vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::PNUV = { POSITION,NORMAL,UV };//位置、法線、UV
