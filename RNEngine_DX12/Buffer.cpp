@@ -55,21 +55,16 @@ namespace RNEngine {
 		m_DSVHeap->Init(_dev, 1, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 	}
 	void SRVBuffer::CreateSRVDesc(ComPtr<ID3D12Device>& _dev, TextureBuffer& texBuffer, DXGI_FORMAT format) {
+		ZeroMemory(&m_SRVDesc, sizeof(m_SRVDesc));
 		m_SRVDesc.Format = format;
 		m_SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		m_SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 		m_SRVDesc.Texture2D.MipLevels = 1;
-		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
-			m_SRVHeap->GetHeap()->GetCPUDescriptorHandleForHeapStart(),
-			m_DescriptorCount,
-			m_SRVHeap->GetHeapSize()
-		);
-		_dev->CreateShaderResourceView(texBuffer.GetBuffer().Get(), &m_SRVDesc, handle);
-		texBuffer.SetSRVHandle(m_DescriptorCount++);
+		
+		auto& renderer = RnEngine::g_pInstance->GetRenderer();
+		renderer->RegisterTextureBuffer(texBuffer);
 	}
-	void SRVBuffer::Init(ComPtr<ID3D12Device>& _dev, TextureBuffer& texBuffer, UINT descriptorCount, DXGI_FORMAT format) {
-		m_SRVHeap = make_unique<DescriptorHeap>();
-		m_SRVHeap->Init(_dev, descriptorCount, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+	void SRVBuffer::Init(ComPtr<ID3D12Device>& _dev, TextureBuffer& texBuffer, DXGI_FORMAT format) {
 		CreateSRVDesc(_dev, texBuffer, format);
 	}
 
@@ -228,7 +223,9 @@ namespace RNEngine {
 		);
 		assert(SUCCEEDED(result));
 
-		//m_SRV = make_unique<SRVBuffer>();
-		//m_SRV->Init(_dev, m_TextureBuffer, 1, metadata.format);
+		m_SRV = make_unique<SRVBuffer>();
+		m_SRV->Init(_dev,*this,metadata.format);
+
+		m_Filename = filename;
 	}
 }

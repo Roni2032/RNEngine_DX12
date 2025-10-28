@@ -5,14 +5,14 @@
 
 //stdånìù
 #include <iostream>
-#include<Windows.h>
-#include<tchar.h>
-#include<assert.h>
+#include <Windows.h>
+#include <tchar.h>
+#include <assert.h>
 #include <chrono>
 #include <vector>
 #include <map>
 #include <array>
-
+#include <thread>
 //DirectXånìù
 #include <d3d12.h>
 #include <dxgi1_6.h>

@@ -126,7 +126,8 @@ namespace RNEngine {
 
 		unique_ptr<RTVBuffer> m_RTVBuffer;	//レンダーターゲットビュー用のヒープ
 		unique_ptr<DSVBuffer> m_DSVBuffer;	//深度バッファ用のヒープ
-		unique_ptr<SRVBuffer> m_SRVBuffer;	//シェーダーリソースビュー用のヒープ
+		unique_ptr<DescriptorHeap> m_SrvCbvDescriptorHeap;
+		UINT m_DescriptorCount;
 		unique_ptr<Viewport> m_ViewPort;
 		unique_ptr<SicssorRect> m_Sicssor;
 		ComPtr<ID3D12GraphicsCommandList> m_CommandList;
@@ -143,7 +144,7 @@ namespace RNEngine {
 		unique_ptr<TextureBuffer> m_TempTexture;
 
 	public:
-		Renderer(){}
+		Renderer():m_DescriptorCount(0){}
 		~Renderer() {}
 
 		void Init(unique_ptr<Device>& _dev, const unique_ptr<Window>& _window);
@@ -156,7 +157,7 @@ namespace RNEngine {
 			m_ClearColor = { r,g,b,a };
 		}
 
-		void RegisterTextureBuffer(const TextureBuffer& texBuffer);
+		void RegisterTextureBuffer(TextureBuffer& texBuffer);
 	};
 
 }

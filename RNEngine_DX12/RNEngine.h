@@ -8,7 +8,7 @@
 #include "Component.h"
 
 namespace RNEngine {
-
+#define FRAME_NONDEFINE 10000
 	class RnEngine
 	{
 	private:

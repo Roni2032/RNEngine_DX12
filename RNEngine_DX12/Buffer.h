@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "Shader.h"
 namespace RNEngine {
+	class TextureBuffer;
 	class DescriptorHeap {
 		ComPtr<ID3D12DescriptorHeap> m_Heap;
 		UINT m_HeapSize;
@@ -12,6 +13,8 @@ namespace RNEngine {
 		bool Init(ComPtr<ID3D12Device>& _dev,UINT _frameBufferCount,D3D12_DESCRIPTOR_HEAP_TYPE _type,D3D12_DESCRIPTOR_HEAP_FLAGS _flags);
 		ComPtr<ID3D12DescriptorHeap> GetHeap()const { return m_Heap; }
 		UINT GetHeapSize()const { return m_HeapSize; }
+		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle()const { return m_Heap->GetGPUDescriptorHandleForHeapStart(); }
+		D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle()const { return m_Heap->GetCPUDescriptorHandleForHeapStart(); }
 	};
 
 	class RTVBuffer {
@@ -53,16 +56,14 @@ namespace RNEngine {
 
 	};
 	class SRVBuffer {
-		unique_ptr<DescriptorHeap> m_SRVHeap;
 		UINT m_DescriptorCount;
 
 	public:
 		D3D12_SHADER_RESOURCE_VIEW_DESC m_SRVDesc;
 		SRVBuffer():m_DescriptorCount(0){}
 		~SRVBuffer() {}
-		void Init(ComPtr<ID3D12Device>& _dev, TextureBuffer& texBuffer, UINT descriptorCount,DXGI_FORMAT format);
+		void Init(ComPtr<ID3D12Device>& _dev, TextureBuffer& texBuffer,DXGI_FORMAT format);
 		void CreateSRVDesc(ComPtr<ID3D12Device>& _dev, TextureBuffer& texBuffer, DXGI_FORMAT format);
-		unique_ptr<DescriptorHeap>& GetDecsriptorHeap() { return m_SRVHeap; }
 	};
 	class ConstBuffer {
 		ComPtr<ID3D12Resource> m_ConstBuffer;
@@ -109,7 +110,8 @@ namespace RNEngine {
 	class TextureBuffer {
 		ComPtr<ID3D12Resource> m_TextureBuffer;
 		UINT m_SRVHandle;
-		//unique_ptr<SRVBuffer> m_SRV;
+		unique_ptr<SRVBuffer> m_SRV;
+		wstring m_Filename;
 	public:
 
 		TextureBuffer() {}
@@ -119,7 +121,11 @@ namespace RNEngine {
 		ComPtr<ID3D12Resource> GetBuffer()const { return m_TextureBuffer; }
 		void SetSRVHandle(UINT handle) { m_SRVHandle = handle; }
 		UINT GetSRVHandle()const { return m_SRVHandle; }
-		//unique_ptr<SRVBuffer>& GetSRV() { return m_SRV; }
+		unique_ptr<SRVBuffer>& GetSRV() { return m_SRV; }
+
+		UINT GetGPUHandle()const {
+
+		}
 	};
 }
 

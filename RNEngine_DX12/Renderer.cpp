@@ -34,7 +34,7 @@ namespace RNEngine {
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;//三角形
 
 		psoDesc.NumRenderTargets = 1;//設定するレンダーターゲットの数
-		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;//レンダーターゲットの数に対応する場所に設定する
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;//レンダーターゲットの数に対応する場所に設定する
 
 		psoDesc.SampleDesc.Count = 1;
 		psoDesc.SampleDesc.Quality = 0;
@@ -136,6 +136,8 @@ namespace RNEngine {
 		m_PipelineState->SetInputLayout(InputLayout::PUV);
 		m_PipelineState->Create(m_Device, &vs, &ps);
 
+		m_SrvCbvDescriptorHeap = make_unique<DescriptorHeap>();
+		m_SrvCbvDescriptorHeap->Init(m_Device, 1, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
 		m_ViewPort = make_unique<Viewport>();
 		m_Sicssor = make_unique<SicssorRect>();
@@ -186,8 +188,9 @@ namespace RNEngine {
 		m_CommandList->RSSetViewports(1, &m_ViewPort->GetViewport());
 		m_CommandList->RSSetScissorRects(1, &m_Sicssor->GetRect());
 		m_CommandList->SetGraphicsRootSignature(m_PipelineState->GetRootSignature()->GetPtr().Get());
-		m_CommandList->SetDescriptorHeaps(1, m_TempTexture->GetSRV()->GetDecsriptorHeap()->GetHeap().GetAddressOf());
-		m_CommandList->SetGraphicsRootDescriptorTable(0, m_TempTexture->GetSRV()->GetDecsriptorHeap()->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+		m_CommandList->SetDescriptorHeaps(1, m_SrvCbvDescriptorHeap->GetHeap().GetAddressOf());
+		m_CommandList->SetGraphicsRootDescriptorTable(0, m_SrvCbvDescriptorHeap->GetGPUHandle());
+
 		m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
 		m_CommandList->IASetVertexBuffers(0, 1, &m_TempVertex->m_VertexBufferView);
@@ -218,7 +221,15 @@ namespace RNEngine {
 		m_Fence->WaitGPU(m_CommandQueue);
 	}
 
-	void Renderer::RegisterTextureBuffer(const TextureBuffer& texBuffer) {
+	void Renderer::RegisterTextureBuffer(TextureBuffer& texBuffer) {
+		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
+			m_SrvCbvDescriptorHeap->GetHeap()->GetCPUDescriptorHandleForHeapStart(),
+			m_DescriptorCount,
+			m_SrvCbvDescriptorHeap->GetHeapSize()
+		);
+		D3D12_SHADER_RESOURCE_VIEW_DESC desc = texBuffer.GetSRV()->m_SRVDesc;
+		m_Device->CreateShaderResourceView(texBuffer.GetBuffer().Get(), &desc, handle);
+		texBuffer.SetSRVHandle(m_DescriptorCount++);
 
 	}
 }
