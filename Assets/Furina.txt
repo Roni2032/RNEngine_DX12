@@ -1,0 +1,69 @@
+----- Mesh Data -----
+Num Meshes : 32
+mesh 0 : 5538
+mesh 1 : 300
+mesh 2 : 318
+mesh 3 : 2220
+mesh 4 : 960
+mesh 5 : 432
+mesh 6 : 144
+mesh 7 : 486
+mesh 8 : 468
+mesh 9 : 192
+mesh 10 : 16485
+mesh 11 : 5484
+mesh 12 : 12624
+mesh 13 : 1536
+mesh 14 : 31926
+mesh 15 : 1338
+mesh 16 : 54
+mesh 17 : 1956
+mesh 18 : 264
+mesh 19 : 276
+mesh 20 : 4512
+mesh 21 : 3126
+mesh 22 : 1254
+mesh 23 : 924
+mesh 24 : 465
+mesh 25 : 1812
+mesh 26 : 513
+mesh 27 : 1974
+mesh 28 : 924
+mesh 29 : 465
+mesh 30 : 1656
+mesh 31 : 16485
+
+----- Material Data -----
+Num Materials : 32
+Material 0 : Mat_Face  => tex\颜.png
+Material 1 : Mat_Face  => tex\颜.png
+Material 2 : Mat_Face  => tex\颜.png
+Material 3 : Mat_Face  => tex\颜.png
+Material 4 : Mat_Face  => tex\颜.png
+Material 5 : Mat_Face  => tex\颜.png
+Material 6 : Mat_Face  => tex\颜.png
+Material 7 : Mat_Face  => tex\颜.png
+Material 8 : Mat_Hair  => tex\髮.png
+Material 9 : Mat_Face  => tex\颜.png
+Material 10 : Mat_Hair  => tex\髮.png
+Material 11 : Mat_EffectHair  => tex\髮2.png
+Material 12 : Mat_Body  => tex\体.png
+Material 13 : Mat_Body  => tex\体.png
+Material 14 : Mat_Hair  => tex\髮.png
+Material 15 : Mat_Hair  => tex\髮.png
+Material 16 : Mat_Hair  => tex\髮.png
+Material 17 : Mat_Hair  => tex\髮.png
+Material 18 : Mat_Hair  => tex\髮.png
+Material 19 : Mat_Hair  => tex\髮.png
+Material 20 : Mat_Hair  => tex\髮.png
+Material 21 : Mat_Dress  => tex\体.png
+Material 22 : Mat_Dress  => tex\体.png
+Material 23 : Mat_Dress  => tex\体.png
+Material 24 : Mat_Dress  => tex\体.png
+Material 25 : Mat_Dress  => tex\体.png
+Material 26 : Mat_Dress  => tex\体.png
+Material 27 : Mat_Body  => tex\体.png
+Material 28 : Mat_Dress  => tex\体.png
+Material 29 : Mat_Dress  => tex\体.png
+Material 30 : Mat_Dress  => tex\体.png
+Material 31 : Mat_Hair  => tex\spa_h.png

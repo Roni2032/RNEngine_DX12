@@ -103,13 +103,13 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Create</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(ProjectDir)include\DirectXTex;$(WindowsSDKDir)Include\um;$(WindowsSDKDir)Include\shared;$(WindowsSDKDir)Include\ucrt</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\assimp\include;$(ProjectDir)include\DirectXTex;$(WindowsSDKDir)Include\um;$(WindowsSDKDir)Include\shared;$(WindowsSDKDir)Include\ucrt</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>stdafx.h;</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)include\DirectXTex\Lib\DebugLib;$(WindowsSDKDir)Lib\10.0.xxxxx.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)include\assimp\lib;$(ProjectDir)include\DirectXTex\Lib\DebugLib;$(WindowsSDKDir)Lib\10.0.xxxxx.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>d3d12.lib;dxgi.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -141,6 +141,7 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="RNEngine.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="stdafx.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="Input.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Object.h" />
+    <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="project.h" />

@@ -48,4 +48,9 @@ namespace RNEngine
 		XMFLOAT3 m_Position;
 		XMFLOAT2 m_Uv;
 	};
+
+	struct Matrix {
+		XMMATRIX m_World;
+		XMMATRIX m_ViewProjection;
+	};
 }

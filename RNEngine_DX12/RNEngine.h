@@ -2,12 +2,12 @@
 #include "stdafx.h"
 #include "Window.h"
 #include "Timer.h"
-#include "Device.h"
-#include "Renderer.h"
-#include "GameObject.h"
-#include "Component.h"
 
 namespace RNEngine {
+#define FRAME_NONDEFINE 10000
+	class Renderer;
+	class Device;
+	class FrameTimer;
 
 	class RnEngine
 	{
@@ -15,8 +15,7 @@ namespace RNEngine {
 		unique_ptr<Window> m_Window;		// ウィンドウ
 		unique_ptr <Renderer> m_Renderer;	// 描画処理
 		unique_ptr<Device> m_Device;		// デバイス
-		Timer m_Timer;			// タイマー
-		Timer m_FrameTimer;		// フレームタイマー
+		FrameTimer m_FrameTimer;		// フレームタイマー
 
 		float m_FrameRate;		// フレームレート
 

@@ -1,3 +1,9 @@
+cbuffer Cb0 : register(b0)
+{
+    matrix world;
+    matrix viewProj;
+}
+
 struct InputPUV
 {
     float4 position : POSITION;
