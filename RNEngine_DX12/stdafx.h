@@ -5,14 +5,18 @@
 
 //stdånìù
 #include <iostream>
+#include <fstream>
 #include <Windows.h>
 #include <tchar.h>
 #include <assert.h>
 #include <chrono>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <array>
 #include <thread>
+#include <codecvt>
+
 //DirectXånìù
 #include <d3d12.h>
 #include <dxgi1_6.h>
@@ -22,11 +26,19 @@
 #include<d3dx12.h>
 #include<DirectXColors.h>
 
+//assimp
+#include <assimp/Importer.hpp>
+#include <assimp/Scene.h>
+#include <assimp/postprocess.h>
+
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
-#pragma comment(lib,"DirectXTex.lib")
+#pragma comment(lib, "DirectXTex.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "comsuppwd.lib")
+#pragma comment(lib, "winmm.lib")
+#pragma comment(lib, "assimp-vc143-mtd.lib")
+#pragma comment(lib, "zlibstaticd.lib")
 
 //ÉfÉoÉbÉOånìù
 #ifdef _DEBUG

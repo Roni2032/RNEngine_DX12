@@ -4,7 +4,7 @@ namespace RNEngine {
 
 	class Timer
 	{
-	private:
+	protected:
 		steady_clock::time_point m_BeforeTime;
 		steady_clock::time_point m_CurrentTime;
 		float m_DeltaTime;
@@ -17,20 +17,21 @@ namespace RNEngine {
 		/// </summary>
 		void Init() {
 			m_BeforeTime = steady_clock::now();
+			timeBeginPeriod(1);
 		}
+
 		/// <summary>
-		/// 前回からの経過時間を計算
-		/// CheckTimeとの同時使用は不可
+		/// 更新処理
 		/// </summary>
-		float CalcDelta() {
+		void Update() {
 			m_CurrentTime = steady_clock::now();
-			m_DeltaTime = duration_cast<milliseconds>(m_CurrentTime - m_BeforeTime).count() * 0.001f;
+			m_DeltaTime = duration<float>(m_CurrentTime - m_BeforeTime).count();
 			m_BeforeTime = m_CurrentTime;
-			return m_DeltaTime;
 		}
 
 		/// <summary>
 		/// 指定した秒数が経過したかチェック
+		/// 最後にInit()を実行またはtrueが返った時からの時間
 		/// </summary>
 		/// <param name="time">秒数</param>
 		/// <returns>経過したかの判定(trueが返るとリセット)</returns>
@@ -46,5 +47,30 @@ namespace RNEngine {
 		float GetDeltaTime() { return m_DeltaTime; }
 	};
 
+	class FrameTimer : public Timer {
+	public:
+		FrameTimer() : Timer() {}
+		~FrameTimer() {}
+
+		/// <summary>
+		/// フレーム制御用
+		/// </summary>
+		/// <param name="fps"></param>
+		/// <returns></returns>
+		float WaitFrame(float fps) {
+			const float frameTime = 1.0f / fps;
+			m_CurrentTime = steady_clock::now();
+			float delta = duration<float>(m_CurrentTime - m_BeforeTime).count();
+
+			float sleepTime = frameTime - delta;
+			if (sleepTime > 0) {
+				this_thread::sleep_for(milliseconds((long long)(sleepTime * 1000)));
+			}
+			m_CurrentTime = steady_clock::now();
+			m_DeltaTime = duration<float>(m_CurrentTime - m_BeforeTime).count();
+			m_BeforeTime = m_CurrentTime;
+			return m_DeltaTime;
+		}
+	};
 }
 

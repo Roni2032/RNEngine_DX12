@@ -31,6 +31,12 @@ namespace RNEngine {
 		psoDesc.InputLayout.NumElements = (UINT)m_InputLayout.m_Layout.size();
 		psoDesc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;//カットなし
 
+		psoDesc.DepthStencilState.DepthEnable = true;
+		psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+		psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS; // 既存の深度値よりも小さかったら更新する
+		psoDesc.DepthStencilState.StencilEnable = false;
+		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;//三角形
 
 		psoDesc.NumRenderTargets = 1;//設定するレンダーターゲットの数
@@ -51,24 +57,30 @@ namespace RNEngine {
 
 		m_DescriptorTable = make_unique<DescriptorTable>();
 		m_DescriptorTable->Create(D3D12_SHADER_VISIBILITY_ALL);
-		rootSignatureDesc.pParameters = &m_DescriptorTable->GetRootParameter();
-		rootSignatureDesc.NumParameters = 1;
+		rootSignatureDesc.pParameters = m_DescriptorTable->GetRootParameters().data();
+		rootSignatureDesc.NumParameters = (UINT)m_DescriptorTable->GetRootParameters().size();
 
 		m_Sampler = make_unique<Sampler>();
 		m_Sampler->Create();
 		rootSignatureDesc.pStaticSamplers = &m_Sampler->GetDesc();
 		rootSignatureDesc.NumStaticSamplers = 1;
 
-		ID3DBlob* erorBlob;
+		ID3DBlob* errorBlob;
 		ID3DBlob* signatureBlob;
-		auto result = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &signatureBlob, &erorBlob);
-		assert(SUCCEEDED(result));
-
+		auto result = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &signatureBlob, &errorBlob);
+		//assert(SUCCEEDED(result));
+		if (FAILED(result)) {
+			if (errorBlob) {
+				OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+				errorBlob->Release();
+			}
+			assert(false); // シリアライズ失敗
+		}
 		result = _dev->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
 		assert(SUCCEEDED(result));
 
 		signatureBlob->Release();
-		if (erorBlob) erorBlob->Release();
+		if (errorBlob) errorBlob->Release();
 	}
 
 	void DescriptorTable::AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE type, UINT numDescriptor) {
@@ -81,13 +93,18 @@ namespace RNEngine {
 		m_DescriptorRanges.push_back(range);
 	}
 	void DescriptorTable::Create(D3D12_SHADER_VISIBILITY visibility) {
-		//AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1);
+		AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1);
 		AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1);
 
-		m_Parameters.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-		m_Parameters.ShaderVisibility = visibility;
-		m_Parameters.DescriptorTable.pDescriptorRanges = &m_DescriptorRanges[0];
-		m_Parameters.DescriptorTable.NumDescriptorRanges = (UINT)m_DescriptorRanges.size();
+		for (int i = 0; i < m_DescriptorRanges.size(); i++) {
+			D3D12_ROOT_PARAMETER parameter = {};
+			parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			parameter.ShaderVisibility = visibility;
+			parameter.DescriptorTable.pDescriptorRanges = &m_DescriptorRanges[i];
+			parameter.DescriptorTable.NumDescriptorRanges = 1;
+
+			m_Parameters.push_back(parameter);
+		}
 	}
 
 	void Sampler::Create() {
@@ -103,7 +120,7 @@ namespace RNEngine {
 		m_SamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	}
 
-	void Viewport::Create(const unique_ptr<Window>& _window) {
+	void Viewport::Create(const Window* _window) {
 		Create(_window->GetWidth(), _window->GetHeight(), 0, 0);
 	}
 	void Viewport::Create(UINT width, UINT height, float topX, float topY) {
@@ -114,7 +131,7 @@ namespace RNEngine {
 		m_Viewport.MinDepth = 0.0f;
 		m_Viewport.MaxDepth = 1.0f;
 	}
-    void Renderer::Init(unique_ptr<Device>& _dev,const unique_ptr<Window>& _window)
+    void Renderer::Init(Device* _dev,const Window* _window)
     {
 		m_Device = _dev->GetPtr();
 		m_CommandList = _dev->GetCommandContext()->GetList();
@@ -123,8 +140,9 @@ namespace RNEngine {
 
         m_SwapChain = _dev->GetSwapChain()->GetPtr();
 		m_RTVBuffer = make_unique<RTVBuffer>();
-        m_RTVBuffer->Init(m_Device, _dev->GetSwapChain());
-        //m_DSVBuffer.Init(_dev.GetPtr(), _window);
+        m_RTVBuffer->Init(m_Device, _dev->GetSwapChain().get());
+		m_DSVBuffer = make_unique<DSVBuffer>();
+        m_DSVBuffer->Init(m_Device, _window);
 
 		m_Fence = make_unique<Fence>(m_Device);
 		m_Barrier = make_unique<Barrier>();
@@ -137,7 +155,7 @@ namespace RNEngine {
 		m_PipelineState->Create(m_Device, &vs, &ps);
 
 		m_SrvCbvDescriptorHeap = make_unique<DescriptorHeap>();
-		m_SrvCbvDescriptorHeap->Init(m_Device, 1, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+		m_SrvCbvDescriptorHeap->Init(m_Device, 4096, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
 		m_ViewPort = make_unique<Viewport>();
 		m_Sicssor = make_unique<SicssorRect>();
@@ -145,27 +163,7 @@ namespace RNEngine {
 		m_Sicssor->Create(m_ViewPort.get());
         //灰色に初期化
 		m_ClearColor = { 0.5f,0.5f,0.5f,1.0f };
-		m_TempVertex = make_unique<VertexBuffer>();
-		//テスト用
-		//仮の三角形データ
-		vector<Vertex> vertex = {
-			{ {-0.4f,-0.7f,0.0f},{0.0f,1.0f}},
-			{ {-0.4f, 0.7f,0.0f},{0.0f,0.0f}},
-			{ { 0.4f,-0.7f,0.0f},{1.0f,1.0f}},
-			{ { 0.4f, 0.7f,0.0f},{1.0f,0.0f}}
-		};
-		m_TempVertex->Create(m_Device, vertex);
-
-		m_TempIndex = make_unique<IndexBuffer>();
-		vector<UINT> index = {
-			0,1,2,
-			2,1,3
-		};
-		m_TempIndex->Create(m_Device, index);
-
-		m_TempTexture = make_unique<TextureBuffer>();
-		m_TempTexture->Create(m_Device, L"../Assets/Textures/test.jpg");
-    }
+	}
 
     void Renderer::BeginRenderer() {
         auto idx = m_SwapChain->GetCurrentBackBufferIndex();
@@ -178,25 +176,44 @@ namespace RNEngine {
 
 		m_CommandList->SetPipelineState(m_PipelineState->GetPtr().Get());
 
-        auto rtvH = m_RTVBuffer->GetDecsriptorHeap()->GetHeap()->GetCPUDescriptorHandleForHeapStart();
+        auto rtvH = m_RTVBuffer->GetDecsriptorHeap()->GetCPUHandle();
         rtvH.ptr += idx * m_RTVBuffer->GetDecsriptorHeap()->GetHeapSize();
 
-        m_CommandList->OMSetRenderTargets(1, &rtvH, true, nullptr);
+		auto dsvH = m_DSVBuffer->GetDecsriptorHeap()->GetCPUHandle();
+
+        m_CommandList->OMSetRenderTargets(1, &rtvH, true, &dsvH);
 
 		m_CommandList->ClearRenderTargetView(rtvH, m_ClearColor.data(), 0, nullptr);
+		m_CommandList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 		m_CommandList->RSSetViewports(1, &m_ViewPort->GetViewport());
 		m_CommandList->RSSetScissorRects(1, &m_Sicssor->GetRect());
 		m_CommandList->SetGraphicsRootSignature(m_PipelineState->GetRootSignature()->GetPtr().Get());
-		m_CommandList->SetDescriptorHeaps(1, m_SrvCbvDescriptorHeap->GetHeap().GetAddressOf());
-		m_CommandList->SetGraphicsRootDescriptorTable(0, m_SrvCbvDescriptorHeap->GetGPUHandle());
+
+		/*m_Matrix.m_World = XMMatrixRotationY(angle);
+		angle += XM_PIDIV2 * 0.01f;
+
+		m_TempConstantBuffer->Upadte(m_Matrix);
+		for(auto& model : m_TempModel){
+			model->Draw(m_CommandList, m_SrvCbvDescriptorHeap.get());
+		}*/
+		/*m_CommandList->SetDescriptorHeaps(1, m_SrvCbvDescriptorHeap->GetHeap().GetAddressOf());
+
+		auto handle = m_SrvCbvDescriptorHeap->GetGPUHandle();
+		m_CommandList->SetGraphicsRootDescriptorTable(0, handle);
+		handle = CD3DX12_GPU_DESCRIPTOR_HANDLE(
+			m_SrvCbvDescriptorHeap->GetGPUHandle(),
+			m_TempTexture->GetSRVHandle(),
+			m_SrvCbvDescriptorHeap->GetHeapSize()
+		);
+		m_CommandList->SetGraphicsRootDescriptorTable(1, handle);
 
 		m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
 		m_CommandList->IASetVertexBuffers(0, 1, &m_TempVertex->m_VertexBufferView);
 		m_CommandList->IASetIndexBuffer(&m_TempIndex->m_IndexBufferView);
 
-		m_CommandList->DrawIndexedInstanced(m_TempIndex->GetIndexCount(), 1, 0, 0, 0);
+		m_CommandList->DrawIndexedInstanced((UINT)m_TempIndex->GetIndexCount(), 1, 0, 0, 0);*/
 
     }
     void Renderer::EndRenderer() {
@@ -223,13 +240,27 @@ namespace RNEngine {
 
 	void Renderer::RegisterTextureBuffer(TextureBuffer& texBuffer) {
 		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
-			m_SrvCbvDescriptorHeap->GetHeap()->GetCPUDescriptorHandleForHeapStart(),
-			m_DescriptorCount,
+			m_SrvCbvDescriptorHeap->GetCPUHandle(),
+			m_SrvCbvDescriptorHeap->GetHeapCount(),
 			m_SrvCbvDescriptorHeap->GetHeapSize()
 		);
 		D3D12_SHADER_RESOURCE_VIEW_DESC desc = texBuffer.GetSRV()->m_SRVDesc;
 		m_Device->CreateShaderResourceView(texBuffer.GetBuffer().Get(), &desc, handle);
-		texBuffer.SetSRVHandle(m_DescriptorCount++);
+		texBuffer.SetSRVHandle(m_SrvCbvDescriptorHeap->GetHeapCount());
+		m_SrvCbvDescriptorHeap->AddHeapCount();
+	}
+	void Renderer::RegisterConstantBuffer(ConstBuffer& constBuffer) {
+		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
+			m_SrvCbvDescriptorHeap->GetHeap()->GetCPUDescriptorHandleForHeapStart(),
+			m_SrvCbvDescriptorHeap->GetHeapCount(),
+			m_SrvCbvDescriptorHeap->GetHeapSize()
+		);
+		m_Device->CreateConstantBufferView(&constBuffer.m_CBVDesc, handle);
+		constBuffer.SetCBVHandle(m_SrvCbvDescriptorHeap->GetHeapCount());
+		m_SrvCbvDescriptorHeap->AddHeapCount();
+	}
 
+	void Renderer::DrawModel(shared_ptr<ModelRenderer>& renderer) {
+		renderer->Draw(m_CommandList, m_SrvCbvDescriptorHeap.get());
 	}
 }

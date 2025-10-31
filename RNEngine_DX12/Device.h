@@ -15,10 +15,10 @@ namespace RNEngine {
 	class SwapChain {
 		ComPtr<IDXGISwapChain4> m_SwapChain;
 
-		void Init(ComPtr<IDXGIFactory6>& _factory, ComPtr<ID3D12CommandQueue> _queue, const unique_ptr<Window>& _window);
+		void Init(ComPtr<IDXGIFactory6>& _factory, ComPtr<ID3D12CommandQueue> _queue, const Window* _window);
 	public:
 		SwapChain() {}
-		SwapChain(ComPtr<IDXGIFactory6>& _factory, ComPtr<ID3D12CommandQueue> _queue, const unique_ptr<Window>& _window) { Init(_factory, _queue, _window); }
+		SwapChain(ComPtr<IDXGIFactory6>& _factory, ComPtr<ID3D12CommandQueue> _queue, const Window* _window) { Init(_factory, _queue, _window); }
 		~SwapChain() {}
 
 		ComPtr<IDXGISwapChain4> GetPtr() { return m_SwapChain; }
@@ -82,12 +82,12 @@ namespace RNEngine {
 		Device() : m_SwapChain(),m_CommandContext(), m_FeatureLevel(D3D_FEATURE_LEVEL_12_1){}
 		~Device() {}
 
-		void Init(const unique_ptr<Window>& _window);
+		void Init(const Window* _window);
 
 		void Update();
 
-		ComPtr<ID3D12Device> GetPtr(){ return m_Device; }
-		ComPtr<IDXGIFactory6> GetFactory() { return m_Factory; }
+		ComPtr<ID3D12Device> GetPtr()const{ return m_Device; }
+		ComPtr<IDXGIFactory6> GetFactory() const{ return m_Factory; }
 
 		unique_ptr<SwapChain>& GetSwapChain() { return m_SwapChain; }
 		unique_ptr<CommandContext>& GetCommandContext() { return m_CommandContext; }

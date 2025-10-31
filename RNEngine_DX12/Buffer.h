@@ -6,8 +6,9 @@ namespace RNEngine {
 	class DescriptorHeap {
 		ComPtr<ID3D12DescriptorHeap> m_Heap;
 		UINT m_HeapSize;
+		UINT m_HeapCount; //éüÇ…í«â¡Ç∑ÇÈÉqÅ[Évî‘çÜ(-1ÇµÇΩï™ÇæÇØìoò^çœÇ›)
 	public:
-		DescriptorHeap() :m_HeapSize(0) {}
+		DescriptorHeap() :m_HeapSize(0), m_HeapCount(0){}
 		~DescriptorHeap(){}
 
 		bool Init(ComPtr<ID3D12Device>& _dev,UINT _frameBufferCount,D3D12_DESCRIPTOR_HEAP_TYPE _type,D3D12_DESCRIPTOR_HEAP_FLAGS _flags);
@@ -15,6 +16,9 @@ namespace RNEngine {
 		UINT GetHeapSize()const { return m_HeapSize; }
 		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle()const { return m_Heap->GetGPUDescriptorHandleForHeapStart(); }
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle()const { return m_Heap->GetCPUDescriptorHandleForHeapStart(); }
+
+		void AddHeapCount() { m_HeapCount++; }
+		UINT GetHeapCount() { return m_HeapCount; }
 	};
 
 	class RTVBuffer {
@@ -23,10 +27,10 @@ namespace RNEngine {
 		vector<D3D12_RESOURCE_STATES> m_BufferStates;
 	public:
 		RTVBuffer() {}
-		RTVBuffer(ComPtr<ID3D12Device>& _dev, unique_ptr<SwapChain>& _swapChain) { Init(_dev,_swapChain); }
+		RTVBuffer(ComPtr<ID3D12Device>& _dev, SwapChain* _swapChain) { Init(_dev,_swapChain); }
 		~RTVBuffer() { }
 
-		void Init(ComPtr<ID3D12Device>& _dev, unique_ptr<SwapChain>& _swapChain);
+		void Init(ComPtr<ID3D12Device>& _dev, SwapChain* _swapChain);
 
 		ComPtr<ID3D12Resource> GetBackBuffer(size_t index) {
 			if (m_BackBuffer.size() <= index) throw;
@@ -45,7 +49,11 @@ namespace RNEngine {
 	};
 	class DSVBuffer {
 		unique_ptr<DescriptorHeap> m_DSVHeap;
+		ComPtr<ID3D12Resource> m_DSBuffer;
+
+		void CreateDSVDesc(ComPtr<ID3D12Device>& _dev);
 	public:
+		D3D12_DEPTH_STENCIL_VIEW_DESC m_DSVDesc;
 		DSVBuffer() {}
 		DSVBuffer(ComPtr<ID3D12Device>& _dev,const Window* _window) { Init(_dev,_window); }
 		~DSVBuffer() { }
@@ -56,25 +64,29 @@ namespace RNEngine {
 
 	};
 	class SRVBuffer {
-		UINT m_DescriptorCount;
-
 	public:
 		D3D12_SHADER_RESOURCE_VIEW_DESC m_SRVDesc;
-		SRVBuffer():m_DescriptorCount(0){}
+		SRVBuffer(){}
 		~SRVBuffer() {}
 		void Init(ComPtr<ID3D12Device>& _dev, TextureBuffer& texBuffer,DXGI_FORMAT format);
 		void CreateSRVDesc(ComPtr<ID3D12Device>& _dev, TextureBuffer& texBuffer, DXGI_FORMAT format);
 	};
 	class ConstBuffer {
 		ComPtr<ID3D12Resource> m_ConstBuffer;
-		UINT m_BufferSize;
+		UINT m_CBVHandle;
 	public:
-		ConstBuffer() :m_BufferSize(0) {}
+		D3D12_CONSTANT_BUFFER_VIEW_DESC m_CBVDesc;
+
+		ConstBuffer():m_CBVHandle(0){}
 		~ConstBuffer() {}
 
-		void Create(ComPtr<ID3D12Device>& _dev, UINT bufferSize);
+		void Create(ComPtr<ID3D12Device>& _dev, Matrix& matrix);
 
 		ComPtr<ID3D12Resource> GetBuffer() { return m_ConstBuffer; }
+		void SetCBVHandle(UINT handle) { m_CBVHandle = handle; }
+		UINT GetCBVHandle()const { return m_CBVHandle; }
+
+		void Upadte(Matrix& matrix);
 	};
 	class VertexBuffer {
 		ComPtr<ID3D12Resource> m_VertexBuffer;
@@ -99,9 +111,10 @@ namespace RNEngine {
 		void CreateIndexBuffer(ComPtr<ID3D12Device>& _dev, const vector<UINT>& index);
 
 	public:
-		IndexBuffer() {}
-		~IndexBuffer() {}
 		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
+
+		IndexBuffer(){}
+		~IndexBuffer() {}
 
 		void Create(ComPtr<ID3D12Device>& _dev, const vector<UINT>& index);
 		size_t GetIndexCount()const { return m_IndexData.size(); }

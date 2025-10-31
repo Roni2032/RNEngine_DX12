@@ -3,7 +3,7 @@
 #include "Buffer.h"
 #include "Shader.h"
 namespace RNEngine {
-	
+	class ModelRenderer;
 	///----------------------------------------------------------------
 	/// Renderer ヘッダ
 	/// 
@@ -33,7 +33,7 @@ namespace RNEngine {
 
 	};
 	class DescriptorTable {
-		D3D12_ROOT_PARAMETER m_Parameters;
+		vector<D3D12_ROOT_PARAMETER> m_Parameters;
 		vector<D3D12_DESCRIPTOR_RANGE> m_DescriptorRanges;
 
 		void AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE type, UINT numDescriptor);
@@ -43,7 +43,7 @@ namespace RNEngine {
 
 		void Create(D3D12_SHADER_VISIBILITY visibility);
 
-		D3D12_ROOT_PARAMETER& GetRootParameter() { return m_Parameters; }
+		vector<D3D12_ROOT_PARAMETER>& GetRootParameters() { return m_Parameters; }
 		const vector<D3D12_DESCRIPTOR_RANGE>& GetDescriptorRanges() { return m_DescriptorRanges; }
 		size_t GetRangeSize()const { return m_DescriptorRanges.size(); }
 	};
@@ -67,7 +67,7 @@ namespace RNEngine {
 		Viewport() noexcept { ZeroMemory(&m_Viewport, sizeof(m_Viewport)); }
 		~Viewport() {}
 
-		void Create(const unique_ptr<Window>& _window);
+		void Create(const Window*_window);
 		void Create(UINT width, UINT height, float topX, float topY);
 
 		float GetWidth()const { return m_Viewport.Width; }
@@ -124,10 +124,11 @@ namespace RNEngine {
 	class Renderer {
 		ComPtr<ID3D12Device> m_Device;
 
+		vector<shared_ptr<TextureBuffer>> m_Textrues;
+
 		unique_ptr<RTVBuffer> m_RTVBuffer;	//レンダーターゲットビュー用のヒープ
 		unique_ptr<DSVBuffer> m_DSVBuffer;	//深度バッファ用のヒープ
 		unique_ptr<DescriptorHeap> m_SrvCbvDescriptorHeap;
-		UINT m_DescriptorCount;
 		unique_ptr<Viewport> m_ViewPort;
 		unique_ptr<SicssorRect> m_Sicssor;
 		ComPtr<ID3D12GraphicsCommandList> m_CommandList;
@@ -139,15 +140,17 @@ namespace RNEngine {
 		unique_ptr<PipelineState> m_PipelineState;
 		array<float, 4> m_ClearColor;
 
-		unique_ptr<VertexBuffer> m_TempVertex;
-		unique_ptr<IndexBuffer> m_TempIndex;
+		unique_ptr<ConstBuffer> m_TempConstantBuffer;
 		unique_ptr<TextureBuffer> m_TempTexture;
 
+		vector<shared_ptr<Model>> m_TempModel;
+		Matrix m_Matrix;
+		float angle = 0;
 	public:
-		Renderer():m_DescriptorCount(0){}
+		Renderer(){}
 		~Renderer() {}
 
-		void Init(unique_ptr<Device>& _dev, const unique_ptr<Window>& _window);
+		void Init(Device* _dev, const Window* _window);
 		void BeginRenderer();
 		void EndRenderer();
 
@@ -158,6 +161,9 @@ namespace RNEngine {
 		}
 
 		void RegisterTextureBuffer(TextureBuffer& texBuffer);
+		void RegisterConstantBuffer(ConstBuffer& constBuffer);
+
+		void DrawModel(shared_ptr<ModelRenderer>& renderer);
 	};
 
 }

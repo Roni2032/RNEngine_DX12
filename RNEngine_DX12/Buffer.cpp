@@ -8,7 +8,6 @@ namespace RNEngine {
 		desc.NumDescriptors = _frameBufferCount;
 		desc.NodeMask = 0;
 		desc.Type = _type;
-		//desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		desc.Flags = _flags;
 		auto hr = _dev->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_Heap));
 		if (FAILED(hr)) {
@@ -21,7 +20,7 @@ namespace RNEngine {
 		return true;
 	}
 
-	void RTVBuffer::Init(ComPtr<ID3D12Device>& _dev,unique_ptr<SwapChain>& _swapChian) {
+	void RTVBuffer::Init(ComPtr<ID3D12Device>& _dev, SwapChain* _swapChian) {
 		UINT frameBufferCount = 2;
 
 		m_RTVHeap = make_unique<DescriptorHeap>();
@@ -50,9 +49,53 @@ namespace RNEngine {
 		}
 	}
 
+	void DSVBuffer::CreateDSVDesc(ComPtr<ID3D12Device>& _dev) {
+		ZeroMemory(&m_DSVDesc, sizeof(m_DSVDesc));
+		m_DSVDesc.Format = DXGI_FORMAT_D32_FLOAT;
+		m_DSVDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+		m_DSVDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+		_dev->CreateDepthStencilView(
+			m_DSBuffer.Get(), // ComPtrが管理しているデータを渡す
+			&m_DSVDesc,
+			m_DSVHeap->GetCPUHandle());
+	}
+
 	void DSVBuffer::Init(ComPtr<ID3D12Device>& _dev, const Window* _window) {
+
+		D3D12_RESOURCE_DESC depthResDesc = {};
+		depthResDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; // 二次元配列的なバッファ
+		depthResDesc.Width = _window->GetWidth(); // 画面の「幅」に合わせる
+		depthResDesc.Height = _window->GetHeight(); // 画面の「高さ」に合わせる
+		depthResDesc.DepthOrArraySize = 1;
+		depthResDesc.Format = DXGI_FORMAT_D32_FLOAT; // ステンシル無し
+		depthResDesc.SampleDesc.Count = 1;
+		depthResDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+		// 深度値用ヒーププロパティ
+		D3D12_HEAP_PROPERTIES depthHeapProp = {};
+		depthHeapProp.Type = D3D12_HEAP_TYPE_DEFAULT;
+		depthHeapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+		depthHeapProp.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+
+		// クリアバリューを設定する
+		D3D12_CLEAR_VALUE depthClearValue = {};
+		depthClearValue.DepthStencil.Depth = 1.0f; // 深度の最大値
+		depthClearValue.Format = DXGI_FORMAT_D32_FLOAT;
+
+		auto result = _dev->CreateCommittedResource(
+			&depthHeapProp,
+			D3D12_HEAP_FLAG_NONE,
+			&depthResDesc,
+			D3D12_RESOURCE_STATE_DEPTH_WRITE,
+			&depthClearValue,
+			IID_PPV_ARGS(m_DSBuffer.GetAddressOf()));
+		assert(SUCCEEDED(result));
+
 		m_DSVHeap = make_unique<DescriptorHeap>();
 		m_DSVHeap->Init(_dev, 1, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+
+		CreateDSVDesc(_dev);
 	}
 	void SRVBuffer::CreateSRVDesc(ComPtr<ID3D12Device>& _dev, TextureBuffer& texBuffer, DXGI_FORMAT format) {
 		ZeroMemory(&m_SRVDesc, sizeof(m_SRVDesc));
@@ -68,7 +111,38 @@ namespace RNEngine {
 		CreateSRVDesc(_dev, texBuffer, format);
 	}
 
-	void ConstBuffer::Create(ComPtr<ID3D12Device>& _dev, UINT bufferSize) {
+	void ConstBuffer::Create(ComPtr<ID3D12Device>& _dev, Matrix& matrix) {
+
+		auto heap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+		auto resDesc = CD3DX12_RESOURCE_DESC::Buffer((sizeof(matrix) + 0xff) & ~0xff);
+		auto result = _dev->CreateCommittedResource(
+			&heap,
+			D3D12_HEAP_FLAG_NONE,
+			&resDesc,
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(m_ConstBuffer.GetAddressOf()));
+
+		assert(SUCCEEDED(result));
+		Matrix* matrixMap;
+		result = m_ConstBuffer->Map(0, nullptr, (void**)&matrixMap);
+
+		matrixMap->m_World = matrix.m_World;
+		matrixMap->m_ViewProjection = matrix.m_ViewProjection;
+
+		ZeroMemory(&m_CBVDesc, sizeof(m_CBVDesc));
+		m_CBVDesc.BufferLocation = m_ConstBuffer->GetGPUVirtualAddress();
+		m_CBVDesc.SizeInBytes = (UINT)m_ConstBuffer->GetDesc().Width;
+
+		auto& renderer = RnEngine::g_pInstance->GetRenderer();
+		renderer->RegisterConstantBuffer(*this);
+
+	}
+	void ConstBuffer::Upadte(Matrix& matrix) {
+		Matrix* matrixMap;
+		auto result = m_ConstBuffer->Map(0, nullptr, (void**)&matrixMap);
+		matrixMap->m_World = matrix.m_World;
+		matrixMap->m_ViewProjection = matrix.m_ViewProjection;
 
 	}
 	void VertexBuffer::InitVertexBufferView(const vector<Vertex>& vertex) {
@@ -123,7 +197,7 @@ namespace RNEngine {
 
 	void IndexBuffer::InitIndexBufferView(const vector<UINT>& index) {
 		m_IndexBufferView.BufferLocation = m_IndexBuffer->GetGPUVirtualAddress();
-		m_IndexBufferView.SizeInBytes = sizeof(UINT) * index.size();
+		m_IndexBufferView.SizeInBytes = sizeof(UINT) * (UINT)index.size();
 		m_IndexBufferView.Format = DXGI_FORMAT_R32_UINT;
 	}
 	void IndexBuffer::CreateIndexBuffer(ComPtr<ID3D12Device>& _dev, const vector<UINT>& index) {
@@ -194,8 +268,8 @@ namespace RNEngine {
 
 		D3D12_RESOURCE_DESC resDesc = {};
 		resDesc.Format = metadata.format;
-		resDesc.Width = metadata.width;
-		resDesc.Height = metadata.height;
+		resDesc.Width = (UINT)metadata.width;
+		resDesc.Height = (UINT)metadata.height;
 		resDesc.DepthOrArraySize = 1;
 		resDesc.SampleDesc.Quality = 0;
 		resDesc.MipLevels = 1;
@@ -218,8 +292,8 @@ namespace RNEngine {
 			0,
 			nullptr,
 			img->pixels,
-			img->rowPitch,
-			img->slicePitch
+			(UINT)img->rowPitch,
+			(UINT)img->slicePitch
 		);
 		assert(SUCCEEDED(result));
 
