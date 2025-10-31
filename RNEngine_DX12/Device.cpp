@@ -3,7 +3,7 @@
 
 namespace RNEngine {
 
-	void Device::Init(const unique_ptr<Window>& _window) {
+	void Device::Init(const Window* _window) {
 		InitFeatureLevel();
 		m_CommandContext = make_unique<CommandContext>(m_Device);
 		m_SwapChain = make_unique<SwapChain>(m_Factory,m_CommandContext->GetQueue(),_window);
@@ -85,7 +85,7 @@ namespace RNEngine {
 
 		_list->ResourceBarrier(1, &m_Barrier);
 	}
-	void SwapChain::Init(ComPtr<IDXGIFactory6>& _factory, ComPtr<ID3D12CommandQueue> _queue, const unique_ptr<Window>& _window) {
+	void SwapChain::Init(ComPtr<IDXGIFactory6>& _factory, ComPtr<ID3D12CommandQueue> _queue, const Window* _window) {
 		m_SwapChain.Reset();
 
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
