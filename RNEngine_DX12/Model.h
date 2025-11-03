@@ -15,6 +15,34 @@ namespace RNEngine
 		uint32_t m_MaterialIndex;
 	};
 
+	/// <summary>
+	/// 未完成部分の忘れないように説明
+	/// 読み込んだモデルデータをバイナリデータとして保存
+	/// 2回目以降の読み込みを高速化する
+	/// 
+	/// .meshファイルとして保存する
+	/// Headerにはデータの詳細(メッシュ数や頂点数などデータの数)が含まれる
+	/// その後頂点、インデックス、マテリアルテクスチャ名などのデータが連続する
+	///
+	/// 読み込みの際はHeaderの情報をもとにデータを読み込む
+	/// </summary>
+	struct BainaryModelHeader {
+		uint32_t m_MeshCount;
+		uint32_t m_MaterialCount;
+		uint32_t m_VertexCount;
+		uint32_t m_IndexCount;
+	};
+	struct BainaryModelDeta {
+		BainaryModelHeader m_Header;
+		vector<string> m_MaterialTextureName;
+		vector<Mesh> m_Meshes;
+	};
+
+
+	string GetModelNameFromPath(const string& filepath);
+	void SaveBainaryModel(const string& filename, BainaryModelDeta& modelData);
+	BainaryModelDeta LoadBainaryModel(const string& filename);
+
 	class Model
 	{
 		wstring m_Filename;

@@ -88,6 +88,7 @@ namespace RNEngine {
 
 		void Upadte(Matrix& matrix);
 	};
+
 	class VertexBuffer {
 		ComPtr<ID3D12Resource> m_VertexBuffer;
 		vector<Vertex> m_VertexData;

@@ -2,6 +2,54 @@
 #include "project.h"
 
 namespace RNEngine {
+	string GetModelNameFromPath(const string& filepath) {
+		string name = filepath;
+		size_t dotPos = name.find_last_of(".");
+		size_t slashPos = name.find_last_of("/\\");
+		if (dotPos != string::npos && slashPos != string::npos && dotPos > slashPos) {
+			name = name.substr(slashPos + 1, dotPos - slashPos - 1);
+		}
+		name += ".mesh";
+
+		string fullPath = "../RNEngine_DX12/mesh/" + name;
+
+		return fullPath;
+	}
+	void SaveBainaryModel(const string& filename, BainaryModelDeta& modelData) {
+
+		string fullPath = GetModelNameFromPath(filename);
+
+		ofstream ofs(fullPath, ios_base::binary);
+
+		if (ofs) {
+			BainaryModelHeader header;
+			header.m_MeshCount = modelData.m_Meshes.size();
+			header.m_MaterialCount = modelData.m_MaterialTextureName.size();
+			//header.m_MaterialCount = ;
+			ofs.write(reinterpret_cast<const char*>(&header), sizeof(BainaryModelHeader));
+			for (auto& mesh : modelData.m_Meshes) {
+				ofs.write(reinterpret_cast<const char*>(&mesh), sizeof(Mesh));
+			}
+			ofs.close();
+		}
+	}
+	BainaryModelDeta LoadBainaryModel(const string& filename) {
+		string fullPath = GetModelNameFromPath(filename);
+
+		ifstream ifs(fullPath, ios_base::binary);
+
+		if (ifs) {
+			BainaryModelHeader header;
+			ifs.read(reinterpret_cast<char*>(&header), sizeof(BainaryModelHeader));
+			vector<Mesh> meshes(header.m_MeshCount);
+			for (auto& mesh : meshes) {
+				ifs.read(reinterpret_cast<char*>(&mesh), sizeof(Mesh));
+			}
+			return {};
+		}
+		return {};
+	}
+
 
 	void Model::Load(ComPtr<ID3D12Device>& _dev, const string& filename) {
 		Assimp::Importer importer;
@@ -79,6 +127,7 @@ namespace RNEngine {
 			m_MaterialTextureName.push_back(filePath);
 		}
 
+		//SaveBainaryModel(filename, m_Meshes);
 		if (m_IsDebug) OutputDebug(scene);
 	}
 
