@@ -1,18 +1,19 @@
 #include "stdafx.h"
-#include "project.h"
+#include "RNEngine.h"
+//#include "project.h"
 
 namespace RNEngine {
 
-	RnEngine* RnEngine::g_pInstance = nullptr;
+	Engine* Engine::g_pInstance = nullptr;
 
-	void RnEngine::EnableDebugLayer() {
+	void Engine::EnableDebugLayer() {
 		ID3D12Debug* debugLayer = nullptr;
 		auto result = D3D12GetDebugInterface(IID_PPV_ARGS(&debugLayer));
 
 		debugLayer->EnableDebugLayer();
 		debugLayer->Release();
 	}
-	void RnEngine::Init() {
+	void Engine::Init() {
 		m_Window = make_unique<Window>(L"RNEngine", 1280, 720);
 
 #ifdef _DEBUG
@@ -22,7 +23,7 @@ namespace RNEngine {
 		m_Renderer = make_unique<Renderer>();
 
 		m_Device->Init(m_Window.get());
-		m_Renderer->Init(m_Device.get(), m_Window.get());
+		m_Renderer->Init(m_Window.get());
 		m_Renderer->SetClearColor(0.1f, 0.25f, 0.5f, 1.0f);
 		//ƒL[“ü—Í‚Ì‰Šú‰»
 		Input::GetInstance().Init();
@@ -31,12 +32,12 @@ namespace RNEngine {
 
 		ResourceManager::SetDefaultFilePath("../Assets/");
 	}
-	void RnEngine::Destroy() {
+	void Engine::Destroy() {
 		m_Renderer->WaitGPU();
 		m_Window->Destroy();
 	}
 
-	void RnEngine::Update() {
+	void Engine::Update() {
 		m_FrameTimer.Init();
 		ResourceManager::RegisterModel("Models/Furina/Furina.fbx");
 		auto dev = m_Device->GetPtr();

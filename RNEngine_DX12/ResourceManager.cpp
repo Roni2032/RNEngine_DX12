@@ -13,7 +13,7 @@ namespace RNEngine {
 			return (*it).second;
 		}
 
-		auto dev = RnEngine::g_pInstance->GetDevice()->GetPtr();
+		auto dev = Engine::GetID3D12Device();
 		shared_ptr<TextureBuffer> texture = make_shared<TextureBuffer>();
 
 		wstring_convert<codecvt_utf8<wchar_t>> converter;
@@ -39,7 +39,7 @@ namespace RNEngine {
 			return (*it).second;
 		}
 
-		auto dev = RnEngine::g_pInstance->GetDevice()->GetPtr();
+		auto dev = Engine::GetID3D12Device();
 		auto model = make_shared<Model>();
 		model->Load(dev, filePath);
 		m_ModelMap[filePath] = model;

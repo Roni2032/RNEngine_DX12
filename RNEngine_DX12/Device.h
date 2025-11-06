@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 namespace RNEngine {
-
+	class Window;
 	///----------------------------------------------------------------
 	/// Device ŠÖŒWƒwƒbƒ_
 	/// 
@@ -15,10 +15,10 @@ namespace RNEngine {
 	class SwapChain {
 		ComPtr<IDXGISwapChain4> m_SwapChain;
 
-		void Init(ComPtr<IDXGIFactory6>& _factory, ComPtr<ID3D12CommandQueue> _queue, const Window* _window);
+		void Init(IDXGIFactory6* _factory, ID3D12CommandQueue* _queue, const Window* _window);
 	public:
 		SwapChain() {}
-		SwapChain(ComPtr<IDXGIFactory6>& _factory, ComPtr<ID3D12CommandQueue> _queue, const Window* _window) { Init(_factory, _queue, _window); }
+		SwapChain(IDXGIFactory6* _factory, ID3D12CommandQueue* _queue, const Window* _window) { Init(_factory, _queue, _window); }
 		~SwapChain() {}
 
 		ComPtr<IDXGISwapChain4> GetPtr() { return m_SwapChain; }
@@ -28,16 +28,16 @@ namespace RNEngine {
 		ComPtr<ID3D12GraphicsCommandList> m_CmdList;
 		ComPtr<ID3D12CommandQueue> m_CmdQueue;
 
-		void Init(ComPtr<ID3D12Device>& _dev);
+		void Init(ID3D12Device* _dev);
 	public:
 		CommandContext() {}
-		CommandContext(ComPtr<ID3D12Device>& _dev) { Init(_dev); }
+		CommandContext(ID3D12Device* _dev) { Init(_dev); }
 		~CommandContext() {}
 
 
-		ComPtr<ID3D12CommandAllocator> GetAllocator() { return m_CmdAllocator; }
-		ComPtr<ID3D12GraphicsCommandList> GetList() { return m_CmdList; }
-		ComPtr<ID3D12CommandQueue> GetQueue() { return m_CmdQueue; }
+		ID3D12CommandAllocator* GetAllocator() { return m_CmdAllocator.Get(); }
+		ID3D12GraphicsCommandList* GetList() { return m_CmdList.Get(); }
+		ID3D12CommandQueue* GetQueue() { return m_CmdQueue.Get(); }
 	};
 
 	class Fence {
@@ -46,11 +46,11 @@ namespace RNEngine {
 		HANDLE m_FenceEvent;
 	public:
 		Fence() :m_FenceVal(0), m_FenceEvent(0){}
-		Fence(ComPtr<ID3D12Device>& _dev) :m_FenceVal(0) { Init(_dev); }
+		Fence(ID3D12Device* _dev) :m_FenceVal(0) { Init(_dev); }
 		~Fence() {}
 
-		void Init(ComPtr<ID3D12Device>& _dev);
-		void WaitGPU(ComPtr<ID3D12CommandQueue>& _queue);
+		void Init(ID3D12Device* _dev);
+		void WaitGPU(ID3D12CommandQueue* _queue);
 
 		ComPtr<ID3D12Fence> GetPtr() { return m_Fence; }
 	};
@@ -62,7 +62,7 @@ namespace RNEngine {
 		Barrier() noexcept { ZeroMemory(&m_Barrier, sizeof(m_Barrier)); }
 		~Barrier() {}
 
-		void Transition(ComPtr<ID3D12GraphicsCommandList> _list, ComPtr<ID3D12Resource> _backBuffer, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
+		void Transition(ID3D12GraphicsCommandList* _list, ID3D12Resource* _backBuffer, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
 	};
 
 
@@ -86,8 +86,8 @@ namespace RNEngine {
 
 		void Update();
 
-		ComPtr<ID3D12Device> GetPtr()const{ return m_Device; }
-		ComPtr<IDXGIFactory6> GetFactory() const{ return m_Factory; }
+		ID3D12Device* GetPtr()const{ return m_Device.Get(); }
+		IDXGIFactory6* GetFactory() const{ return m_Factory.Get(); }
 
 		unique_ptr<SwapChain>& GetSwapChain() { return m_SwapChain; }
 		unique_ptr<CommandContext>& GetCommandContext() { return m_CommandContext; }

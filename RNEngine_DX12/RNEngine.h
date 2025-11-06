@@ -1,6 +1,8 @@
 #pragma once
 #include "stdafx.h"
+#include "Device.h"
 #include "Window.h"
+#include "Renderer.h"
 #include "Timer.h"
 
 namespace RNEngine {
@@ -9,7 +11,7 @@ namespace RNEngine {
 	class Device;
 	class FrameTimer;
 
-	class RnEngine
+	class Engine
 	{
 	private:
 		unique_ptr<Window> m_Window;		// ウィンドウ
@@ -24,12 +26,11 @@ namespace RNEngine {
 		//vector<Component*> m_Components; // コンポーネントの配列
 
 		void EnableDebugLayer();
+
+		static Engine* g_pInstance;
 	public:
-
-		static RnEngine* g_pInstance;
-
-		RnEngine() : m_Window(),m_FrameRate(120.0f) { g_pInstance = this; }
-		~RnEngine() {}
+		Engine() : m_Window(),m_FrameRate(120.0f) { g_pInstance = this; }
+		~Engine() {}
 
 		/// <summary>
 		/// 初期化
@@ -46,9 +47,10 @@ namespace RNEngine {
 		/// </summary>
 		void Update();
 
-		unique_ptr <Device>& GetDevice() { return m_Device; }
-		unique_ptr <Renderer>& GetRenderer() { return m_Renderer; }
-		unique_ptr<Window>& GetWindow() { return m_Window; }
+		static Device* GetDevice() { return g_pInstance->m_Device.get(); }
+		static ID3D12Device* GetID3D12Device() { return g_pInstance->m_Device->GetPtr(); }
+		static Renderer* GetRenderer() { return g_pInstance->m_Renderer.get(); }
+		static Window* GetWindow() { return g_pInstance->m_Window.get(); }
 
 		float GetFrameRate() {
 			return m_FrameRate;

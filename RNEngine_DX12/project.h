@@ -7,6 +7,7 @@
 #include "Vector.h"
 #include "Device.h"
 #include "Renderer.h"
+#include "PipelineState.h"
 #include "Timer.h"
 #include "Input.h"
 #include "Singleton.h"

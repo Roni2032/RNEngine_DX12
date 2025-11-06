@@ -18,6 +18,8 @@ namespace RNEngine {
 	class RenderTarget;
 	class DescriptorTable;
 	class Sampler;
+	class Fence;
+	class Barrier;
 
 	class RootSignature {
 		ComPtr<ID3D12RootSignature> m_RootSignature;
@@ -27,9 +29,9 @@ namespace RNEngine {
 		RootSignature() {}
 		~RootSignature() {}
 
-		ComPtr<ID3D12RootSignature> GetPtr() { return m_RootSignature; }
+		ID3D12RootSignature* GetPtr() { return m_RootSignature.Get(); }
 
-		void Create(ComPtr<ID3D12Device>& _dev);
+		void Create(ID3D12Device* _dev);
 
 	};
 	class DescriptorTable {
@@ -109,26 +111,25 @@ namespace RNEngine {
 		void SetInputLayout(const InputLayout& layout) { m_InputLayout = layout; }
 		void SetInputLayout(const vector<D3D12_INPUT_ELEMENT_DESC>& layout) { m_InputLayout = InputLayout(layout); }
 
-		void Create(ComPtr<ID3D12Device>& _dev,const Shader* vs,const Shader* ps);
+		void Create(ID3D12Device* _dev,const Shader* vs,const Shader* ps);
 
 		void SetVSShader( Shader* shader) { m_VSShader = make_shared<Shader>(*shader); }
 		void SetPSShader( Shader* shader) { m_PSShader = make_shared<Shader>(*shader); }
 
-		ComPtr<ID3D12PipelineState> GetPtr() { return m_PipelineState; }
-		unique_ptr<RootSignature>& GetRootSignature() { return m_RootSignature; }
+		ID3D12PipelineState* GetPtr() { return m_PipelineState.Get(); }
+		RootSignature* GetRootSignature() { return m_RootSignature.get(); }
 	};
 
 	/// <summary>
 	/// 描画処理を行うクラス
 	/// </summary>
 	class Renderer {
-		ComPtr<ID3D12Device> m_Device;
-
 		vector<shared_ptr<TextureBuffer>> m_Textrues;
 
 		unique_ptr<RTVBuffer> m_RTVBuffer;	//レンダーターゲットビュー用のヒープ
 		unique_ptr<DSVBuffer> m_DSVBuffer;	//深度バッファ用のヒープ
 		unique_ptr<DescriptorHeap> m_SrvCbvDescriptorHeap;
+		unique_ptr<DescriptorHeap> m_CbvDescriptorHeap;
 		unique_ptr<Viewport> m_ViewPort;
 		unique_ptr<SicssorRect> m_Sicssor;
 		ComPtr<ID3D12GraphicsCommandList> m_CommandList;
@@ -139,18 +140,11 @@ namespace RNEngine {
 		unique_ptr<Barrier> m_Barrier;
 		unique_ptr<PipelineState> m_PipelineState;
 		array<float, 4> m_ClearColor;
-
-		unique_ptr<ConstBuffer> m_TempConstantBuffer;
-		unique_ptr<TextureBuffer> m_TempTexture;
-
-		vector<shared_ptr<Model>> m_TempModel;
-		Matrix m_Matrix;
-		float angle = 0;
 	public:
 		Renderer(){}
 		~Renderer() {}
 
-		void Init(Device* _dev, const Window* _window);
+		void Init(const Window* _window);
 		void BeginRenderer();
 		void EndRenderer();
 
@@ -164,6 +158,9 @@ namespace RNEngine {
 		void RegisterConstantBuffer(ConstBuffer& constBuffer);
 
 		void DrawModel(shared_ptr<ModelRenderer>& renderer);
+
+		CD3DX12_GPU_DESCRIPTOR_HANDLE GetSRVDescriptorHandle(UINT handle);
+		CD3DX12_GPU_DESCRIPTOR_HANDLE GetCBVDescriptorHandle(UINT handle);
 	};
 
 }

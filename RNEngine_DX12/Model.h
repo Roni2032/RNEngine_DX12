@@ -29,7 +29,7 @@ namespace RNEngine
 		Model(bool isDebug,const string& name): m_IsDebug(isDebug), m_DebugName(name){}
 		~Model(){}
 
-		void Load(ComPtr<ID3D12Device>& _dev, const string& filename);
+		void Load(ID3D12Device* _dev, const string& filename);
 
 		void Draw(ComPtr<ID3D12GraphicsCommandList> cmdList, const DescriptorHeap* heap, const ConstBuffer* constantBuffer);
 

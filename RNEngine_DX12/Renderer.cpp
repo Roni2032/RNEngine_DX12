@@ -3,12 +3,12 @@
 
 namespace RNEngine {
 
-    void PipelineState::Create(ComPtr<ID3D12Device>& _dev,const Shader* vs, const Shader* ps) {
+    void PipelineState::Create(ID3D12Device* _dev,const Shader* vs, const Shader* ps) {
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 		m_RootSignature = make_unique<RootSignature>();
 		m_RootSignature->Create(_dev);
 
-		psoDesc.pRootSignature = m_RootSignature->GetPtr().Get();
+		psoDesc.pRootSignature = m_RootSignature->GetPtr();
 
 		psoDesc.VS = vs->GetBytecode();
 		psoDesc.PS = ps->GetBytecode();
@@ -50,7 +50,7 @@ namespace RNEngine {
 
 
     }
-	void RootSignature::Create(ComPtr<ID3D12Device>& _dev) {
+	void RootSignature::Create(ID3D12Device* _dev) {
 		D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
 
 		rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
@@ -131,31 +131,36 @@ namespace RNEngine {
 		m_Viewport.MinDepth = 0.0f;
 		m_Viewport.MaxDepth = 1.0f;
 	}
-    void Renderer::Init(Device* _dev,const Window* _window)
+    void Renderer::Init(const Window* _window)
     {
-		m_Device = _dev->GetPtr();
-		m_CommandList = _dev->GetCommandContext()->GetList();
-		m_CommandQueue = _dev->GetCommandContext()->GetQueue();
-		m_CommandAllocator = _dev->GetCommandContext()->GetAllocator();
+		auto dev = Engine::GetDevice();
+		auto d3d12Device = dev->GetPtr();
+		m_CommandList = dev->GetCommandContext()->GetList();
+		m_CommandQueue = dev->GetCommandContext()->GetQueue();
+		m_CommandAllocator = dev->GetCommandContext()->GetAllocator();
 
-        m_SwapChain = _dev->GetSwapChain()->GetPtr();
+        m_SwapChain = dev->GetSwapChain()->GetPtr();
 		m_RTVBuffer = make_unique<RTVBuffer>();
-        m_RTVBuffer->Init(m_Device, _dev->GetSwapChain().get());
+        m_RTVBuffer->Init(d3d12Device, dev->GetSwapChain().get());
 		m_DSVBuffer = make_unique<DSVBuffer>();
-        m_DSVBuffer->Init(m_Device, _window);
+        m_DSVBuffer->Init(d3d12Device, _window);
 
-		m_Fence = make_unique<Fence>(m_Device);
+		m_Fence = make_unique<Fence>(d3d12Device);
 		m_Barrier = make_unique<Barrier>();
 
 		Shader vs, ps;
 		vs.LoadVS(L"SampleVertexShader.hlsl", "VSMain");
 		ps.LoadPS(L"SamplePixelShader.hlsl", "PSMain");
-		m_PipelineState = make_unique<PipelineState>();
-		m_PipelineState->SetInputLayout(InputLayout::PUV);
-		m_PipelineState->Create(m_Device, &vs, &ps);
+
+		PipelineStatePool::RegisterPipelineState(L"Sample1", &vs, &ps, InputLayout::PUV);
+		//m_PipelineState = make_unique<PipelineState>();
+		//m_PipelineState->SetInputLayout(InputLayout::PUV);
+		//m_PipelineState->Create(d3d12Device, &vs, &ps);
 
 		m_SrvCbvDescriptorHeap = make_unique<DescriptorHeap>();
-		m_SrvCbvDescriptorHeap->Init(m_Device, 4096, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+		m_SrvCbvDescriptorHeap->Init(d3d12Device, 1024, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+		m_CbvDescriptorHeap = make_unique<DescriptorHeap>();
+		m_CbvDescriptorHeap->Init(d3d12Device, 1024, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
 		m_ViewPort = make_unique<Viewport>();
 		m_Sicssor = make_unique<SicssorRect>();
@@ -170,11 +175,9 @@ namespace RNEngine {
 		D3D12_RESOURCE_STATES currentState = m_RTVBuffer->GetBufferState(idx);
 		
 		if (currentState != D3D12_RESOURCE_STATE_RENDER_TARGET) {
-			m_Barrier->Transition(m_CommandList, m_RTVBuffer->GetBackBuffer(idx), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+			m_Barrier->Transition(m_CommandList.Get(), m_RTVBuffer->GetBackBuffer(idx), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 			m_RTVBuffer->SetBufferState(idx, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		}
-
-		m_CommandList->SetPipelineState(m_PipelineState->GetPtr().Get());
 
         auto rtvH = m_RTVBuffer->GetDecsriptorHeap()->GetCPUHandle();
         rtvH.ptr += idx * m_RTVBuffer->GetDecsriptorHeap()->GetHeapSize();
@@ -188,37 +191,10 @@ namespace RNEngine {
 
 		m_CommandList->RSSetViewports(1, &m_ViewPort->GetViewport());
 		m_CommandList->RSSetScissorRects(1, &m_Sicssor->GetRect());
-		m_CommandList->SetGraphicsRootSignature(m_PipelineState->GetRootSignature()->GetPtr().Get());
-
-		/*m_Matrix.m_World = XMMatrixRotationY(angle);
-		angle += XM_PIDIV2 * 0.01f;
-
-		m_TempConstantBuffer->Upadte(m_Matrix);
-		for(auto& model : m_TempModel){
-			model->Draw(m_CommandList, m_SrvCbvDescriptorHeap.get());
-		}*/
-		/*m_CommandList->SetDescriptorHeaps(1, m_SrvCbvDescriptorHeap->GetHeap().GetAddressOf());
-
-		auto handle = m_SrvCbvDescriptorHeap->GetGPUHandle();
-		m_CommandList->SetGraphicsRootDescriptorTable(0, handle);
-		handle = CD3DX12_GPU_DESCRIPTOR_HANDLE(
-			m_SrvCbvDescriptorHeap->GetGPUHandle(),
-			m_TempTexture->GetSRVHandle(),
-			m_SrvCbvDescriptorHeap->GetHeapSize()
-		);
-		m_CommandList->SetGraphicsRootDescriptorTable(1, handle);
-
-		m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		
-		m_CommandList->IASetVertexBuffers(0, 1, &m_TempVertex->m_VertexBufferView);
-		m_CommandList->IASetIndexBuffer(&m_TempIndex->m_IndexBufferView);
-
-		m_CommandList->DrawIndexedInstanced((UINT)m_TempIndex->GetIndexCount(), 1, 0, 0, 0);*/
-
     }
     void Renderer::EndRenderer() {
 		auto idx = m_SwapChain->GetCurrentBackBufferIndex();
-		m_Barrier->Transition(m_CommandList, m_RTVBuffer->GetBackBuffer(idx),D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		m_Barrier->Transition(m_CommandList.Get(), m_RTVBuffer->GetBackBuffer(idx), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 		m_RTVBuffer->SetBufferState(idx, D3D12_RESOURCE_STATE_PRESENT);
         m_CommandList->Close();
 
@@ -235,7 +211,7 @@ namespace RNEngine {
 	}
 
 	void Renderer::WaitGPU() {
-		m_Fence->WaitGPU(m_CommandQueue);
+		m_Fence->WaitGPU(m_CommandQueue.Get());
 	}
 
 	void Renderer::RegisterTextureBuffer(TextureBuffer& texBuffer) {
@@ -245,7 +221,8 @@ namespace RNEngine {
 			m_SrvCbvDescriptorHeap->GetHeapSize()
 		);
 		D3D12_SHADER_RESOURCE_VIEW_DESC desc = texBuffer.GetSRV()->m_SRVDesc;
-		m_Device->CreateShaderResourceView(texBuffer.GetBuffer().Get(), &desc, handle);
+		auto dev = Engine::GetID3D12Device();
+		dev->CreateShaderResourceView(texBuffer.GetBuffer().Get(), &desc, handle);
 		texBuffer.SetSRVHandle(m_SrvCbvDescriptorHeap->GetHeapCount());
 		m_SrvCbvDescriptorHeap->AddHeapCount();
 	}
@@ -255,12 +232,30 @@ namespace RNEngine {
 			m_SrvCbvDescriptorHeap->GetHeapCount(),
 			m_SrvCbvDescriptorHeap->GetHeapSize()
 		);
-		m_Device->CreateConstantBufferView(&constBuffer.m_CBVDesc, handle);
+		auto dev = Engine::GetID3D12Device();
+		dev->CreateConstantBufferView(&constBuffer.m_CBVDesc, handle);
 		constBuffer.SetCBVHandle(m_SrvCbvDescriptorHeap->GetHeapCount());
 		m_SrvCbvDescriptorHeap->AddHeapCount();
 	}
 
 	void Renderer::DrawModel(shared_ptr<ModelRenderer>& renderer) {
 		renderer->Draw(m_CommandList, m_SrvCbvDescriptorHeap.get());
+	}
+
+
+	CD3DX12_GPU_DESCRIPTOR_HANDLE Renderer::GetSRVDescriptorHandle(UINT handle) {
+		return CD3DX12_GPU_DESCRIPTOR_HANDLE(
+			m_SrvCbvDescriptorHeap->GetGPUHandle(),
+			handle,
+			m_SrvCbvDescriptorHeap->GetHeapSize()
+		);
+	}
+	CD3DX12_GPU_DESCRIPTOR_HANDLE Renderer::GetCBVDescriptorHandle(UINT handle) {
+		return CD3DX12_GPU_DESCRIPTOR_HANDLE(
+			m_CbvDescriptorHeap->GetGPUHandle(),
+			handle,
+			m_CbvDescriptorHeap->GetHeapSize()
+		);
+
 	}
 }
