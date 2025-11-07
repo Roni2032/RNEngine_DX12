@@ -18,6 +18,7 @@
 #include "RendererComponent.h"
 #include "Model.h"
 #include "Image.h"
+#include "Camera.h"
 
 #include "GameObject.h"
 #include "Component.h"

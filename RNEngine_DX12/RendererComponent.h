@@ -6,7 +6,7 @@ namespace RNEngine
 	class Model;
 	class ConstBuffer;
 	class Image;
-
+	class Camera;
 
 	class RendererComponent {
 		struct ConstantBufferData {
@@ -14,6 +14,7 @@ namespace RNEngine
 			size_t m_DataSize;
 		};
 	protected:
+		weak_ptr<Camera> m_TargetCamera;
 		vector<unique_ptr<ConstBuffer>> m_ConstantBuffers;
 		Matrix m_Matrix{};
 

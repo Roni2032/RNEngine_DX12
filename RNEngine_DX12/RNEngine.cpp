@@ -46,6 +46,10 @@ namespace RNEngine {
 
 		XMFLOAT3 eye(0, 20, -20);
 		XMFLOAT3 target(0, 10, 0);
+
+		shared_ptr<Camera> camera = make_shared<Camera>();
+		camera->SetEye({ 0, 20, -20 });
+		camera->SetTarget({ 0,10,0 });
 		vector<shared_ptr<RendererComponent>> renderers;
 		for (int i = 0; i < 3; i++) {
 			shared_ptr<ModelRenderer> renderer = make_shared<ModelRenderer>();
