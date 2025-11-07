@@ -3,7 +3,16 @@
 #include "Buffer.h"
 #include "Shader.h"
 namespace RNEngine {
-	class ModelRenderer;
+	class RendererComponent;
+	class PipelineState;
+	class RootSignature;
+	class RenderTarget;
+	class DescriptorTable;
+	class Sampler;
+	class Fence;
+	class Barrier;
+
+
 	///----------------------------------------------------------------
 	/// Renderer ヘッダ
 	/// 
@@ -13,13 +22,6 @@ namespace RNEngine {
 	///		:
 	/// 
 	/// ----------------------------------------------------------------
-	class PipelineState;
-	class RootSignature;
-	class RenderTarget;
-	class DescriptorTable;
-	class Sampler;
-	class Fence;
-	class Barrier;
 
 	class RootSignature {
 		ComPtr<ID3D12RootSignature> m_RootSignature;
@@ -50,7 +52,7 @@ namespace RNEngine {
 		size_t GetRangeSize()const { return m_DescriptorRanges.size(); }
 	};
 	class Sampler {
-		D3D12_STATIC_SAMPLER_DESC m_SamplerDesc;
+		D3D12_STATIC_SAMPLER_DESC m_SamplerDesc{};
 	public:
 		Sampler(){}
 		~Sampler() {}
@@ -129,7 +131,6 @@ namespace RNEngine {
 		unique_ptr<RTVBuffer> m_RTVBuffer;	//レンダーターゲットビュー用のヒープ
 		unique_ptr<DSVBuffer> m_DSVBuffer;	//深度バッファ用のヒープ
 		unique_ptr<DescriptorHeap> m_SrvCbvDescriptorHeap;
-		unique_ptr<DescriptorHeap> m_CbvDescriptorHeap;
 		unique_ptr<Viewport> m_ViewPort;
 		unique_ptr<SicssorRect> m_Sicssor;
 		ComPtr<ID3D12GraphicsCommandList> m_CommandList;
@@ -141,7 +142,7 @@ namespace RNEngine {
 		unique_ptr<PipelineState> m_PipelineState;
 		array<float, 4> m_ClearColor;
 	public:
-		Renderer(){}
+		Renderer() : m_ClearColor({1,1,1,1}) {}
 		~Renderer() {}
 
 		void Init(const Window* _window);
@@ -157,10 +158,9 @@ namespace RNEngine {
 		void RegisterTextureBuffer(TextureBuffer& texBuffer);
 		void RegisterConstantBuffer(ConstBuffer& constBuffer);
 
-		void DrawModel(shared_ptr<ModelRenderer>& renderer);
+		void Draw(shared_ptr<RendererComponent>& renderer);
 
 		CD3DX12_GPU_DESCRIPTOR_HANDLE GetSRVDescriptorHandle(UINT handle);
-		CD3DX12_GPU_DESCRIPTOR_HANDLE GetCBVDescriptorHandle(UINT handle);
 	};
 
 }

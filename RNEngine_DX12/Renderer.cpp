@@ -141,7 +141,7 @@ namespace RNEngine {
 
         m_SwapChain = dev->GetSwapChain()->GetPtr();
 		m_RTVBuffer = make_unique<RTVBuffer>();
-        m_RTVBuffer->Init(d3d12Device, dev->GetSwapChain().get());
+        m_RTVBuffer->Init(d3d12Device, dev->GetSwapChain());
 		m_DSVBuffer = make_unique<DSVBuffer>();
         m_DSVBuffer->Init(d3d12Device, _window);
 
@@ -153,14 +153,9 @@ namespace RNEngine {
 		ps.LoadPS(L"SamplePixelShader.hlsl", "PSMain");
 
 		PipelineStatePool::RegisterPipelineState(L"Sample1", &vs, &ps, InputLayout::PUV);
-		//m_PipelineState = make_unique<PipelineState>();
-		//m_PipelineState->SetInputLayout(InputLayout::PUV);
-		//m_PipelineState->Create(d3d12Device, &vs, &ps);
 
 		m_SrvCbvDescriptorHeap = make_unique<DescriptorHeap>();
-		m_SrvCbvDescriptorHeap->Init(d3d12Device, 1024, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
-		m_CbvDescriptorHeap = make_unique<DescriptorHeap>();
-		m_CbvDescriptorHeap->Init(d3d12Device, 1024, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+		m_SrvCbvDescriptorHeap->Init(d3d12Device, 2048, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
 		m_ViewPort = make_unique<Viewport>();
 		m_Sicssor = make_unique<SicssorRect>();
@@ -222,7 +217,7 @@ namespace RNEngine {
 		);
 		D3D12_SHADER_RESOURCE_VIEW_DESC desc = texBuffer.GetSRV()->m_SRVDesc;
 		auto dev = Engine::GetID3D12Device();
-		dev->CreateShaderResourceView(texBuffer.GetBuffer().Get(), &desc, handle);
+		dev->CreateShaderResourceView(texBuffer.GetBuffer(), &desc, handle);
 		texBuffer.SetSRVHandle(m_SrvCbvDescriptorHeap->GetHeapCount());
 		m_SrvCbvDescriptorHeap->AddHeapCount();
 	}
@@ -238,8 +233,8 @@ namespace RNEngine {
 		m_SrvCbvDescriptorHeap->AddHeapCount();
 	}
 
-	void Renderer::DrawModel(shared_ptr<ModelRenderer>& renderer) {
-		renderer->Draw(m_CommandList, m_SrvCbvDescriptorHeap.get());
+	void Renderer::Draw(shared_ptr<RendererComponent>& renderer) {
+		renderer->Draw(m_CommandList.Get(), m_SrvCbvDescriptorHeap.get());
 	}
 
 
@@ -249,13 +244,5 @@ namespace RNEngine {
 			handle,
 			m_SrvCbvDescriptorHeap->GetHeapSize()
 		);
-	}
-	CD3DX12_GPU_DESCRIPTOR_HANDLE Renderer::GetCBVDescriptorHandle(UINT handle) {
-		return CD3DX12_GPU_DESCRIPTOR_HANDLE(
-			m_CbvDescriptorHeap->GetGPUHandle(),
-			handle,
-			m_CbvDescriptorHeap->GetHeapSize()
-		);
-
 	}
 }

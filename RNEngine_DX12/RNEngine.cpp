@@ -1,6 +1,5 @@
 #include "stdafx.h"
-#include "RNEngine.h"
-//#include "project.h"
+#include "project.h"
 
 namespace RNEngine {
 
@@ -31,6 +30,8 @@ namespace RNEngine {
 		SetFrameRate(120.0f);
 
 		ResourceManager::SetDefaultFilePath("../Assets/");
+		ResourceManager::CreateSquare2D();
+		ResourceManager::CreateSquare3D();
 	}
 	void Engine::Destroy() {
 		m_Renderer->WaitGPU();
@@ -40,20 +41,27 @@ namespace RNEngine {
 	void Engine::Update() {
 		m_FrameTimer.Init();
 		ResourceManager::RegisterModel("Models/Furina/Furina.fbx");
+		ResourceManager::RegisterTexture("Textures/test.jpg");
 		auto dev = m_Device->GetPtr();
 
 		XMFLOAT3 eye(0, 20, -20);
 		XMFLOAT3 target(0, 10, 0);
-		vector<shared_ptr<ModelRenderer>> renderers;
+		vector<shared_ptr<RendererComponent>> renderers;
 		for (int i = 0; i < 3; i++) {
 			shared_ptr<ModelRenderer> renderer = make_shared<ModelRenderer>();
 			renderer->Init(eye, target);
 			renderer->SetModel("Models/Furina/Furina.fbx");
 			renderers.push_back(renderer);
 		}
-		renderers[0]->SetMatrixWorld({ 0,0,0 }, { 0,0,0 }, { 1,1,1 });
-		renderers[1]->SetMatrixWorld({ 10,0,0 }, { 0,XM_PIDIV4,0 }, { 1,1,1 });
-		renderers[2]->SetMatrixWorld({ -10,0,0 }, { 0,-XM_PIDIV4,0 }, { 1,1,1 });
+		shared_ptr<ImageRenderer> image = make_shared<ImageRenderer>();
+		image->Init(eye, target);
+		image->SetTexture("Textures/test.jpg");
+		renderers.push_back(image);
+
+		renderers[0]->UpdateWorldMatrix({ 0,0,0 }, { 1,1,1 }, { 0,0,0 });
+		renderers[1]->UpdateWorldMatrix({ 10,0,0 }, { 1.5f,1.5f,1.5f }, { 0,XM_PIDIV4,0 });
+		renderers[2]->UpdateWorldMatrix({ -10,0,0 }, { 0.5f,0.5f,0.5f }, { 0,-XM_PIDIV4,0 });
+		renderers[3]->UpdateWorldMatrix({ 640,400,0 }, { 200,200,1 }, { 0,0,0 });
 
 		float angle[3] = { 0,XM_PIDIV4 ,-XM_PIDIV4 };
 		while (m_Window->ProcessMessage()) {
@@ -65,11 +73,11 @@ namespace RNEngine {
 			cout << "DeltaTime:" << deltaTime << " / " << "FPS: " << 1.0f / deltaTime << endl;*/
 			angle[1] += XM_PIDIV2 * 0.01f;
 			angle[2] -= XM_PIDIV2 * 0.01f;
-			renderers[1]->SetMatrixWorld({ 10,0,0 }, { 0,angle[1],0 }, { 1,1,1 });
-			renderers[2]->SetMatrixWorld({ -10,0,0 }, { 0,angle[2],0 }, { 1,1,1 });
-
+			renderers[1]->UpdateWorldMatrix({ 10,0,0 }, { 1.5f,1.5f,1.5f }, { 0,angle[1],0 });
+			renderers[2]->UpdateWorldMatrix({ -10,0,0 }, { 0.5f,0.5f,0.5f }, { 0,angle[2],0 });
 			for (auto& renderer : renderers) {
-				m_Renderer->DrawModel(renderer);
+				renderer->Update();
+				m_Renderer->Draw(renderer);
 			}
 			m_Renderer->EndRenderer();
 		}

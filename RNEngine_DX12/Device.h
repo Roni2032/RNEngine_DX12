@@ -52,7 +52,7 @@ namespace RNEngine {
 		void Init(ID3D12Device* _dev);
 		void WaitGPU(ID3D12CommandQueue* _queue);
 
-		ComPtr<ID3D12Fence> GetPtr() { return m_Fence; }
+		ID3D12Fence* GetPtr() { return m_Fence.Get(); }
 	};
 
 	class Barrier {
@@ -89,7 +89,7 @@ namespace RNEngine {
 		ID3D12Device* GetPtr()const{ return m_Device.Get(); }
 		IDXGIFactory6* GetFactory() const{ return m_Factory.Get(); }
 
-		unique_ptr<SwapChain>& GetSwapChain() { return m_SwapChain; }
-		unique_ptr<CommandContext>& GetCommandContext() { return m_CommandContext; }
+		SwapChain* GetSwapChain() { return m_SwapChain.get(); }
+		CommandContext* GetCommandContext() { return m_CommandContext.get(); }
 	};
 }

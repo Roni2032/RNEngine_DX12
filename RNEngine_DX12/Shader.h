@@ -13,7 +13,7 @@ namespace RNEngine
 		void LoadVS(const wstring& filename,const string& entryPoint);
 		void LoadPS(const wstring& filename, const string& entryPoint);
 
-		const ComPtr<ID3DBlob> GetBlob()const { return m_Blob; }
+		const ID3DBlob* GetBlob()const { return m_Blob.Get(); }
 		D3D12_SHADER_BYTECODE GetBytecode()const { return { m_Blob->GetBufferPointer(), m_Blob->GetBufferSize() }; }
 	};
 
@@ -41,16 +41,5 @@ namespace RNEngine
 		const static D3D12_INPUT_ELEMENT_DESC TANGENT;
 		const static D3D12_INPUT_ELEMENT_DESC BINORMAL;
 
-	};
-
-
-	struct Vertex {
-		XMFLOAT3 m_Position;
-		XMFLOAT2 m_Uv;
-	};
-
-	struct Matrix {
-		XMMATRIX m_World;
-		XMMATRIX m_ViewProjection;
 	};
 }

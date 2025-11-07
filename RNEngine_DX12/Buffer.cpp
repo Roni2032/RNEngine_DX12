@@ -111,39 +111,32 @@ namespace RNEngine {
 		CreateSRVDesc(_dev, texBuffer, format);
 	}
 
-	void ConstBuffer::Create(ID3D12Device* _dev, Matrix& matrix) {
-
+	void ConstBuffer::Create(ID3D12Device* _dev, void* data) {
+		m_BufferSize = (sizeof(data) + 0xff) & ~0xff;
 		auto heap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-		auto resDesc = CD3DX12_RESOURCE_DESC::Buffer((sizeof(matrix) + 0xff) & ~0xff);
+		auto resDesc = CD3DX12_RESOURCE_DESC::Buffer(m_BufferSize);
 		auto result = _dev->CreateCommittedResource(
 			&heap,
 			D3D12_HEAP_FLAG_NONE,
 			&resDesc,
 			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
+			nullptr, 
 			IID_PPV_ARGS(m_ConstBuffer.GetAddressOf()));
-
 		assert(SUCCEEDED(result));
-		Matrix* matrixMap;
-		result = m_ConstBuffer->Map(0, nullptr, (void**)&matrixMap);
 
-		matrixMap->m_World = matrix.m_World;
-		matrixMap->m_ViewProjection = matrix.m_ViewProjection;
+		CD3DX12_RANGE readRange(0, 0);
+		result = m_ConstBuffer->Map(0, &readRange, (void**)&m_MappedData);
+		if (data) memcpy(m_MappedData, data, sizeof(data));
 
 		ZeroMemory(&m_CBVDesc, sizeof(m_CBVDesc));
 		m_CBVDesc.BufferLocation = m_ConstBuffer->GetGPUVirtualAddress();
 		m_CBVDesc.SizeInBytes = (UINT)m_ConstBuffer->GetDesc().Width;
-
 		auto renderer = Engine::GetRenderer();
 		renderer->RegisterConstantBuffer(*this);
-
 	}
-	void ConstBuffer::Upadte(Matrix& matrix) {
-		Matrix* matrixMap;
-		auto result = m_ConstBuffer->Map(0, nullptr, (void**)&matrixMap);
-		matrixMap->m_World = matrix.m_World;
-		matrixMap->m_ViewProjection = matrix.m_ViewProjection;
 
+	void ConstBuffer::Upadte(void* data,size_t size) {
+		memcpy(m_MappedData, data, size);
 	}
 	void VertexBuffer::InitVertexBufferView(const vector<Vertex>& vertex) {
 		m_VertexBufferView.BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();

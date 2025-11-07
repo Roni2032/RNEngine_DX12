@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ResourceManager.h"
+#include "RendererHeader.h"
 
 #include "Window.h"
 #include "RNEngine.h"
@@ -14,8 +15,9 @@
 #include "Buffer.h"
 #include "Shader.h"
 #include "Vector.h"
-#include "Texture.h"
+#include "RendererComponent.h"
 #include "Model.h"
+#include "Image.h"
 
 #include "GameObject.h"
 #include "Component.h"
