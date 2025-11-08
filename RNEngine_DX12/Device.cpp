@@ -5,8 +5,8 @@ namespace RNEngine {
 
 	void Device::Init(const Window* _window) {
 		InitFeatureLevel();
-		m_CommandContext = make_unique<CommandContext>(m_Device);
-		m_SwapChain = make_unique<SwapChain>(m_Factory,m_CommandContext->GetQueue(),_window);
+		m_CommandContext = make_unique<CommandContext>(m_Device.Get());
+		m_SwapChain = make_unique<SwapChain>(m_Factory.Get(), m_CommandContext->GetQueue(), _window);
 	}
 	void Device::Update() {
 
@@ -51,7 +51,7 @@ namespace RNEngine {
 			}
 		}
 	}
-	void CommandContext::Init(ComPtr<ID3D12Device>& _dev) {
+	void CommandContext::Init(ID3D12Device* _dev) {
 		auto result = _dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(m_CmdAllocator.GetAddressOf()));
 		assert(SUCCEEDED(result));
 
@@ -66,11 +66,11 @@ namespace RNEngine {
 
 		result = _dev->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(m_CmdQueue.GetAddressOf()));
 	}
-	void Fence::Init(ComPtr<ID3D12Device>& _dev) {
+	void Fence::Init(ID3D12Device* _dev) {
 		m_FenceVal = 0;
 		auto result = _dev->CreateFence(m_FenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_Fence.GetAddressOf()));
 	}
-	void Fence::WaitGPU(ComPtr<ID3D12CommandQueue>& _queue) {
+	void Fence::WaitGPU(ID3D12CommandQueue* _queue) {
 		_queue->Signal(m_Fence.Get(), ++m_FenceVal);
 		// GPU‚ªˆ—‚ðI‚¦‚é‚Ü‚Å‘Ò‹@
 		if(m_Fence->GetCompletedValue() != m_FenceVal){
@@ -80,12 +80,12 @@ namespace RNEngine {
 			CloseHandle(m_FenceEvent);
 		}
 	}
-	void Barrier::Transition(ComPtr<ID3D12GraphicsCommandList> _list,ComPtr<ID3D12Resource> _backBuffer, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
-		m_Barrier = CD3DX12_RESOURCE_BARRIER::Transition(_backBuffer.Get(), before, after);
+	void Barrier::Transition(ID3D12GraphicsCommandList* _list,ID3D12Resource* _backBuffer, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
+		m_Barrier = CD3DX12_RESOURCE_BARRIER::Transition(_backBuffer, before, after);
 
 		_list->ResourceBarrier(1, &m_Barrier);
 	}
-	void SwapChain::Init(ComPtr<IDXGIFactory6>& _factory, ComPtr<ID3D12CommandQueue> _queue, const Window* _window) {
+	void SwapChain::Init(IDXGIFactory6* _factory, ID3D12CommandQueue* _queue, const Window* _window) {
 		m_SwapChain.Reset();
 
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
@@ -106,7 +106,7 @@ namespace RNEngine {
 		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 		auto result = _factory->CreateSwapChainForHwnd(
-			_queue.Get(),
+			_queue,
 			_window->GetHwnd(),
 			&swapChainDesc,
 			nullptr,

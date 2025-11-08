@@ -57,9 +57,6 @@
     <ClCompile Include="RNEngine.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Texture.cpp">
-      <Filter>Engine\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="Shader.cpp">
       <Filter>Engine\Renderer</Filter>
     </ClCompile>
@@ -96,7 +93,19 @@
     <ClCompile Include="Component.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="RendererComponent.cpp">
+      <Filter>Engine\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="ResourceManager.cpp">
+      <Filter>Engine\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="PipelineState.cpp">
+      <Filter>Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Image.cpp">
+      <Filter>Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -120,9 +129,6 @@
       <Filter>Engine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Renderer.h">
-      <Filter>Engine\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
       <Filter>Engine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
@@ -152,7 +158,22 @@
     <ClInclude Include="Component.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="RendererComponent.h">
+      <Filter>Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="PipelineState.h">
+      <Filter>Engine\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="ResourceManager.h">
+      <Filter>Engine\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Image.h">
+      <Filter>Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererHeader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

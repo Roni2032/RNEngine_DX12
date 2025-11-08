@@ -51,7 +51,7 @@ namespace RNEngine {
 	}
 
 
-	void Model::Load(ComPtr<ID3D12Device>& _dev, const string& filename) {
+	void Model::Load(ID3D12Device* _dev, const string& filename) {
 		Assimp::Importer importer;
 		unsigned int readFlags = 0;
 		readFlags |= aiProcess_FlipUVs; // UV‚ð”½“]‚³‚¹‚é
@@ -108,7 +108,7 @@ namespace RNEngine {
 		
 		auto numMaterials = scene->mNumMaterials;
 		m_MaterialTextureName.reserve(numMaterials);
-		for (int i = 0; i < numMaterials; i++) {
+		for (unsigned int i = 0; i < numMaterials; i++) {
 			auto& material = scene->mMaterials[i];
 			
 			aiString path;
@@ -131,25 +131,23 @@ namespace RNEngine {
 		if (m_IsDebug) OutputDebug(scene);
 	}
 
-	void Model::Draw(ComPtr<ID3D12GraphicsCommandList> cmdList, const DescriptorHeap* heap,const ConstBuffer* constantBuffer) {
+	void Model::Draw(ComPtr<ID3D12GraphicsCommandList> cmdList, DescriptorHeap* heap,const ConstBuffer* constantBuffer) {
+		
+		auto pipelineState = PipelineStatePool::GetPipelineState(L"Sample1");
+		cmdList->SetPipelineState(pipelineState->GetPtr());
+		cmdList->SetGraphicsRootSignature(pipelineState->GetRootSignature()->GetPtr());
+		auto renderer = Engine::GetRenderer();
 		for (auto& mesh : m_Meshes) {
-			cmdList->SetDescriptorHeaps(1, heap->GetHeap().GetAddressOf());
+			cmdList->SetDescriptorHeaps(1, heap->GetHeapAddress());
 			auto startHandle = heap->GetGPUHandle();
-			auto handle = CD3DX12_GPU_DESCRIPTOR_HANDLE(
-				startHandle,
-				constantBuffer->GetCBVHandle(),
-				heap->GetHeapSize()
-			);
+			auto handle = renderer->GetSRVDescriptorHandle(constantBuffer->GetCBVHandle());
 			cmdList->SetGraphicsRootDescriptorTable(0, handle);
 
 			auto& textureName = m_MaterialTextureName[mesh.m_MaterialIndex];
 
 			auto texture = ResourceManager::GetTextureBuffer(textureName);
-			handle = CD3DX12_GPU_DESCRIPTOR_HANDLE(
-				startHandle,
-				texture->GetSRVHandle(),
-				heap->GetHeapSize()
-			);
+
+			handle = renderer->GetSRVDescriptorHandle(texture->GetSRVHandle());
 			cmdList->SetGraphicsRootDescriptorTable(1, handle);
 
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -194,29 +192,5 @@ namespace RNEngine {
 				ofs << "=> " << path.C_Str() << std::endl;
 			}
 		}
-	}
-
-	void ModelRenderer::Init(XMFLOAT3 eye, XMFLOAT3 target) {
-		m_Matrix.m_World = XMMatrixRotationY(0);
-
-		XMFLOAT3 up(0, 1, 0);
-		auto viewMat = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
-		auto projMat = XMMatrixPerspectiveFovLH(XM_PIDIV2,//‰æŠp‚Í90‹
-			static_cast<float>(1280) / static_cast<float>(720),//ƒAƒX”ä
-			0.1f,//‹ß‚¢•û
-			1000.0f//‰“‚¢•û
-		);
-		m_Matrix.m_ViewProjection = viewMat * projMat;
-
-		m_ConstantBuffer = make_unique<ConstBuffer>();
-		auto dev = RnEngine::g_pInstance->GetDevice()->GetPtr();
-		m_ConstantBuffer->Create(dev, m_Matrix);
-	}
-
-	void ModelRenderer::SetMatrixWorld(XMFLOAT3 position, XMFLOAT3 rotation, XMFLOAT3 scale) {
-		m_Matrix.m_World = XMMatrixRotationY(rotation.y);
-		m_Matrix.m_World *= XMMatrixTranslation(position.x, position.y, position.z);
-
-		m_ConstantBuffer->Upadte(m_Matrix);
 	}
 }

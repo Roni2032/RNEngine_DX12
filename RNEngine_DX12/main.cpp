@@ -7,7 +7,7 @@ int main() {
 #include<Windows.h>
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #endif
-	RnEngine* engine = new RnEngine();
+	Engine* engine = new Engine();
 	engine->Init();
 
 	engine->Update();
