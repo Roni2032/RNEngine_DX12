@@ -2,22 +2,25 @@
 #include "project.h"
 
 namespace RNEngine {
-	void RendererComponent::Init(XMFLOAT3 eye, XMFLOAT3 target) {
+	void RendererComponent::Init(const shared_ptr<Camera>& camera) {
 		m_Matrix.m_World = XMMatrixRotationY(0);
 
-		XMFLOAT3 up(0, 1, 0);
-		auto viewMat = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
+		auto viewMat = camera->GetViewMatrix();
 		auto projMat = XMMatrixPerspectiveFovLH(XM_PIDIV2,//âÊäpÇÕ90Åã
 			static_cast<float>(1280) / static_cast<float>(720),//ÉAÉXî‰
 			0.1f,//ãﬂÇ¢ï˚
 			1000.0f//âìÇ¢ï˚
 		);
 		m_Matrix.m_ViewProjection = viewMat * projMat;
+		m_TargetCamera = camera;
 
 		RegisterConstantBuffer(&m_Matrix, sizeof(m_Matrix));
 	}
 
 	void RendererComponent::Update() {
+		if (auto camera = m_TargetCamera.lock()) {
+			m_Matrix.m_ViewProjection = camera->GetViewProjectionMatrix();
+		}
 		for (size_t i = 0, size = m_ConstantBuffers.size(); i < size; ++i) {
 			m_ConstantBuffers[i]->Upadte(m_ConstantDatas[i].m_Data, m_ConstantDatas[i].m_DataSize);
 		}
@@ -45,12 +48,13 @@ namespace RNEngine {
 	void ModelRenderer::Draw(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* heap) {
 		m_Model->Draw(cmdList, heap, m_ConstantBuffers[0].get());
 	}
-	void ImageRenderer::Init(XMFLOAT3 eye, XMFLOAT3 target) {
+	void ImageRenderer::Init(const shared_ptr<Camera>& camera) {
 		m_Matrix.m_World = XMMatrixRotationZ(0);
-
-		auto window = Engine::GetWindow();
-		m_Matrix.m_ViewProjection = XMMatrixOrthographicOffCenterLH(0, (float)window->GetWidth(), (float)window->GetHeight(), 0, 0, 1);
-
+		if (camera->IsOrthographic()) {
+			camera->SetOrthographic(true);
+		}
+		m_Matrix.m_ViewProjection = camera->GetProjectionMatrix();
+		m_TargetCamera = camera;
 		RegisterConstantBuffer(&m_Matrix, sizeof(m_Matrix));
 	}
 	void ImageRenderer::SetTexture(const string& filename){

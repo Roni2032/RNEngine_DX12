@@ -24,7 +24,7 @@ namespace RNEngine
 		RendererComponent(const Matrix& matrix) : m_Matrix(matrix){}
 		~RendererComponent(){}
 
-		void Init(XMFLOAT3 eye, XMFLOAT3 target);
+		void Init(const shared_ptr<Camera>& camera);
 
 		void Update();
 
@@ -53,8 +53,7 @@ namespace RNEngine
 			m_Image = make_shared<Image>();
 		}
 		~ImageRenderer(){}
-
-		void Init(XMFLOAT3 eye, XMFLOAT3 target);
+		void Init(const shared_ptr<Camera>& camera);
 		void SetTexture(const string& filename);
 		virtual void Draw(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* heap)override;
 	};

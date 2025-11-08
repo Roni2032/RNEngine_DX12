@@ -50,15 +50,21 @@ namespace RNEngine {
 		shared_ptr<Camera> camera = make_shared<Camera>();
 		camera->SetEye({ 0, 20, -20 });
 		camera->SetTarget({ 0,10,0 });
+
+		shared_ptr<Camera> uiCamera = make_shared<Camera>();
+		uiCamera->SetOrthographic(true);
+		uiCamera->SetWindowWidth((float)m_Window->GetWidth());
+		uiCamera->SetWindowHeight((float)m_Window->GetHeight());
+
 		vector<shared_ptr<RendererComponent>> renderers;
 		for (int i = 0; i < 3; i++) {
 			shared_ptr<ModelRenderer> renderer = make_shared<ModelRenderer>();
-			renderer->Init(eye, target);
+			renderer->Init(camera);
 			renderer->SetModel("Models/Furina/Furina.fbx");
 			renderers.push_back(renderer);
 		}
 		shared_ptr<ImageRenderer> image = make_shared<ImageRenderer>();
-		image->Init(eye, target);
+		image->Init(uiCamera);
 		image->SetTexture("Textures/test.jpg");
 		renderers.push_back(image);
 
@@ -79,6 +85,17 @@ namespace RNEngine {
 			angle[2] -= XM_PIDIV2 * 0.01f;
 			renderers[1]->UpdateWorldMatrix({ 10,0,0 }, { 1.5f,1.5f,1.5f }, { 0,angle[1],0 });
 			renderers[2]->UpdateWorldMatrix({ -10,0,0 }, { 0.5f,0.5f,0.5f }, { 0,angle[2],0 });
+
+			auto target = camera->GetTarget();
+			target.x += 0.005f;
+			camera->SetTarget(target);
+
+			target = uiCamera->GetTarget();
+			target.x -= 1.0f;
+			uiCamera->SetTarget(target);
+
+			camera->Update();
+			uiCamera->Update();
 			for (auto& renderer : renderers) {
 				renderer->Update();
 				m_Renderer->Draw(renderer);
