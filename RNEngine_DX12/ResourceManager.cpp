@@ -3,6 +3,7 @@
 
 namespace RNEngine {
 	string ResourceManager::m_DefaultFilePath = "";
+	unordered_map<string, Mesh> ResourceManager::m_MeshMap = {};
 	unordered_map<string, shared_ptr<Model>> ResourceManager::m_ModelMap = {};
 	unordered_map<string, shared_ptr<TextureBuffer>> ResourceManager::m_TextureBufferMap = {};
 
@@ -13,7 +14,7 @@ namespace RNEngine {
 			return (*it).second;
 		}
 
-		auto dev = RnEngine::g_pInstance->GetDevice()->GetPtr();
+		auto dev = Engine::GetID3D12Device();
 		shared_ptr<TextureBuffer> texture = make_shared<TextureBuffer>();
 
 		wstring_convert<codecvt_utf8<wchar_t>> converter;
@@ -39,7 +40,7 @@ namespace RNEngine {
 			return (*it).second;
 		}
 
-		auto dev = RnEngine::g_pInstance->GetDevice()->GetPtr();
+		auto dev = Engine::GetID3D12Device();
 		auto model = make_shared<Model>();
 		model->Load(dev, filePath);
 		m_ModelMap[filePath] = model;
@@ -53,5 +54,61 @@ namespace RNEngine {
 			return (*it).second->Clone();
 		}
 		return nullptr;
+	}
+
+	Mesh ResourceManager::RegisterMesh(const string& name, vector<Vertex>& vertices, vector<uint32_t>& indices) {
+		auto it = m_MeshMap.find(name);
+		if (it != m_MeshMap.end()) {
+			return (*it).second;
+		}
+		Mesh mesh;
+		mesh.m_Verteces = vertices;
+		mesh.m_Indeces = indices;
+
+		auto dev = Engine::GetID3D12Device();
+		mesh.m_VertexBuffer = make_shared<VertexBuffer>();
+		mesh.m_VertexBuffer->Create(dev, mesh.m_Verteces);
+
+		mesh.m_IndexBuffer = make_shared<IndexBuffer>();
+		mesh.m_IndexBuffer->Create(dev, mesh.m_Indeces);
+
+		m_MeshMap[name] = mesh;
+		return mesh;
+	}
+	Mesh ResourceManager::GetMeshData(const string& name) {
+		auto it = m_MeshMap.find(name);
+		if (it != m_MeshMap.end()) {
+			return (*it).second;
+		}
+		return {};
+	}
+
+	//-----------------ここから下はメッシュテンプレート作成----------------------------
+
+	Mesh ResourceManager::CreateSquare2D() {
+		vector<Vertex> vertices = {
+			{{-0.5f, 0.5f,0.0f},{0.0f,1.0f}},
+			{{ 0.5f, 0.5f,0.0f},{1.0f,1.0f}},
+			{{-0.5f,-0.5f,0.0f},{0.0f,0.0f}},
+			{{ 0.5f,-0.5f,0.0f},{1.0f,0.0f}}
+		};
+		vector<uint32_t> indices{
+			0,1,2,2,1,3
+		};
+		return RegisterMesh("DEFAULT_SQUARE_2D", vertices, indices);
+
+	}
+	Mesh ResourceManager::CreateSquare3D() {
+		vector<Vertex> vertices = {
+			{{-0.5f, 0.5f,0.0f},{0.0f,0.0f}},
+			{{ 0.5f, 0.5f,0.0f},{1.0f,0.0f}},
+			{{-0.5f,-0.5f,0.0f},{0.0f,1.0f}},
+			{{ 0.5f,-0.5f,0.0f},{1.0f,1.0f}}
+		};
+		vector<uint32_t> indices{
+			0,1,2,2,1,3
+		};
+		return RegisterMesh("DEFAULT_SQUARE_3D", vertices, indices);
+
 	}
 }

@@ -3,7 +3,7 @@
 
 namespace RNEngine {
 
-	bool DescriptorHeap::Init(ComPtr<ID3D12Device>& _dev, UINT _frameBufferCount, D3D12_DESCRIPTOR_HEAP_TYPE _type, D3D12_DESCRIPTOR_HEAP_FLAGS _flags) {
+	bool DescriptorHeap::Init(ID3D12Device* _dev, UINT _frameBufferCount, D3D12_DESCRIPTOR_HEAP_TYPE _type, D3D12_DESCRIPTOR_HEAP_FLAGS _flags) {
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 		desc.NumDescriptors = _frameBufferCount;
 		desc.NodeMask = 0;
@@ -20,7 +20,7 @@ namespace RNEngine {
 		return true;
 	}
 
-	void RTVBuffer::Init(ComPtr<ID3D12Device>& _dev, SwapChain* _swapChian) {
+	void RTVBuffer::Init(ID3D12Device* _dev, SwapChain* _swapChian) {
 		UINT frameBufferCount = 2;
 
 		m_RTVHeap = make_unique<DescriptorHeap>();
@@ -49,7 +49,7 @@ namespace RNEngine {
 		}
 	}
 
-	void DSVBuffer::CreateDSVDesc(ComPtr<ID3D12Device>& _dev) {
+	void DSVBuffer::CreateDSVDesc(ID3D12Device* _dev) {
 		ZeroMemory(&m_DSVDesc, sizeof(m_DSVDesc));
 		m_DSVDesc.Format = DXGI_FORMAT_D32_FLOAT;
 		m_DSVDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
@@ -61,7 +61,7 @@ namespace RNEngine {
 			m_DSVHeap->GetCPUHandle());
 	}
 
-	void DSVBuffer::Init(ComPtr<ID3D12Device>& _dev, const Window* _window) {
+	void DSVBuffer::Init(ID3D12Device* _dev, const Window* _window) {
 
 		D3D12_RESOURCE_DESC depthResDesc = {};
 		depthResDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; // 二次元配列的なバッファ
@@ -97,60 +97,53 @@ namespace RNEngine {
 
 		CreateDSVDesc(_dev);
 	}
-	void SRVBuffer::CreateSRVDesc(ComPtr<ID3D12Device>& _dev, TextureBuffer& texBuffer, DXGI_FORMAT format) {
+	void SRVBuffer::CreateSRVDesc(ID3D12Device* _dev, TextureBuffer& texBuffer, DXGI_FORMAT format) {
 		ZeroMemory(&m_SRVDesc, sizeof(m_SRVDesc));
 		m_SRVDesc.Format = format;
 		m_SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		m_SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 		m_SRVDesc.Texture2D.MipLevels = 1;
 		
-		auto& renderer = RnEngine::g_pInstance->GetRenderer();
+		auto renderer = Engine::GetRenderer();
 		renderer->RegisterTextureBuffer(texBuffer);
 	}
-	void SRVBuffer::Init(ComPtr<ID3D12Device>& _dev, TextureBuffer& texBuffer, DXGI_FORMAT format) {
+	void SRVBuffer::Init(ID3D12Device* _dev, TextureBuffer& texBuffer, DXGI_FORMAT format) {
 		CreateSRVDesc(_dev, texBuffer, format);
 	}
 
-	void ConstBuffer::Create(ComPtr<ID3D12Device>& _dev, Matrix& matrix) {
-
+	void ConstBuffer::Create(ID3D12Device* _dev, void* data) {
+		m_BufferSize = (sizeof(data) + 0xff) & ~0xff;
 		auto heap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-		auto resDesc = CD3DX12_RESOURCE_DESC::Buffer((sizeof(matrix) + 0xff) & ~0xff);
+		auto resDesc = CD3DX12_RESOURCE_DESC::Buffer(m_BufferSize);
 		auto result = _dev->CreateCommittedResource(
 			&heap,
 			D3D12_HEAP_FLAG_NONE,
 			&resDesc,
 			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
+			nullptr, 
 			IID_PPV_ARGS(m_ConstBuffer.GetAddressOf()));
-
 		assert(SUCCEEDED(result));
-		Matrix* matrixMap;
-		result = m_ConstBuffer->Map(0, nullptr, (void**)&matrixMap);
 
-		matrixMap->m_World = matrix.m_World;
-		matrixMap->m_ViewProjection = matrix.m_ViewProjection;
+		CD3DX12_RANGE readRange(0, 0);
+		result = m_ConstBuffer->Map(0, &readRange, (void**)&m_MappedData);
+		if (data) memcpy(m_MappedData, data, sizeof(data));
 
 		ZeroMemory(&m_CBVDesc, sizeof(m_CBVDesc));
 		m_CBVDesc.BufferLocation = m_ConstBuffer->GetGPUVirtualAddress();
 		m_CBVDesc.SizeInBytes = (UINT)m_ConstBuffer->GetDesc().Width;
-
-		auto& renderer = RnEngine::g_pInstance->GetRenderer();
+		auto renderer = Engine::GetRenderer();
 		renderer->RegisterConstantBuffer(*this);
-
 	}
-	void ConstBuffer::Upadte(Matrix& matrix) {
-		Matrix* matrixMap;
-		auto result = m_ConstBuffer->Map(0, nullptr, (void**)&matrixMap);
-		matrixMap->m_World = matrix.m_World;
-		matrixMap->m_ViewProjection = matrix.m_ViewProjection;
 
+	void ConstBuffer::Upadte(void* data,size_t size) {
+		memcpy(m_MappedData, data, size);
 	}
 	void VertexBuffer::InitVertexBufferView(const vector<Vertex>& vertex) {
 		m_VertexBufferView.BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();
 		m_VertexBufferView.SizeInBytes = sizeof(Vertex) * (UINT)vertex.size();
 		m_VertexBufferView.StrideInBytes = sizeof(vertex[0]);
 	}
-	void VertexBuffer::CreateVertexBuffer(ComPtr<ID3D12Device>& _dev, const vector<Vertex>& vertex) {
+	void VertexBuffer::CreateVertexBuffer(ID3D12Device* _dev, const vector<Vertex>& vertex) {
 		D3D12_HEAP_PROPERTIES heapProp = {};
 		heapProp.Type = D3D12_HEAP_TYPE_UPLOAD;
 		heapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
@@ -188,7 +181,7 @@ namespace RNEngine {
 		m_VertexBuffer->Unmap(0, nullptr);
 	}
 
-	void VertexBuffer::Create(ComPtr<ID3D12Device>& _dev, const vector<Vertex>& vertex) {
+	void VertexBuffer::Create(ID3D12Device* _dev, const vector<Vertex>& vertex) {
 		CreateVertexBuffer(_dev, vertex);
 		InitVertexBufferView(vertex);
 		m_VertexData = vertex;
@@ -200,7 +193,7 @@ namespace RNEngine {
 		m_IndexBufferView.SizeInBytes = sizeof(UINT) * (UINT)index.size();
 		m_IndexBufferView.Format = DXGI_FORMAT_R32_UINT;
 	}
-	void IndexBuffer::CreateIndexBuffer(ComPtr<ID3D12Device>& _dev, const vector<UINT>& index) {
+	void IndexBuffer::CreateIndexBuffer(ID3D12Device* _dev, const vector<UINT>& index) {
 		D3D12_HEAP_PROPERTIES heapProp = {};
 		heapProp.Type = D3D12_HEAP_TYPE_UPLOAD;
 		heapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
@@ -238,14 +231,14 @@ namespace RNEngine {
 		m_IndexBuffer->Unmap(0, nullptr);
 	}
 
-	void IndexBuffer::Create(ComPtr<ID3D12Device>& _dev, const vector<UINT>& index) {
+	void IndexBuffer::Create(ID3D12Device* _dev, const vector<UINT>& index) {
 		CreateIndexBuffer(_dev, index);
 		InitIndexBufferView(index);
 		m_IndexData = index;
 	}
 
 
-	void TextureBuffer::Create(ComPtr<ID3D12Device>& _dev, const wstring& filename) {
+	void TextureBuffer::Create(ID3D12Device* _dev, const wstring& filename) {
 
 		TexMetadata metadata;
 		ScratchImage image;

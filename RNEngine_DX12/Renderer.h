@@ -3,7 +3,16 @@
 #include "Buffer.h"
 #include "Shader.h"
 namespace RNEngine {
-	class ModelRenderer;
+	class RendererComponent;
+	class PipelineState;
+	class RootSignature;
+	class RenderTarget;
+	class DescriptorTable;
+	class Sampler;
+	class Fence;
+	class Barrier;
+
+
 	///----------------------------------------------------------------
 	/// Renderer ヘッダ
 	/// 
@@ -13,11 +22,6 @@ namespace RNEngine {
 	///		:
 	/// 
 	/// ----------------------------------------------------------------
-	class PipelineState;
-	class RootSignature;
-	class RenderTarget;
-	class DescriptorTable;
-	class Sampler;
 
 	class RootSignature {
 		ComPtr<ID3D12RootSignature> m_RootSignature;
@@ -27,9 +31,9 @@ namespace RNEngine {
 		RootSignature() {}
 		~RootSignature() {}
 
-		ComPtr<ID3D12RootSignature> GetPtr() { return m_RootSignature; }
+		ID3D12RootSignature* GetPtr() { return m_RootSignature.Get(); }
 
-		void Create(ComPtr<ID3D12Device>& _dev);
+		void Create(ID3D12Device* _dev);
 
 	};
 	class DescriptorTable {
@@ -48,7 +52,7 @@ namespace RNEngine {
 		size_t GetRangeSize()const { return m_DescriptorRanges.size(); }
 	};
 	class Sampler {
-		D3D12_STATIC_SAMPLER_DESC m_SamplerDesc;
+		D3D12_STATIC_SAMPLER_DESC m_SamplerDesc{};
 	public:
 		Sampler(){}
 		~Sampler() {}
@@ -109,21 +113,19 @@ namespace RNEngine {
 		void SetInputLayout(const InputLayout& layout) { m_InputLayout = layout; }
 		void SetInputLayout(const vector<D3D12_INPUT_ELEMENT_DESC>& layout) { m_InputLayout = InputLayout(layout); }
 
-		void Create(ComPtr<ID3D12Device>& _dev,const Shader* vs,const Shader* ps);
+		void Create(ID3D12Device* _dev,const Shader* vs,const Shader* ps);
 
 		void SetVSShader( Shader* shader) { m_VSShader = make_shared<Shader>(*shader); }
 		void SetPSShader( Shader* shader) { m_PSShader = make_shared<Shader>(*shader); }
 
-		ComPtr<ID3D12PipelineState> GetPtr() { return m_PipelineState; }
-		unique_ptr<RootSignature>& GetRootSignature() { return m_RootSignature; }
+		ID3D12PipelineState* GetPtr() { return m_PipelineState.Get(); }
+		RootSignature* GetRootSignature() { return m_RootSignature.get(); }
 	};
 
 	/// <summary>
 	/// 描画処理を行うクラス
 	/// </summary>
 	class Renderer {
-		ComPtr<ID3D12Device> m_Device;
-
 		vector<shared_ptr<TextureBuffer>> m_Textrues;
 
 		unique_ptr<RTVBuffer> m_RTVBuffer;	//レンダーターゲットビュー用のヒープ
@@ -139,18 +141,11 @@ namespace RNEngine {
 		unique_ptr<Barrier> m_Barrier;
 		unique_ptr<PipelineState> m_PipelineState;
 		array<float, 4> m_ClearColor;
-
-		unique_ptr<ConstBuffer> m_TempConstantBuffer;
-		unique_ptr<TextureBuffer> m_TempTexture;
-
-		vector<shared_ptr<Model>> m_TempModel;
-		Matrix m_Matrix;
-		float angle = 0;
 	public:
-		Renderer(){}
+		Renderer() : m_ClearColor({1,1,1,1}) {}
 		~Renderer() {}
 
-		void Init(Device* _dev, const Window* _window);
+		void Init(const Window* _window);
 		void BeginRenderer();
 		void EndRenderer();
 
@@ -163,7 +158,9 @@ namespace RNEngine {
 		void RegisterTextureBuffer(TextureBuffer& texBuffer);
 		void RegisterConstantBuffer(ConstBuffer& constBuffer);
 
-		void DrawModel(shared_ptr<ModelRenderer>& renderer);
+		void Draw(shared_ptr<RendererComponent>& renderer);
+
+		CD3DX12_GPU_DESCRIPTOR_HANDLE GetSRVDescriptorHandle(UINT handle);
 	};
 
 }
