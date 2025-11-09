@@ -1,12 +1,9 @@
 #include "stdafx.h"
 #include "Input.h"
 namespace RNEngine {
-	void Input::Init()
-	{
-		
+	template<typename T>
+	T InputAction::GetValue()const {
+
 	}
-	void Input::Update()
-	{
-		
-	}
+
 }
