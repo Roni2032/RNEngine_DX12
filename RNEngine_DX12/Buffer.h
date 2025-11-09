@@ -96,6 +96,7 @@ namespace RNEngine {
 
 		void Upadte(void* data,size_t size);
 	};
+
 	class VertexBuffer {
 		ComPtr<ID3D12Resource> m_VertexBuffer;
 		vector<Vertex> m_VertexData;
