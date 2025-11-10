@@ -4,7 +4,8 @@
 #include "Window.h"
 #include "Renderer.h"
 #include "Timer.h"
-
+#include "RendererComponent.h"
+#include "Input.h"
 namespace RNEngine {
 #define FRAME_NONDEFINE 10000
 	class Renderer;
@@ -15,15 +16,15 @@ namespace RNEngine {
 	{
 	private:
 		unique_ptr<Window> m_Window;		// ウィンドウ
-		unique_ptr <Renderer> m_Renderer;	// 描画処理
+		unique_ptr<Renderer> m_Renderer;	// 描画処理
 		unique_ptr<Device> m_Device;		// デバイス
-		FrameTimer m_FrameTimer;		// フレームタイマー
+		FrameTimer m_FrameTimer;			// フレームタイマー
 
-		float m_FrameRate;		// フレームレート
+		float m_FrameRate;					// フレームレート
 
-		//仮のデータ配列(後々シーンクラスが持つ)
-		//vector<GameObject*> m_GameObjects; // ゲームオブジェクトの配列
-		//vector<Component*> m_Components; // コンポーネントの配列
+		//テスト用モデル作成
+		vector<shared_ptr<RendererComponent>> m_Renderers;
+		XMFLOAT3 position = { 0,0,0 };
 
 		void EnableDebugLayer();
 
@@ -57,6 +58,10 @@ namespace RNEngine {
 		}
 		void SetFrameRate(float frame) {
 			m_FrameRate = frame;
+		}
+
+		void OnMove(InputActionContext& context) {
+			position.x -= 0.01f;
 		}
 	};
 }

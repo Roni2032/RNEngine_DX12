@@ -27,6 +27,8 @@ namespace RNEngine {
 		m_Renderer->Init(m_Window.get());
 		m_Renderer->SetClearColor(0.1f, 0.25f, 0.5f, 1.0f);
 
+		
+
 		// フレームレート設定
 		SetFrameRate(120.0f);
 
@@ -58,41 +60,55 @@ namespace RNEngine {
 		uiCamera->SetWindowWidth((float)m_Window->GetWidth());
 		uiCamera->SetWindowHeight((float)m_Window->GetHeight());
 
-		//テスト用モデル作成
-		vector<shared_ptr<RendererComponent>> renderers;
 		for (int i = 0; i < 3; i++) {
 			shared_ptr<ModelRenderer> renderer = make_shared<ModelRenderer>();
 			renderer->Init(camera);
 			renderer->SetModel("Models/Furina/Furina.fbx");
-			renderers.push_back(renderer);
+			m_Renderers.push_back(renderer);
 		}
 		//テスト画像作成
 		shared_ptr<ImageRenderer> image = make_shared<ImageRenderer>();
 		image->Init(uiCamera);
 		image->SetTexture("Textures/test.jpg");
-		renderers.push_back(image);
+		m_Renderers.push_back(image);
 
 		//初期位置設定
-		renderers[0]->UpdateWorldMatrix({ 0,0,0 }, { 1,1,1 }, { 0,0,0 });
-		renderers[1]->UpdateWorldMatrix({ 10,0,0 }, { 1.5f,1.5f,1.5f }, { 0,XM_PIDIV4,0 });
-		renderers[2]->UpdateWorldMatrix({ -10,0,0 }, { 0.5f,0.5f,0.5f }, { 0,-XM_PIDIV4,0 });
-		renderers[3]->UpdateWorldMatrix({ 640,400,0 }, { 200,200,1 }, { 0,0,0 });
+		m_Renderers[0]->UpdateWorldMatrix({ 0,0,0 }, { 1,1,1 }, { 0,0,0 });
+		m_Renderers[1]->UpdateWorldMatrix({ 10,0,0 }, { 1.5f,1.5f,1.5f }, { 0,XM_PIDIV4,0 });
+		m_Renderers[2]->UpdateWorldMatrix({ -10,0,0 }, { 0.5f,0.5f,0.5f }, { 0,-XM_PIDIV4,0 });
+		m_Renderers[3]->UpdateWorldMatrix({ 640,400,0 }, { 200,200,1 }, { 0,0,0 });
 
 		float angle[3] = { 0,XM_PIDIV4 ,-XM_PIDIV4 };
 
+		//入力のテスト設定
+		Input::RegisterInput("up", 'W', InputMode::Keyboard);
+		Input::RegisterInput("down", 'S', InputMode::Keyboard);
+		Input::RegisterInput("left", 'A', InputMode::Keyboard);
+		Input::RegisterInput("right", 'D', InputMode::Keyboard);
+
+		//テスト入力設定
+		Input::BindAction("right", [&](InputActionContext context) {position.x += 0.01f; });//ラムダ式での設定
+		Input::BindAction("left", &Engine::OnMove, this);//メンバ関数での設定(shared_ptrでも可能。uniqueとかは黙ってget()してくれ)
 		// メインループ
 		while (m_Window->ProcessMessage()) {
 			m_Renderer->BeginRenderer();
-
+			Input::Update();
 			//モデル回転
 			angle[1] += XM_PIDIV2 * 0.01f;
 			angle[2] -= XM_PIDIV2 * 0.01f;
-			renderers[1]->UpdateWorldMatrix({ 10,0,0 }, { 1.5f,1.5f,1.5f }, { 0,angle[1],0 });
-			renderers[2]->UpdateWorldMatrix({ -10,0,0 }, { 0.5f,0.5f,0.5f }, { 0,angle[2],0 });
+			m_Renderers[0]->UpdateWorldMatrix(position, { 1,1,1 }, { 0,0,0 });
+			m_Renderers[1]->UpdateWorldMatrix({ 10,0,0 }, { 1.5f,1.5f,1.5f }, { 0,angle[1],0 });
+			m_Renderers[2]->UpdateWorldMatrix({ -10,0,0 }, { 0.5f,0.5f,0.5f }, { 0,angle[2],0 });
+
+			//テスト入力取得(if文)
+			if (Input::IsHeld("up"))
+				position.y += 0.01f;
+			if (Input::IsHeld("down"))
+				position.y -= 0.01f;
 
 			//カメラ移動
 			auto target = camera->GetTarget();
-			target.x += 0.005f;
+			//target.x += 0.005f;
 			camera->SetTarget(target);
 
 			//UIカメラ移動
@@ -103,7 +119,7 @@ namespace RNEngine {
 			//更新と描画
 			camera->Update();
 			uiCamera->Update();
-			for (auto& renderer : renderers) {
+			for (auto& renderer : m_Renderers) {
 				renderer->Update();
 				m_Renderer->Draw(renderer);
 			}
