@@ -1,10 +1,11 @@
 #pragma once
-#include "project.h"
+
 
 namespace RNEngine
 {
-	LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
+	LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+	void WindowKeyDownProcedure(HWND hwnd, WPARAM wparam);
 	class Window
 	{
 	private:

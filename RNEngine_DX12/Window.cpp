@@ -1,15 +1,36 @@
 #include "stdafx.h"
 #include "project.h"
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 namespace RNEngine {
 
 	//面倒だけど書かなあかんやつ
 	LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-		if (msg == WM_DESTROY) {//ウィンドウが破棄されたら呼ばれます
-			PostQuitMessage(0);//OSに対して「もうこのアプリは終わるんや」と伝える
-			return 0;
+
+		if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
+			return true;
 		}
+
+		switch (msg)
+		{
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			break;
+		case WM_KEYDOWN:
+			WindowKeyDownProcedure(hwnd, wparam);
+			break;
+		default:
+			break;
+		}
+		
 		return DefWindowProc(hwnd, msg, wparam, lparam);//規定の処理を行う
+	}
+	void WindowKeyDownProcedure(HWND hwnd, WPARAM wparam) {
+		switch (wparam) {
+		case VK_ESCAPE:
+			DestroyWindow(hwnd);
+			break;
+		}
 	}
 
 	void Window::Create(const wstring& appName, UINT width, UINT height) {

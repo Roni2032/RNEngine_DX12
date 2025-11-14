@@ -56,6 +56,11 @@ namespace RNEngine {
 
 		void SetOrthographic(bool isOrtho) { m_IsOrthographic = isOrtho; }
 		bool IsOrthographic() const { return m_IsOrthographic; }
+
+		void LookDirection(XMFLOAT3 direction) {
+			XMFLOAT3 target = { m_Eye.x + direction.x,m_Eye.x + direction.x ,m_Eye.x + direction.x };
+			SetTarget(target);
+		}
 	};
 
 }

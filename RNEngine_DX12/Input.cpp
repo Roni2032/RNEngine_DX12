@@ -18,13 +18,29 @@ namespace RNEngine {
 	}
 
 	unordered_map<string, InputAction> Input::m_ActionMap = {};
+	POINT Input::m_CurrentMousePoint = {};
+	POINT Input::m_BeforeMousePoint = {};
+	POINT Input::m_OffsetMousePoint = {};
+
 	void Input::ExecuteActions(vector<function<void(InputActionContext&)>>& actions, InputActionContext& context) {
 		for (auto& prossess : actions) {
 			prossess(context);
 		}
 	}
 
+	void Input::Init() {
+		m_OffsetMousePoint = { 0,0 };
+		GetCursorPos(&m_CurrentMousePoint);
+		m_BeforeMousePoint = m_CurrentMousePoint;
+	}
+
 	void Input::Update() {
+		m_BeforeMousePoint = m_CurrentMousePoint;
+		GetCursorPos(&m_CurrentMousePoint);
+
+		m_OffsetMousePoint.x = m_CurrentMousePoint.x - m_BeforeMousePoint.x;
+		m_OffsetMousePoint.y = m_CurrentMousePoint.y - m_BeforeMousePoint.y;
+
 		for (auto& inputAction : m_ActionMap) {
 			InputAction& action = inputAction.second;
 			InputActionContext context{};

@@ -49,6 +49,9 @@
     <Filter Include="Engine\Input">
       <UniqueIdentifier>{bc3cfe69-8366-4e30-84ce-2c955bb5af32}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\GUI">
+      <UniqueIdentifier>{4ea6a7ff-66d3-4d5b-94b6-660e0b3c5c3f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -110,6 +113,27 @@
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Engine\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui.cpp">
+      <Filter>Engine\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_draw.cpp">
+      <Filter>Engine\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_tables.cpp">
+      <Filter>Engine\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_widgets.cpp">
+      <Filter>Engine\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\backends\imgui_impl_dx12.cpp">
+      <Filter>Engine\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\backends\imgui_impl_win32.cpp">
+      <Filter>Engine\GUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -178,6 +202,9 @@
     </ClInclude>
     <ClInclude Include="RendererHeader.h">
       <Filter>Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

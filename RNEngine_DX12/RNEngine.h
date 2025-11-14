@@ -11,18 +11,22 @@ namespace RNEngine {
 	class Renderer;
 	class Device;
 	class FrameTimer;
+	class Scene;
 
 	class Engine
 	{
 	private:
 		unique_ptr<Window> m_Window;		// ウィンドウ
 		unique_ptr<Renderer> m_Renderer;	// 描画処理
+		unique_ptr<GUIRenderer> m_GuiRenderer;
 		unique_ptr<Device> m_Device;		// デバイス
 		FrameTimer m_FrameTimer;			// フレームタイマー
 
 		float m_FrameRate;					// フレームレート
 
+		shared_ptr<Scene> m_CurrentScene;
 		//テスト用モデル作成
+		vector<shared_ptr<GameObject>> m_GameObjects;
 		vector<shared_ptr<RendererComponent>> m_Renderers;
 		XMFLOAT3 position = { 0,0,0 };
 

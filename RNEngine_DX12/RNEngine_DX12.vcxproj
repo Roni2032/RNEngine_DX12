@@ -102,8 +102,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Create</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(ProjectDir)include\assimp\include;$(ProjectDir)include\DirectXTex;$(WindowsSDKDir)Include\um;$(WindowsSDKDir)Include\shared;$(WindowsSDKDir)Include\ucrt</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\imgui;$(ProjectDir)include\assimp\include;$(ProjectDir)include\DirectXTex;$(WindowsSDKDir)Include\um;$(WindowsSDKDir)Include\shared;$(WindowsSDKDir)Include\ucrt</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>stdafx.h;</ForcedIncludeFiles>
     </ClCompile>
     <Link>
@@ -121,14 +121,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Create</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(ProjectDir)include\DirectXTex;$(WindowsSDKDir)Include\ucrt;$(WindowsSDKDir)Include\shared;$(WindowsSDKDir)Include\um;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\DirectXTex;$(WindowsSDKDir)Include\ucrt;$(WindowsSDKDir)Include\shared;$(WindowsSDKDir)Include\um;$(ProjectDir)include\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d3d12.lib;dxgi.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)include\DirectXTex\Lib\ReleaseLib;$(WindowsSDKDir)Lib\10.0.xxxxx.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)include\assimp\lib;$(ProjectDir)include\DirectXTex\Lib\ReleaseLib;$(WindowsSDKDir)Lib\10.0.xxxxx.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -138,6 +138,12 @@
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Image.cpp" />
+    <ClCompile Include="include\imgui\backends\imgui_impl_dx12.cpp" />
+    <ClCompile Include="include\imgui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="include\imgui\imgui.cpp" />
+    <ClCompile Include="include\imgui\imgui_draw.cpp" />
+    <ClCompile Include="include\imgui\imgui_tables.cpp" />
+    <ClCompile Include="include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model.cpp" />
@@ -146,8 +152,12 @@
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="RNEngine.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="RendererComponent.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Vector.cpp" />
@@ -166,6 +176,7 @@
     <ClInclude Include="PipelineState.h" />
     <ClInclude Include="RendererHeader.h" />
     <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="project.h" />

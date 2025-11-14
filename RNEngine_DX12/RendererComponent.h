@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "Component.h"
 namespace RNEngine
 {
 	class DescriptorHeap;
@@ -8,7 +9,7 @@ namespace RNEngine
 	class Image;
 	class Camera;
 
-	class RendererComponent {
+	class RendererComponent : public Component{
 		struct ConstantBufferData {
 			void* m_Data;
 			size_t m_DataSize;
@@ -20,13 +21,13 @@ namespace RNEngine
 
 		vector<ConstantBufferData> m_ConstantDatas;
 	public:
-		RendererComponent(){}
-		RendererComponent(const Matrix& matrix) : m_Matrix(matrix){}
+		RendererComponent(const shared_ptr<GameObject>& ptr):Component(ptr){}
+		RendererComponent(const shared_ptr<GameObject>& ptr,const Matrix& matrix) : m_Matrix(matrix), Component(ptr){}
 		~RendererComponent(){}
 
 		void Init(const shared_ptr<Camera>& camera);
 
-		void Update();
+		virtual void Update()override;
 
 		void UpdateWorldMatrix(XMFLOAT3 position, XMFLOAT3 scale, XMFLOAT3 rotation);
 
@@ -38,7 +39,7 @@ namespace RNEngine
 	class ModelRenderer : public RendererComponent{
 		shared_ptr<Model> m_Model;
 	public:
-		ModelRenderer(){}
+		ModelRenderer(const shared_ptr<GameObject>& ptr):RendererComponent(ptr){}
 		~ModelRenderer() {}
 
 		void SetModel(const string& filename);
@@ -49,9 +50,7 @@ namespace RNEngine
 	class ImageRenderer : public RendererComponent {
 		shared_ptr<Image> m_Image;
 	public:
-		ImageRenderer() {
-			m_Image = make_shared<Image>();
-		}
+		ImageRenderer(const shared_ptr<GameObject>& ptr);
 		~ImageRenderer(){}
 		void Init(const shared_ptr<Camera>& camera);
 		void SetTexture(const string& filename);

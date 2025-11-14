@@ -31,6 +31,13 @@
 #include <assimp/Scene.h>
 #include <assimp/postprocess.h>
 
+//imgui
+#define IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_IMPL_API
+#include "include/imgui/backends/imgui_impl_win32.h"
+#include "include/imgui/backends/imgui_impl_dx12.h"
+#include "include/imgui/imgui.h"
+
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "DirectXTex.lib")

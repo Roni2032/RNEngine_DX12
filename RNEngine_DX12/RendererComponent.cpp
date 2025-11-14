@@ -21,6 +21,11 @@ namespace RNEngine {
 		if (auto camera = m_TargetCamera.lock()) {
 			m_Matrix.m_ViewProjection = camera->GetViewProjectionMatrix();
 		}
+		auto gameObject = GetOwner();
+		if (gameObject) {
+			auto transform = gameObject->GetComponent<Transform>();
+			UpdateWorldMatrix(transform->GetPosition(), transform->GetScale(), transform->GetRotation());
+		}
 		for (size_t i = 0, size = m_ConstantBuffers.size(); i < size; ++i) {
 			m_ConstantBuffers[i]->Upadte(m_ConstantDatas[i].m_Data, m_ConstantDatas[i].m_DataSize);
 		}
@@ -47,6 +52,10 @@ namespace RNEngine {
 
 	void ModelRenderer::Draw(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* heap) {
 		m_Model->Draw(cmdList, heap, m_ConstantBuffers[0].get());
+	}
+
+	ImageRenderer::ImageRenderer(const shared_ptr<GameObject>& ptr) :RendererComponent(ptr) {
+		m_Image = make_shared<Image>();
 	}
 	void ImageRenderer::Init(const shared_ptr<Camera>& camera) {
 		m_Matrix.m_World = XMMatrixRotationZ(0);

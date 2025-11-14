@@ -51,10 +51,13 @@ namespace RNEngine
 	};
 	class Input {
 		static unordered_map<string, InputAction> m_ActionMap;
+		static POINT m_CurrentMousePoint;
+		static POINT m_BeforeMousePoint;
+		static POINT m_OffsetMousePoint;
 
 		static void ExecuteActions(vector<function<void(InputActionContext&)>>& actions, InputActionContext& context);
 	public:
-		//static void Init();
+		static void Init();
 		
 		static void Update();
 		
@@ -74,6 +77,16 @@ namespace RNEngine
 
 		static bool IsPressed(const string& actionName);
 		static bool IsHeld(const string& actionName);
+
+		static XMFLOAT2 GetMouseOffset() {
+			return { (float)m_OffsetMousePoint.x,(float)m_OffsetMousePoint.y };
+		}
+		static XMFLOAT2 GetMousePosition() {
+			return { (float)m_CurrentMousePoint.x,(float)m_CurrentMousePoint.y };
+		}
+		static XMFLOAT2 GetBeforeMousePosition() {
+			return { (float)m_BeforeMousePoint.x,(float)m_BeforeMousePoint.y };
+		}
 	};
 }
 
