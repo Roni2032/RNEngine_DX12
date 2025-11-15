@@ -10,7 +10,7 @@
 
 namespace RNEngine {
 
-	class Object
+	class Object : public enable_shared_from_this<Object>
 	{
 	public:
 		Object(){}
@@ -24,12 +24,12 @@ namespace RNEngine {
 		/// <summary>
 		/// –ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚é
 		/// </summary>
-		virtual void Update(float delta) {}
+		virtual void Update() {}
 
 		/// <summary>
 		/// ‚·‚×‚Ä‚ÌUpdate()‚ªI‚í‚Á‚½Œã‚ÉŒÄ‚Î‚ê‚é
 		/// </summary>
-		virtual void LateUpdate(float delta) {}
+		virtual void LateUpdate() {}
 
 		/// <summary>
 		/// •`‰æˆ—‚ÌÛ‚ÉŒÄ‚Î‚ê‚é
@@ -40,6 +40,12 @@ namespace RNEngine {
 		/// ”jŠü‚ÌÛ‚ÉŒÄ‚Î‚ê‚é
 		/// </summary>
 		virtual void Destroy() {}
+
+		template<class T>
+		shared_ptr<T> GetThis() {
+			auto ptr = dynamic_pointer_cast<T>(shared_from_this());
+			return ptr;
+		}
 	};
 
 }
