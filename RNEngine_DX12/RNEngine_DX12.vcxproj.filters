@@ -37,9 +37,6 @@
     <Filter Include="Engine\Singleton">
       <UniqueIdentifier>{c8cc94d7-c3fe-403d-9bf4-6c5c26065ff3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Singleton\Input">
-      <UniqueIdentifier>{bc3cfe69-8366-4e30-84ce-2c955bb5af32}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Game">
       <UniqueIdentifier>{f1f6bec3-fb9d-4097-980c-a911eb166ff8}</UniqueIdentifier>
     </Filter>
@@ -48,6 +45,12 @@
     </Filter>
     <Filter Include="Engine\Camera">
       <UniqueIdentifier>{0ac71154-5009-4028-93e2-d797e2645081}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Input">
+      <UniqueIdentifier>{bc3cfe69-8366-4e30-84ce-2c955bb5af32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\GUI">
+      <UniqueIdentifier>{4ea6a7ff-66d3-4d5b-94b6-660e0b3c5c3f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -85,7 +88,7 @@
       <Filter>Engine\Math</Filter>
     </ClCompile>
     <ClCompile Include="Input.cpp">
-      <Filter>Engine\Singleton\Input</Filter>
+      <Filter>Engine\Input</Filter>
     </ClCompile>
     <ClCompile Include="Object.cpp">
       <Filter>ソース ファイル</Filter>
@@ -110,6 +113,27 @@
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Engine\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui.cpp">
+      <Filter>Engine\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_draw.cpp">
+      <Filter>Engine\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_tables.cpp">
+      <Filter>Engine\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_widgets.cpp">
+      <Filter>Engine\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\backends\imgui_impl_dx12.cpp">
+      <Filter>Engine\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\backends\imgui_impl_win32.cpp">
+      <Filter>Engine\GUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -150,7 +174,7 @@
       <Filter>Engine\Singleton</Filter>
     </ClInclude>
     <ClInclude Include="Input.h">
-      <Filter>Engine\Singleton\Input</Filter>
+      <Filter>Engine\Input</Filter>
     </ClInclude>
     <ClInclude Include="Object.h">
       <Filter>ヘッダー ファイル</Filter>
@@ -178,6 +202,9 @@
     </ClInclude>
     <ClInclude Include="RendererHeader.h">
       <Filter>Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

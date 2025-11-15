@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "Buffer.h"
 #include "Shader.h"
+
 namespace RNEngine {
 	class RendererComponent;
 	class PipelineState;
@@ -11,6 +12,7 @@ namespace RNEngine {
 	class Sampler;
 	class Fence;
 	class Barrier;
+	class GUIRenderer;
 
 
 	///----------------------------------------------------------------
@@ -122,6 +124,8 @@ namespace RNEngine {
 		RootSignature* GetRootSignature() { return m_RootSignature.get(); }
 	};
 
+
+
 	/// <summary>
 	/// ï`âÊèàóùÇçsÇ§ÉNÉâÉX
 	/// </summary>
@@ -147,7 +151,7 @@ namespace RNEngine {
 
 		void Init(const Window* _window);
 		void BeginRenderer();
-		void EndRenderer();
+		void EndRenderer(GUIRenderer* guiRenderer = nullptr);
 
 		void WaitGPU();
 
@@ -161,6 +165,20 @@ namespace RNEngine {
 		void Draw(shared_ptr<RendererComponent>& renderer);
 
 		CD3DX12_GPU_DESCRIPTOR_HANDLE GetSRVDescriptorHandle(UINT handle);
+
+		ID3D12GraphicsCommandList* GetCommandList() { return m_CommandList.Get(); }
+		DescriptorHeap* GetSrvDescriptorHeap() { return m_SrvCbvDescriptorHeap.get(); }
 	};
 
+	class GUIRenderer {
+		unique_ptr<DescriptorHeap> m_SrvDescriptorHeap;
+
+	public:
+		GUIRenderer(){}
+		~GUIRenderer(){}
+
+		void Init(DescriptorHeap* srvHeap);
+		void UpdateRenderer(ID3D12GraphicsCommandList * cmdList, DescriptorHeap* srvHeap);
+		void Destroy();
+	};
 }

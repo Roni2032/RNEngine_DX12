@@ -187,7 +187,15 @@ namespace RNEngine {
 		m_CommandList->RSSetViewports(1, &m_ViewPort->GetViewport());
 		m_CommandList->RSSetScissorRects(1, &m_Sicssor->GetRect());
     }
-    void Renderer::EndRenderer() {
+    void Renderer::EndRenderer(GUIRenderer* guiRenderer) {
+		//すべての描画が終わった後にGUIを表示
+		if (guiRenderer != nullptr) {
+			guiRenderer->UpdateRenderer(m_CommandList.Get(), m_SrvCbvDescriptorHeap.get());
+		}
+		m_CommandList->RSSetViewports(1, &m_ViewPort->GetViewport());
+		m_CommandList->RSSetScissorRects(1, &m_Sicssor->GetRect());
+
+
 		auto idx = m_SwapChain->GetCurrentBackBufferIndex();
 		m_Barrier->Transition(m_CommandList.Get(), m_RTVBuffer->GetBackBuffer(idx), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 		m_RTVBuffer->SetBufferState(idx, D3D12_RESOURCE_STATE_PRESENT);
@@ -244,5 +252,57 @@ namespace RNEngine {
 			handle,
 			m_SrvCbvDescriptorHeap->GetHeapSize()
 		);
+	}
+
+	void GUIRenderer::Init(DescriptorHeap* srvHeap) {
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+
+		ImGuiIO& io = ImGui::GetIO();
+		(void)io;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+		ImGui::StyleColorsDark();
+		io.Fonts->AddFontFromFileTTF("../Assets/Font/851H-kktt_004.ttf");
+
+		auto dev = Engine::GetID3D12Device();
+		auto window = Engine::GetWindow();
+		// 3. Platform + Renderer バックエンド初期化
+		ImGui_ImplWin32_Init(window->GetHwnd());
+		ImGui_ImplDX12_Init(
+			dev,
+			2,
+			DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
+			srvHeap->GetHeap(),
+			srvHeap->GetCPUHandle(),
+			srvHeap->GetGPUHandle()
+		);
+		//3つ分確保しておく
+		for (int i = 0; i < 3; i++) {
+			srvHeap->AddHeapCount();
+		}
+		io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
+	}
+	void GUIRenderer::UpdateRenderer(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* srvHeap) {
+		// 開始
+		ImGui_ImplDX12_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+
+		// 描画内容
+		ImGui::Begin("Demo");
+		ImGui::Text("Hello from ImGui + DX12!");
+		ImGui::End();
+
+		// 描画コマンド発行
+		ImGui::Render();
+
+		cmdList->SetDescriptorHeaps(1, srvHeap->GetHeapAddress());
+		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmdList);
+	}
+	void GUIRenderer::Destroy() {
+		ImGui_ImplDX12_Shutdown();
+		ImGui_ImplWin32_Shutdown();
+		ImGui::DestroyContext();
 	}
 }
