@@ -120,6 +120,66 @@ namespace RNEngine {
 		m_SamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	}
 
+	void RenderTarget::Create(Vector2 renderSize, DXGI_FORMAT format, array<float, 4> clearColor) {
+
+		m_Width = renderSize.x;
+		m_Height = renderSize.y;
+		m_ClearColor = clearColor;
+
+		auto dev = Engine::GetID3D12Device();
+		m_Rtv = make_unique<RTVBuffer>();
+		m_Rtv->Init(dev);
+
+		m_Dsv = make_unique<DSVBuffer>();
+		auto window = Engine::GetWindow();
+		m_Dsv->Init(dev, window);
+
+		m_RenderTargetTexture = make_shared<TextureBuffer>();
+		m_RenderTargetTexture->Create(dev,(UINT)renderSize.x, (UINT)renderSize.y, format, clearColor);
+		
+		dev->CreateRenderTargetView(m_RenderTargetTexture->GetBuffer(), &m_Rtv->m_RTVDesc, m_Rtv->GetDecsriptorHeap()->GetCPUHandle());
+	
+		auto res = m_RenderTargetTexture->GetBuffer();
+		if (!res) { printf("ERROR: resource null\n"); }
+
+		auto desc = res->GetDesc();
+		printf("RESOURCE: Format=%u Flags=%u Width=%u Height=%u Sample=%u Mip=%u\n",
+			(unsigned)desc.Format, (unsigned)desc.Flags, (unsigned)desc.Width, (unsigned)desc.Height,
+			(unsigned)desc.SampleDesc.Count, (unsigned)desc.MipLevels);
+
+		D3D12_RENDER_TARGET_VIEW_DESC rtv = m_Rtv->m_RTVDesc; // or log fields individually
+		printf("RTVDesc: Format=%u ViewDim=%u\n", (unsigned)rtv.Format, (unsigned)rtv.ViewDimension);
+
+		auto heap = m_Rtv->GetDecsriptorHeap();
+		printf("Heap: type? (not accessible here) Count or pointer: %p  CPU.ptr=%llu\n",
+			heap, (unsigned long long)heap->GetCPUHandle().ptr);
+	}
+
+	void RenderTarget::DrawBegin(ID3D12GraphicsCommandList* cmdList) {
+		auto barrier = make_unique<Barrier>();
+		barrier->Transition(cmdList, m_RenderTargetTexture->GetBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		//m_Rtv->SetBufferState(0, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		auto rtvH = m_Rtv->GetDecsriptorHeap()->GetCPUHandle();
+		auto dsvH = m_Dsv->GetDecsriptorHeap()->GetCPUHandle();
+		cmdList->OMSetRenderTargets(1, &rtvH, true, &dsvH);
+
+		cmdList->ClearRenderTargetView(rtvH, m_ClearColor.data(), 0, nullptr);
+		cmdList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	}
+	void RenderTarget::DrawEnd(ID3D12GraphicsCommandList* cmdList) {
+		auto barrier = make_unique<Barrier>();
+		barrier->Transition(cmdList, m_RenderTargetTexture->GetBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		//m_Rtv->SetBufferState(0, D3D12_RESOURCE_STATE_PRESENT);
+	}
+	void RenderTarget::Draw(ID3D12GraphicsCommandList* cmdList, vector<shared_ptr<RendererComponent>>& renderers) {
+		DrawBegin(cmdList);
+		auto renderer = Engine::GetRenderer();
+		auto srvHeap = renderer->GetSrvDescriptorHeap();
+		for (auto& renderer : renderers) {
+			renderer->Draw(cmdList, srvHeap);
+		}
+		DrawEnd(cmdList);
+	}
 	void Viewport::Create(const Window* _window) {
 		Create(_window->GetWidth(), _window->GetHeight(), 0, 0);
 	}
@@ -141,10 +201,17 @@ namespace RNEngine {
 
         m_SwapChain = dev->GetSwapChain()->GetPtr();
 		m_RTVBuffer = make_unique<RTVBuffer>();
-        m_RTVBuffer->Init(d3d12Device, dev->GetSwapChain());
+        m_RTVBuffer->InitFrameBuffer(d3d12Device, dev->GetSwapChain());
 		m_DSVBuffer = make_unique<DSVBuffer>();
         m_DSVBuffer->Init(d3d12Device, _window);
 
+		m_SrvCbvDescriptorHeap = make_unique<DescriptorHeap>();
+		m_SrvCbvDescriptorHeap->Init(d3d12Device, 2048, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+
+		/*m_FrameBufferRenderTargets = {make_unique<RenderTarget>() ,make_unique<RenderTarget>()};
+		m_FrameBufferRenderTargets[0]->Create({ (float)_window->GetWidth(),(float)_window->GetHeight() }, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, m_ClearColor);
+		m_FrameBufferRenderTargets[1]->Create({ (float)_window->GetWidth(),(float)_window->GetHeight() }, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, m_ClearColor);
+		*/
 		m_Fence = make_unique<Fence>(d3d12Device);
 		m_Barrier = make_unique<Barrier>();
 
@@ -153,9 +220,6 @@ namespace RNEngine {
 		ps.LoadPS(L"SamplePixelShader.hlsl", "PSMain");
 
 		PipelineStatePool::RegisterPipelineState(L"Sample1", &vs, &ps, InputLayout::PUV);
-
-		m_SrvCbvDescriptorHeap = make_unique<DescriptorHeap>();
-		m_SrvCbvDescriptorHeap->Init(d3d12Device, 2048, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
 		m_ViewPort = make_unique<Viewport>();
 		m_Sicssor = make_unique<SicssorRect>();
@@ -167,6 +231,7 @@ namespace RNEngine {
 
     void Renderer::BeginRenderer() {
         auto idx = m_SwapChain->GetCurrentBackBufferIndex();
+
 		D3D12_RESOURCE_STATES currentState = m_RTVBuffer->GetBufferState(idx);
 		
 		if (currentState != D3D12_RESOURCE_STATE_RENDER_TARGET) {
@@ -186,8 +251,24 @@ namespace RNEngine {
 
 		m_CommandList->RSSetViewports(1, &m_ViewPort->GetViewport());
 		m_CommandList->RSSetScissorRects(1, &m_Sicssor->GetRect());
+
+		for (auto& rendererObject : m_CurrentFrameRenderObjects) {
+			rendererObject.second.clear();
+		}
     }
     void Renderer::EndRenderer(GUIRenderer* guiRenderer) {
+		auto idx = m_SwapChain->GetCurrentBackBufferIndex();
+		//m_FrameBufferRenderTargets[idx]->DrawBegin(m_CommandList.Get());
+		auto rtvH = m_RTVBuffer->GetDecsriptorHeap()->GetCPUHandle();
+		rtvH.ptr += idx * m_RTVBuffer->GetDecsriptorHeap()->GetHeapSize();
+
+		auto dsvH = m_DSVBuffer->GetDecsriptorHeap()->GetCPUHandle();
+
+		m_CommandList->OMSetRenderTargets(1, &rtvH, true, &dsvH);
+
+		m_CommandList->ClearRenderTargetView(rtvH, m_ClearColor.data(), 0, nullptr);
+		m_CommandList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
 		//すべての描画が終わった後にGUIを表示
 		if (guiRenderer != nullptr) {
 			guiRenderer->UpdateRenderer(m_CommandList.Get(), m_SrvCbvDescriptorHeap.get());
@@ -195,8 +276,8 @@ namespace RNEngine {
 		m_CommandList->RSSetViewports(1, &m_ViewPort->GetViewport());
 		m_CommandList->RSSetScissorRects(1, &m_Sicssor->GetRect());
 
+		//m_FrameBufferRenderTargets[idx]->DrawEnd(m_CommandList.Get());
 
-		auto idx = m_SwapChain->GetCurrentBackBufferIndex();
 		m_Barrier->Transition(m_CommandList.Get(), m_RTVBuffer->GetBackBuffer(idx), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 		m_RTVBuffer->SetBufferState(idx, D3D12_RESOURCE_STATE_PRESENT);
         m_CommandList->Close();
@@ -242,67 +323,34 @@ namespace RNEngine {
 	}
 
 	void Renderer::Draw(shared_ptr<RendererComponent>& renderer) {
-		renderer->Draw(m_CommandList.Get(), m_SrvCbvDescriptorHeap.get());
+		//renderer->Draw(m_CommandList.Get(), m_SrvCbvDescriptorHeap.get());
+		
+		for (auto tag : renderer->GetRenderTargetTag()) {
+			if (m_RenderTargets.find(tag) != m_RenderTargets.end()) {
+				m_CurrentFrameRenderObjects[tag].push_back(renderer);
+			}
+		}
+	}
+	void Renderer::DrawAll() {
+		for (auto& rendererMap : m_CurrentFrameRenderObjects) {
+			auto renderTarget = m_RenderTargets[rendererMap.first];
+			renderTarget->Draw(m_CommandList.Get(), rendererMap.second);
+		}
 	}
 
 
-	CD3DX12_GPU_DESCRIPTOR_HANDLE Renderer::GetSRVDescriptorHandle(UINT handle) {
+	CD3DX12_GPU_DESCRIPTOR_HANDLE Renderer::GetSRVDescriptorGPUHandle(UINT handle) {
 		return CD3DX12_GPU_DESCRIPTOR_HANDLE(
 			m_SrvCbvDescriptorHeap->GetGPUHandle(),
 			handle,
 			m_SrvCbvDescriptorHeap->GetHeapSize()
 		);
 	}
-
-	void GUIRenderer::Init(DescriptorHeap* srvHeap) {
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-
-		ImGuiIO& io = ImGui::GetIO();
-		(void)io;
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-		ImGui::StyleColorsDark();
-		io.Fonts->AddFontFromFileTTF("../Assets/Font/851H-kktt_004.ttf");
-
-		auto dev = Engine::GetID3D12Device();
-		auto window = Engine::GetWindow();
-		// 3. Platform + Renderer バックエンド初期化
-		ImGui_ImplWin32_Init(window->GetHwnd());
-		ImGui_ImplDX12_Init(
-			dev,
-			2,
-			DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
-			srvHeap->GetHeap(),
-			srvHeap->GetCPUHandle(),
-			srvHeap->GetGPUHandle()
+	CD3DX12_CPU_DESCRIPTOR_HANDLE Renderer::GetSRVDescriptorCPUHandle(UINT handle) {
+		return CD3DX12_CPU_DESCRIPTOR_HANDLE(
+			m_SrvCbvDescriptorHeap->GetCPUHandle(),
+			handle,
+			m_SrvCbvDescriptorHeap->GetHeapSize()
 		);
-		//3つ分確保しておく
-		for (int i = 0; i < 3; i++) {
-			srvHeap->AddHeapCount();
-		}
-		io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
-	}
-	void GUIRenderer::UpdateRenderer(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* srvHeap) {
-		// 開始
-		ImGui_ImplDX12_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
-
-		// 描画内容
-		ImGui::Begin("Demo");
-		ImGui::Text("Hello from ImGui + DX12!");
-		ImGui::End();
-
-		// 描画コマンド発行
-		ImGui::Render();
-
-		cmdList->SetDescriptorHeaps(1, srvHeap->GetHeapAddress());
-		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmdList);
-	}
-	void GUIRenderer::Destroy() {
-		ImGui_ImplDX12_Shutdown();
-		ImGui_ImplWin32_Shutdown();
-		ImGui::DestroyContext();
 	}
 }

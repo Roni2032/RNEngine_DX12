@@ -29,7 +29,7 @@ namespace RNEngine {
 		m_ViewMatrix = XMMatrixLookAtLH(XMLoadFloat3(&m_Eye), XMLoadFloat3(&m_Target), XMLoadFloat3(&m_Up));
 		m_IsDirty = false;
 	}
-	void Camera::SetViewMatrix(XMFLOAT3 eye, XMFLOAT3 target, XMFLOAT3 up) {
+	void Camera::SetViewMatrix(Vector3 eye, Vector3 target, Vector3 up) {
 		SetEye(eye);
 		SetTarget(target);
 		SetUp(up);

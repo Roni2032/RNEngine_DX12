@@ -27,6 +27,7 @@ namespace RNEngine {
 		m_Device->Init(m_Window.get());
 		m_Renderer->Init(m_Window.get());
 		m_GuiRenderer->Init(m_Renderer->GetSrvDescriptorHeap());
+
 		m_Renderer->SetClearColor(0.1f, 0.25f, 0.5f, 1.0f);
 
 		Input::Init();
@@ -53,7 +54,36 @@ namespace RNEngine {
 
 		// テスト用リソース登録
 		ResourceManager::RegisterModel("Models/Furina/Furina.fbx");
+		ResourceManager::RegisterModel("Models/Harlequin/Harlequin.fbx");
+		ResourceManager::RegisterModel("Models/raiden/raiden.fbx");
+		ResourceManager::RegisterModel("Models/kaf/VRM/kaf_fukuro_hatdown.vrm");
 		ResourceManager::RegisterTexture("Textures/test.jpg");
+		ResourceManager::RegisterTexture("Editor/Texture/folder_icon.png");
+		ResourceManager::RegisterTexture("Editor/Texture/file_icon.png");
+
+		//レンダーターゲット作成
+		auto gameViewTarget = make_shared<RenderTarget>();
+		gameViewTarget->Create(
+			{ (float)m_Window->GetWidth(),(float)m_Window->GetHeight() },
+			DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, m_Renderer->GetClearColor());
+		m_Renderer->RegisterRenderTarget("GameView", gameViewTarget);
+
+#if _DEBUG
+		//GUI初期設定
+		m_GuiRenderer->AddGui("inspector", make_shared<Inspector>("Inspector"));
+		m_GuiRenderer->AddGui("hierarchy", make_shared<Hierarchy>("hierarchy"));
+		auto projectView = make_shared<ProjectView>("project", 64.0f);
+		projectView->Init();
+		m_GuiRenderer->AddGui("project", projectView);
+		m_GuiRenderer->AddGui("debugLog", make_shared<DebugLog>("debugLog"));
+		m_GuiRenderer->AddGui("scene", make_shared<GameView>("scene"));
+		//GUI用レンダーターゲット作成
+		auto editorRenderTarget = make_shared<RenderTarget>();
+		editorRenderTarget->Create(
+			{ (float)m_Window->GetWidth(),(float)m_Window->GetHeight() },
+			DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, m_Renderer->GetClearColor());
+		m_Renderer->RegisterRenderTarget("Editor", editorRenderTarget);
+#endif
 
 		//メインカメラ設定
 		shared_ptr<Camera> camera = make_shared<Camera>();
@@ -72,35 +102,51 @@ namespace RNEngine {
 			auto object = m_CurrentScene->AddGameObject<GameObject>();
 			auto renderer = object->AddComponent<ModelRenderer>();
 			renderer->Init(camera);
-			renderer->SetModel("Models/Furina/Furina.fbx");
+			if (i == 0) {
+				renderer->SetModel("Models/Furina/Furina.fbx");
+				object->SetName("Furina");
+			}
+			else if(i == 1){
+				renderer->SetModel("Models/Harlequin/Harlequin.fbx");
+				object->SetName(u8"召使");
+			}
+			else if (i == 2) {
+				renderer->SetModel("Models/kaf/VRM/kaf_fukuro_hatdown.vrm");
+				object->SetName(u8"花譜");
+			}
+			renderer->AddRenderTargetTag("GameView");
 			m_GameObjects.push_back(object);
 		}
 		//テスト画像作成
-		auto object = m_CurrentScene->AddGameObject<GameObject>();
+		/*auto object = m_CurrentScene->AddGameObject<GameObject>();
 		auto image = object->AddComponent<ImageRenderer>();
-		image->Init(uiCamera);
+		image->InitFrameBuffer(uiCamera);
 		image->SetTexture("Textures/test.jpg");
-		m_GameObjects.push_back(object);
-
+		m_GameObjects.push_back(object);*/
+#if _DEBUG
+		//GUI設定
+		auto inspector = m_GuiRenderer->GetGui<Inspector>("inspector");
+		inspector->SetGameObject(m_GameObjects[0]);
+		auto hierarchy = m_GuiRenderer->GetGui<Hierarchy>("hierarchy");
+		hierarchy->SetScene(m_CurrentScene);
+		auto gameView = Engine::GetGUIRenderer()->GetGui<GameView>("scene");
+		gameView->CreateSRV(gameViewTarget);
+#endif
 		//初期位置設定
 		float angle[3] = { 0,XM_PIDIV4 ,-XM_PIDIV4 };
 		for (int i = 0; i < m_GameObjects.size(); i++) {
 			auto transform = m_GameObjects[i]->GetComponent<Transform>();
 			if (i == 1) {
 				transform->SetPosition({ 10,0,0 });
-				transform->SetScale({ 1.5f,1.5f,1.5f });
 				transform->SetRotation({0, angle[i], 0});
 			}else if (i == 2) {
 				transform->SetPosition({ -10,0,0 });
-				transform->SetScale({ 0.5f,0.5f,0.5f });
 				transform->SetRotation({ 0, angle[i], 0});
 			}else if (i == 3) {
 				transform->SetPosition({ 640,400,0 });
 				transform->SetScale({ 200,200,1 });
 			}
 		}
-
-
 		//入力のテスト設定
 		Input::RegisterInput("up", 'W', InputMode::Keyboard);
 		Input::RegisterInput("down", 'S', InputMode::Keyboard);
@@ -108,30 +154,20 @@ namespace RNEngine {
 		Input::RegisterInput("right", 'D', InputMode::Keyboard);
 
 		//テスト入力設定
-		Input::BindAction("right", [&](InputActionContext context) {position.x += 0.01f; });//ラムダ式での設定
+		Input::BindAction("right", [&](InputActionContext context) { });//ラムダ式での設定
 		Input::BindAction("left", &Engine::OnMove, this);//メンバ関数での設定(shared_ptrでも可能。uniqueとかは黙ってget()してくれ)
 		// メインループ
 		while (m_Window->ProcessMessage()) {
-			//m_GuiRenderer->UpdateRenderer(m_Renderer->GetCommandList(), m_Renderer->GetSrvDescriptorHeap());
 			m_Renderer->BeginRenderer();
 			Input::Update();
-			//モデル回転
-			angle[1] += XM_PIDIV2 * 0.01f;
-			angle[2] -= XM_PIDIV2 * 0.01f;
-			auto transform = m_GameObjects[0]->GetComponent<Transform>();
-			transform->SetPosition(position);
-			transform = m_GameObjects[1]->GetComponent<Transform>();
-			transform->SetRotation({ 0,angle[1],0 });
-			transform = m_GameObjects[2]->GetComponent<Transform>();
-			transform->SetRotation({ 0,angle[2],0 });
 
 			//テスト入力取得(if文)
-			if (Input::IsHeld("up"))
-				position.y += 0.01f;
+			if (Input::IsPressed("up"))
+				DebugLog::Log("key down [up]",LogData::Type::Error);
 			//テストマウス入力取得
-			XMFLOAT2 mouseOffset = Input::GetMouseOffset();
-			position.x += mouseOffset.x * 0.05f;
-			position.y -= mouseOffset.y * 0.05f;
+			//XMFLOAT2 mouseOffset = Input::GetMouseOffset();
+			//position.x += mouseOffset.x * 0.05f;
+			//position.y -= mouseOffset.y * 0.05f;
 
 			//更新と描画
 			m_CurrentScene->Update();

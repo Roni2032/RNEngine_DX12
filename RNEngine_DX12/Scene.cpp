@@ -23,5 +23,6 @@ namespace RNEngine {
 				renderer->Draw(rendererComponent);
 			}
 		}
+		renderer->DrawAll();
 	}
 }

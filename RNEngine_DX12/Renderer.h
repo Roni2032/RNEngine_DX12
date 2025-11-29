@@ -64,7 +64,25 @@ namespace RNEngine {
 		D3D12_STATIC_SAMPLER_DESC& GetDesc() { return m_SamplerDesc; }
 	};
 	class RenderTarget {
-		ComPtr<ID3D12Resource> m_RenderTarget;
+		shared_ptr<TextureBuffer> m_RenderTargetTexture;
+		unique_ptr<RTVBuffer> m_Rtv;
+		unique_ptr<DSVBuffer> m_Dsv;
+		
+		float m_Width;
+		float m_Height;
+
+		DXGI_FORMAT m_Format;
+		array<float, 4> m_ClearColor;
+	public:
+		void Create(Vector2 renderSize, DXGI_FORMAT format, array<float, 4> clearColor = {1.0f,1.0f,1.0f,1.0f});
+
+		void DrawBegin(ID3D12GraphicsCommandList* cmdList);
+		void DrawEnd(ID3D12GraphicsCommandList* cmdList);
+		void Draw(ID3D12GraphicsCommandList* cmdList, vector<shared_ptr<RendererComponent>>& renderers);
+
+		RTVBuffer* GetRTVBuffer() { return m_Rtv.get(); }
+
+		shared_ptr<TextureBuffer> GetRenderTargetTexture() { return m_RenderTargetTexture; }
 	};
 
 	class Viewport {
@@ -130,13 +148,18 @@ namespace RNEngine {
 	/// 描画処理を行うクラス
 	/// </summary>
 	class Renderer {
-		vector<shared_ptr<TextureBuffer>> m_Textrues;
+		unordered_map<string, shared_ptr<RenderTarget>> m_RenderTargets;//登録されたレンダーターゲット
+		//今回のフレームに描画するオブジェクトをレンダーターゲットに振り分けたやつ
+		unordered_map<string, vector<shared_ptr<RendererComponent>>> m_CurrentFrameRenderObjects;
+		vector<string> m_RenderTargetOrder;//レンダーターゲットの描画順(何もしなければ登録順)
 
+		array<unique_ptr<RenderTarget>, 2> m_FrameBufferRenderTargets;
 		unique_ptr<RTVBuffer> m_RTVBuffer;	//レンダーターゲットビュー用のヒープ
 		unique_ptr<DSVBuffer> m_DSVBuffer;	//深度バッファ用のヒープ
-		unique_ptr<DescriptorHeap> m_SrvCbvDescriptorHeap;
 		unique_ptr<Viewport> m_ViewPort;
 		unique_ptr<SicssorRect> m_Sicssor;
+
+		unique_ptr<DescriptorHeap> m_SrvCbvDescriptorHeap;
 		ComPtr<ID3D12GraphicsCommandList> m_CommandList;
 		ComPtr<ID3D12CommandQueue> m_CommandQueue;
 		ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
@@ -158,27 +181,26 @@ namespace RNEngine {
 		void SetClearColor(float r, float g, float b, float a) {
 			m_ClearColor = { r,g,b,a };
 		}
+		array<float, 4> GetClearColor() { return m_ClearColor; }
 
 		void RegisterTextureBuffer(TextureBuffer& texBuffer);
 		void RegisterConstantBuffer(ConstBuffer& constBuffer);
 
-		void Draw(shared_ptr<RendererComponent>& renderer);
+		void RegisterRenderTarget(const string& name, shared_ptr<RenderTarget>& renderTarget) {
+			m_RenderTargets[name] = renderTarget;
+			m_CurrentFrameRenderObjects[name] = {};
+			m_RenderTargetOrder.push_back(name);
+		}
 
-		CD3DX12_GPU_DESCRIPTOR_HANDLE GetSRVDescriptorHandle(UINT handle);
+		void Draw(shared_ptr<RendererComponent>& renderer);
+		void DrawAll();
+
+		CD3DX12_GPU_DESCRIPTOR_HANDLE GetSRVDescriptorGPUHandle(UINT handle);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE GetSRVDescriptorCPUHandle(UINT handle);
 
 		ID3D12GraphicsCommandList* GetCommandList() { return m_CommandList.Get(); }
 		DescriptorHeap* GetSrvDescriptorHeap() { return m_SrvCbvDescriptorHeap.get(); }
-	};
 
-	class GUIRenderer {
-		unique_ptr<DescriptorHeap> m_SrvDescriptorHeap;
-
-	public:
-		GUIRenderer(){}
-		~GUIRenderer(){}
-
-		void Init(DescriptorHeap* srvHeap);
-		void UpdateRenderer(ID3D12GraphicsCommandList * cmdList, DescriptorHeap* srvHeap);
-		void Destroy();
+		RTVBuffer* GetFrameRTVBuffer() { return m_RTVBuffer.get(); }
 	};
 }
