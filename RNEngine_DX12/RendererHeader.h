@@ -17,11 +17,11 @@ namespace RNEngine{
 	class IndexBuffer;
 
 	struct Mesh {
-		vector<Vertex> m_Verteces;//頂点データ
-		vector<uint32_t> m_Indeces;//頂点インデックス
+		vector<Vertex> m_Vertices;//頂点データ
+		vector<uint32_t> m_Indices;//頂点インデックス
 
 		shared_ptr<VertexBuffer> m_VertexBuffer;
 		shared_ptr<IndexBuffer> m_IndexBuffer;
-		uint32_t m_MaterialIndex;
+		uint32_t m_MaterialIndex = 0;
 	};
 }

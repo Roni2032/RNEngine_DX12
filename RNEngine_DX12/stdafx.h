@@ -16,6 +16,9 @@
 #include <array>
 #include <thread>
 #include <codecvt>
+#include <type_traits>
+#include <filesystem>
+#include <random>
 
 //DirectX系統
 #include <d3d12.h>
@@ -58,8 +61,11 @@ using namespace std;
 using namespace Microsoft::WRL;
 using namespace DirectX;
 using namespace std::chrono;
+using namespace std::filesystem;
 
 //ゲーム内で使用する基本的なファイル
 #include "Object.h"
+#include "Util.h"
+#include "Vector.h"
 
 //using namespace RNEngine;

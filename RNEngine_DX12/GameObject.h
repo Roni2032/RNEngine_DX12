@@ -4,15 +4,24 @@
 namespace RNEngine {
 	class Component;
 	class Scene;
+	class RendererComponent;
 
 	class GameObject : public Object {
+		string m_Name;
 		weak_ptr<Scene> m_OwnerScene;
 		vector<shared_ptr<Component>> m_Components;
 	public:
-		GameObject(const shared_ptr<Scene>& ptr) :m_OwnerScene(ptr), Object() {}
+		GameObject(const shared_ptr<Scene>& ptr) :m_OwnerScene(ptr),m_Name("GameObject"), Object() {}
 		virtual ~GameObject() {}
 
 		virtual void Start();
+
+		void SetName(const string& name) {
+			m_Name = name;
+		}
+		string GetName() {
+			return m_Name;
+		}
 
 		template<class T,class... Param>
 		shared_ptr<T> AddComponent(Param&&... params) {

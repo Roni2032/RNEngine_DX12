@@ -15,6 +15,8 @@ namespace RNEngine
 		static unordered_map<string, shared_ptr<Model>> m_ModelMap;
 		static unordered_map<string, shared_ptr<TextureBuffer>> m_TextureBufferMap;
 	public:
+
+		static string GetDefaultFilePath() { return m_DefaultFilePath; }
 		static void SetDefaultFilePath(const string& path) { m_DefaultFilePath = path; }
 
 		static shared_ptr<TextureBuffer> RegisterTexture(const string& filename);

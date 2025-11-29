@@ -6,4 +6,6 @@ namespace RNEngine {
 		auto ptr = m_Owner.lock();
 		return ptr;
 	}
+
+	INSPECTOR_COMPONENT_CPP(Transform)
 }

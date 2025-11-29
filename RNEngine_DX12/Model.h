@@ -27,11 +27,6 @@ namespace RNEngine
 		vector<Mesh> m_Meshes;
 	};
 
-
-	string GetModelNameFromPath(const string& filepath);
-	void SaveBainaryModel(const string& filename, BainaryModelDeta& modelData);
-	BainaryModelDeta LoadBainaryModel(const string& filename);
-
 	class Model
 	{
 		wstring m_Filename;
@@ -41,6 +36,21 @@ namespace RNEngine
 
 		bool m_IsDebug;	//trueの場合は読み込みの際にtxtファイルでデータを書きだす
 		string m_DebugName;
+
+
+		struct Header {
+			uint32_t m_MeshCount;
+			uint32_t m_MaterialCount;
+		};
+		struct MeshHeader {
+			uint32_t m_VertexCount;
+			uint32_t m_IndexCount;
+			uint32_t m_materialIndex;
+		};
+		string GetModelNameFromPath(const string& filepath);
+		void DeleteDefaultFilePath(string& filePath);
+		void SaveBinaryModel(const string& filename, vector<Mesh>& mesh, vector<string>& materialTextures);
+		void LoadBinaryModel(const string& filename, vector<Mesh>& mesh, vector<string>& materialTextures);
 	public:
 		Model():m_IsDebug(false){}
 		Model(bool isDebug,const string& name): m_IsDebug(isDebug), m_DebugName(name){}

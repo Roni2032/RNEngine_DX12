@@ -20,21 +20,27 @@ namespace RNEngine {
 		return true;
 	}
 
-	void RTVBuffer::Init(ID3D12Device* _dev, SwapChain* _swapChian) {
+	void RTVBuffer::CreateRTV(ID3D12Device* _dev, UINT count) {
+		m_RTVHeap = make_unique<DescriptorHeap>();
+		m_RTVHeap->Init(_dev, count, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+
+		::ZeroMemory(&m_RTVDesc, sizeof(m_RTVDesc));
+		m_RTVDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		m_RTVDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	}
+	void RTVBuffer::Init(ID3D12Device* _dev) {
+		CreateRTV(_dev, 1);
+	}
+	void RTVBuffer::InitFrameBuffer(ID3D12Device* _dev, SwapChain* _swapChian) {
 		UINT frameBufferCount = 2;
 
-		m_RTVHeap = make_unique<DescriptorHeap>();
-		m_RTVHeap->Init(_dev, frameBufferCount, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+		CreateRTV(_dev, frameBufferCount);
 
-		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_RTVHeap->GetHeap()->GetCPUDescriptorHandleForHeapStart();
+		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_RTVHeap->GetCPUHandle();
 
 		DXGI_SWAP_CHAIN_DESC swapDesc;
 		auto result = _swapChian->GetPtr()->GetDesc(&swapDesc);
 		assert(SUCCEEDED(result));
-
-		D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-		rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-		rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
 		m_BackBuffer.resize(swapDesc.BufferCount);
 		m_BufferStates.resize(swapDesc.BufferCount);
@@ -42,7 +48,7 @@ namespace RNEngine {
 		for (UINT n = 0; n < frameBufferCount; n++) {
 			_swapChian->GetPtr()->GetBuffer(n, IID_PPV_ARGS(&m_BackBuffer[n]));
 			_dev->CreateRenderTargetView(
-				m_BackBuffer[n].Get(), &rtvDesc, rtvHandle
+				m_BackBuffer[n].Get(), &m_RTVDesc, rtvHandle
 			);
 			m_BufferStates[n] = D3D12_RESOURCE_STATE_PRESENT;
 			rtvHandle.ptr += m_RTVHeap->GetHeapSize();
@@ -63,52 +69,60 @@ namespace RNEngine {
 
 	void DSVBuffer::Init(ID3D12Device* _dev, const Window* _window) {
 
-		D3D12_RESOURCE_DESC depthResDesc = {};
-		depthResDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; // 二次元配列的なバッファ
-		depthResDesc.Width = _window->GetWidth(); // 画面の「幅」に合わせる
-		depthResDesc.Height = _window->GetHeight(); // 画面の「高さ」に合わせる
-		depthResDesc.DepthOrArraySize = 1;
-		depthResDesc.Format = DXGI_FORMAT_D32_FLOAT; // ステンシル無し
-		depthResDesc.SampleDesc.Count = 1;
-		depthResDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+		D3D12_RESOURCE_DESC resourceDesc = {};
+		resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; // 二次元配列的なバッファ
+		resourceDesc.Width = _window->GetWidth(); // 画面の「幅」に合わせる
+		resourceDesc.Height = _window->GetHeight(); // 画面の「高さ」に合わせる
+		resourceDesc.DepthOrArraySize = 1;
+		resourceDesc.Format = DXGI_FORMAT_R32_TYPELESS; // ステンシル無し
+		resourceDesc.SampleDesc.Count = 1;
+		resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
 		// 深度値用ヒーププロパティ
-		D3D12_HEAP_PROPERTIES depthHeapProp = {};
-		depthHeapProp.Type = D3D12_HEAP_TYPE_DEFAULT;
-		depthHeapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-		depthHeapProp.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+		auto heap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 
 		// クリアバリューを設定する
-		D3D12_CLEAR_VALUE depthClearValue = {};
-		depthClearValue.DepthStencil.Depth = 1.0f; // 深度の最大値
-		depthClearValue.Format = DXGI_FORMAT_D32_FLOAT;
+		D3D12_CLEAR_VALUE clearValue = {};
+		clearValue.DepthStencil.Depth = 1.0f; // 深度の最大値
+		clearValue.Format = DXGI_FORMAT_D32_FLOAT;
 
 		auto result = _dev->CreateCommittedResource(
-			&depthHeapProp,
+			&heap,
 			D3D12_HEAP_FLAG_NONE,
-			&depthResDesc,
+			&resourceDesc,
 			D3D12_RESOURCE_STATE_DEPTH_WRITE,
-			&depthClearValue,
+			&clearValue,
 			IID_PPV_ARGS(m_DSBuffer.GetAddressOf()));
-		assert(SUCCEEDED(result));
+
+		printf("Create RT: size=%ux%u format=%u flags=%u\n",
+			_window->GetWidth(), _window->GetHeight(), (unsigned)resourceDesc.Format, (unsigned)resourceDesc.Flags);
+
+		if (FAILED(result)) {
+			printf("CreateCommittedResource failed hr=0x%08X\n", (unsigned)result);
+			HRESULT reason = _dev->GetDeviceRemovedReason();
+			printf("GetDeviceRemovedReason = 0x%08X\n", (unsigned)reason);
+		}
 
 		m_DSVHeap = make_unique<DescriptorHeap>();
 		m_DSVHeap->Init(_dev, 1, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 
 		CreateDSVDesc(_dev);
 	}
-	void SRVBuffer::CreateSRVDesc(ID3D12Device* _dev, TextureBuffer& texBuffer, DXGI_FORMAT format) {
+	void SRVBuffer::CreateSRVDesc(ID3D12Device* _dev, DXGI_FORMAT format) {
 		ZeroMemory(&m_SRVDesc, sizeof(m_SRVDesc));
 		m_SRVDesc.Format = format;
 		m_SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		m_SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 		m_SRVDesc.Texture2D.MipLevels = 1;
-		
+	}
+	void SRVBuffer::Init(ID3D12Device* _dev, TextureBuffer& texBuffer, DXGI_FORMAT format) {
+		CreateSRVDesc(_dev, format);
+
 		auto renderer = Engine::GetRenderer();
 		renderer->RegisterTextureBuffer(texBuffer);
 	}
-	void SRVBuffer::Init(ID3D12Device* _dev, TextureBuffer& texBuffer, DXGI_FORMAT format) {
-		CreateSRVDesc(_dev, texBuffer, format);
+	void SRVBuffer::Init(ID3D12Device* _dev, DXGI_FORMAT format) {
+		CreateSRVDesc(_dev, format);
 	}
 
 	void ConstBuffer::Create(ID3D12Device* _dev, void* data) {
@@ -252,34 +266,7 @@ namespace RNEngine {
 		assert(SUCCEEDED(result));
 		auto img = image.GetImage(0, 0, 0); 
 
-		D3D12_HEAP_PROPERTIES heapProp = {};
-		heapProp.Type = D3D12_HEAP_TYPE_CUSTOM;
-		heapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
-		heapProp.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
-		heapProp.CreationNodeMask = 0;
-		heapProp.VisibleNodeMask = 0;
-
-		D3D12_RESOURCE_DESC resDesc = {};
-		resDesc.Format = metadata.format;
-		resDesc.Width = (UINT)metadata.width;
-		resDesc.Height = (UINT)metadata.height;
-		resDesc.DepthOrArraySize = 1;
-		resDesc.SampleDesc.Quality = 0;
-		resDesc.MipLevels = 1;
-		resDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-		resDesc.SampleDesc.Count = 1;
-		resDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-		resDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-		result = _dev->CreateCommittedResource(
-			&heapProp,
-			D3D12_HEAP_FLAG_NONE,
-			&resDesc,
-			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-			nullptr,
-			IID_PPV_ARGS(m_TextureBuffer.GetAddressOf()));
-
-		assert(SUCCEEDED(result));
+		CreateResource(metadata.width, metadata.height, metadata.format);
 
 		result = m_TextureBuffer->WriteToSubresource(
 			0,
@@ -290,9 +277,66 @@ namespace RNEngine {
 		);
 		assert(SUCCEEDED(result));
 
-		m_SRV = make_unique<SRVBuffer>();
-		m_SRV->Init(_dev,*this,metadata.format);
-
 		m_Filename = filename;
+	}
+	void TextureBuffer::Create(ID3D12Device* _dev, UINT width, UINT height, DXGI_FORMAT format, array<float, 4> clearColor) {
+		CreateResource(width, height, format, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, clearColor);
+	}
+	void TextureBuffer::CreateResource(UINT width, UINT height, DXGI_FORMAT format, D3D12_RESOURCE_FLAGS flag,array<float,4> clearColor) {
+
+		D3D12_HEAP_PROPERTIES heapProp = {};
+		heapProp.Type = D3D12_HEAP_TYPE_CUSTOM;
+		heapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
+		heapProp.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
+		heapProp.CreationNodeMask = 0;
+		heapProp.VisibleNodeMask = 0;
+
+		CD3DX12_RESOURCE_DESC desc(
+			D3D12_RESOURCE_DIMENSION_TEXTURE2D,
+			0,
+			width,
+			height,
+			1, 1,
+			format,
+			1, 0,
+			D3D12_TEXTURE_LAYOUT_UNKNOWN,
+			flag
+		);
+
+
+		D3D12_CLEAR_VALUE clearValue;
+		clearValue.Format = format;
+		clearValue.Color[0] = clearColor[0];
+		clearValue.Color[1] = clearColor[1];
+		clearValue.Color[2] = clearColor[2];
+		clearValue.Color[3] = clearColor[3];
+
+		auto dev = Engine::GetID3D12Device();
+		if (flag != D3D12_RESOURCE_FLAG_NONE) {
+			auto result = dev->CreateCommittedResource(
+				&heapProp,
+				D3D12_HEAP_FLAG_NONE,
+				&desc,
+				D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+				&clearValue,
+				IID_PPV_ARGS(m_TextureBuffer.GetAddressOf()));
+
+			assert(SUCCEEDED(result));
+		}
+		else {
+			auto result = dev->CreateCommittedResource(
+				&heapProp,
+				D3D12_HEAP_FLAG_NONE,
+				&desc,
+				D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+				nullptr,
+				IID_PPV_ARGS(m_TextureBuffer.GetAddressOf()));
+
+			assert(SUCCEEDED(result));
+		}
+
+		//SRVを作成
+		m_SRV = make_unique<SRVBuffer>();
+		m_SRV->Init(dev, *this, format);
 	}
 }
