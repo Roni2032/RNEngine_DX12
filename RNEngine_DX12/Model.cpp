@@ -2,7 +2,7 @@
 #include "project.h"
 
 namespace RNEngine {
-	string GetModelNameFromPath(const string& filepath) {
+	string Model::GetModelNameFromPath(const string& filepath) {
 		string name = filepath;
 		size_t dotPos = name.find_last_of(".");
 		size_t slashPos = name.find_last_of("/\\");
@@ -15,43 +15,110 @@ namespace RNEngine {
 
 		return fullPath;
 	}
-	void SaveBainaryModel(const string& filename, BainaryModelDeta& modelData) {
+	void Model::DeleteDefaultFilePath(string& filePath) {
+		string defaultPath = ResourceManager::GetDefaultFilePath();
+		size_t pos = filePath.find(defaultPath);
+		if (pos != string::npos && pos == 0) {
+			filePath.erase(0, defaultPath.length());
+		}
+	}
+	void Model::SaveBinaryModel(const string& filename, vector<Mesh>& mesh, vector<string>& materialTextures) {
+		Header header;
+		header.m_MeshCount = (uint32_t)mesh.size();
+		header.m_MaterialCount = (uint32_t)materialTextures.size();
+		vector<MeshHeader> meshHeaders(header.m_MeshCount);
+		for (uint32_t i = 0; i < header.m_MeshCount; i++) {
+			MeshHeader meshHeader;
+			meshHeader.m_VertexCount = (uint32_t)mesh[i].m_Vertices.size();
+			meshHeader.m_IndexCount = (uint32_t)mesh[i].m_Indices.size();
+			meshHeader.m_materialIndex = mesh[i].m_MaterialIndex;
+			meshHeaders[i] = meshHeader;
+		}
+		vector<uint32_t> materialNameLength(header.m_MaterialCount);
+		for (uint32_t i = 0; i < header.m_MaterialCount; i++) {
+			DeleteDefaultFilePath(materialTextures[i]);
+			materialNameLength[i] = (uint32_t)materialTextures[i].size();
+		}
 
 		string fullPath = GetModelNameFromPath(filename);
-
 		ofstream ofs(fullPath, ios_base::binary);
 
 		if (ofs) {
-			BainaryModelHeader header;
-			header.m_MeshCount = modelData.m_Meshes.size();
-			header.m_MaterialCount = modelData.m_MaterialTextureName.size();
-			//header.m_MaterialCount = ;
-			ofs.write(reinterpret_cast<const char*>(&header), sizeof(BainaryModelHeader));
-			for (auto& mesh : modelData.m_Meshes) {
-				ofs.write(reinterpret_cast<const char*>(&mesh), sizeof(Mesh));
+			ofs.write(reinterpret_cast<const char*>(&header), sizeof(Header));
+			for (uint32_t i = 0; i < header.m_MeshCount; i++) {
+				ofs.write(reinterpret_cast<const char*>(&meshHeaders[i]), sizeof(meshHeaders[0]));
 			}
-			ofs.close();
+			for (uint32_t i = 0; i < header.m_MeshCount; i++) {
+				for (uint32_t j = 0; j < meshHeaders[i].m_VertexCount; j++) {
+					ofs.write(reinterpret_cast<const char*>(&mesh[i].m_Vertices[j]), sizeof(mesh[i].m_Vertices[0]));
+				}
+				for (uint32_t j = 0; j < meshHeaders[i].m_IndexCount; j++) {
+					ofs.write(reinterpret_cast<const char*>(&mesh[i].m_Indices[j]), sizeof(mesh[i].m_Indices[0]));
+				}
+				ofs.write(reinterpret_cast<const char*>(&mesh[i].m_MaterialIndex), sizeof(mesh[i].m_MaterialIndex));
+			}
+			for (uint32_t i = 0; i < header.m_MaterialCount; i++) {
+				ofs.write(reinterpret_cast<const char*>(&materialNameLength[i]), sizeof(materialNameLength[0]));
+				ofs.write(materialTextures[i].data(), materialNameLength[i]);
+			}
 		}
 	}
-	BainaryModelDeta LoadBainaryModel(const string& filename) {
+	void Model::LoadBinaryModel(const string& filename,vector<Mesh>& mesh, vector<string>& materialTextures) {
+		Header header;
+		vector<MeshHeader> meshHeaders;
+		vector<uint32_t> materialNameLength;
+
 		string fullPath = GetModelNameFromPath(filename);
 
 		ifstream ifs(fullPath, ios_base::binary);
-
 		if (ifs) {
-			BainaryModelHeader header;
-			ifs.read(reinterpret_cast<char*>(&header), sizeof(BainaryModelHeader));
-			vector<Mesh> meshes(header.m_MeshCount);
-			for (auto& mesh : meshes) {
-				ifs.read(reinterpret_cast<char*>(&mesh), sizeof(Mesh));
+			ifs.read(reinterpret_cast<char*>(&header), sizeof(Header));
+			meshHeaders.resize(header.m_MeshCount);
+			mesh.resize(header.m_MeshCount);
+			materialTextures.resize(header.m_MaterialCount);
+
+			for (uint32_t i = 0; i < header.m_MeshCount; i++) {
+				ifs.read(reinterpret_cast<char*>(&meshHeaders[i]), sizeof(meshHeaders[0]));
 			}
-			return {};
+			for (uint32_t i = 0; i < header.m_MeshCount; i++) {
+				mesh[i].m_Vertices.resize(meshHeaders[i].m_VertexCount);
+				mesh[i].m_Indices.resize(meshHeaders[i].m_IndexCount);
+
+				for (uint32_t j = 0; j < meshHeaders[i].m_VertexCount; j++) {
+					ifs.read(reinterpret_cast< char*>(&mesh[i].m_Vertices[j]), sizeof(mesh[i].m_Vertices[0]));
+				}
+				for (uint32_t j = 0; j < meshHeaders[i].m_IndexCount; j++) {
+					ifs.read(reinterpret_cast< char*>(&mesh[i].m_Indices[j]), sizeof(mesh[i].m_Indices[0]));
+				}
+				ifs.read(reinterpret_cast< char*>(&mesh[i].m_MaterialIndex), sizeof(mesh[i].m_MaterialIndex));
+			}
+			materialNameLength.resize(header.m_MaterialCount);
+			for (uint32_t i = 0; i < header.m_MaterialCount; i++) {
+				ifs.read(reinterpret_cast< char*>(&materialNameLength[i]), sizeof(materialNameLength[0]));
+				materialTextures[i].resize(materialNameLength[i]);
+				ifs.read(materialTextures[i].data(), materialNameLength[i]);
+			}
 		}
-		return {};
 	}
 
 
 	void Model::Load(ID3D12Device* _dev, const string& filename) {
+
+		if (File::IsExistFile(Util::ConvertStrToWstr(GetModelNameFromPath(filename)))) {
+			LoadBinaryModel(filename, m_Meshes, m_MaterialTextureName);
+
+			for (UINT i = 0; i < m_Meshes.size(); i++) {
+				m_Meshes[i].m_VertexBuffer = make_shared<VertexBuffer>();
+				m_Meshes[i].m_VertexBuffer->Create(_dev, m_Meshes[i].m_Vertices);
+
+				m_Meshes[i].m_IndexBuffer = make_shared<IndexBuffer>();
+				m_Meshes[i].m_IndexBuffer->Create(_dev, m_Meshes[i].m_Indices);
+			}
+			for (auto& materialTexture : m_MaterialTextureName) {
+				ResourceManager::RegisterTexture(materialTexture);
+			}
+			return;
+		}
 		Assimp::Importer importer;
 		unsigned int readFlags = 0;
 		readFlags |= aiProcess_FlipUVs; // UV‚ð”½“]‚³‚¹‚é
@@ -67,7 +134,7 @@ namespace RNEngine {
 			UINT vertexSize = mesh->mNumVertices;
 
 			Mesh newMesh;
-			auto& vertices = newMesh.m_Verteces;
+			auto& vertices = newMesh.m_Vertices;
 			vertices.reserve(vertexSize);
 
 			for (UINT j = 0; j < vertexSize; j++) {
@@ -89,7 +156,7 @@ namespace RNEngine {
 			newMesh.m_VertexBuffer = make_shared<VertexBuffer>();
 			newMesh.m_VertexBuffer->Create(_dev, vertices);
 
-			auto& indices = newMesh.m_Indeces;
+			auto& indices = newMesh.m_Indices;
 			auto faceSize = mesh->mNumFaces;
 			indices.reserve(faceSize * 3);
 			for (UINT j = 0; j < faceSize; j++) {
@@ -127,7 +194,7 @@ namespace RNEngine {
 			m_MaterialTextureName.push_back(filePath);
 		}
 
-		//SaveBainaryModel(filename, m_Meshes);
+		SaveBinaryModel(filename, m_Meshes, m_MaterialTextureName);
 		if (m_IsDebug) OutputDebug(scene);
 	}
 
@@ -140,15 +207,18 @@ namespace RNEngine {
 		for (auto& mesh : m_Meshes) {
 			cmdList->SetDescriptorHeaps(1, heap->GetHeapAddress());
 			auto startHandle = heap->GetGPUHandle();
-			auto handle = renderer->GetSRVDescriptorHandle(constantBuffer->GetCBVHandle());
+			auto handle = renderer->GetSRVDescriptorGPUHandle(constantBuffer->GetCBVHandle());
 			cmdList->SetGraphicsRootDescriptorTable(0, handle);
 
-			auto& textureName = m_MaterialTextureName[mesh.m_MaterialIndex];
+			if (m_MaterialTextureName.size() > mesh.m_MaterialIndex) {
+				auto& textureName = m_MaterialTextureName[mesh.m_MaterialIndex];
 
-			auto texture = ResourceManager::GetTextureBuffer(textureName);
-
-			handle = renderer->GetSRVDescriptorHandle(texture->GetSRVHandle());
-			cmdList->SetGraphicsRootDescriptorTable(1, handle);
+				auto texture = ResourceManager::GetTextureBuffer(textureName);
+				if (texture) {
+					handle = renderer->GetSRVDescriptorGPUHandle(texture->GetSRVHandle());
+					cmdList->SetGraphicsRootDescriptorTable(1, handle);
+				}
+			}
 
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 

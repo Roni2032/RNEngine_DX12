@@ -30,12 +30,16 @@ namespace RNEngine {
 		unique_ptr<DescriptorHeap> m_RTVHeap;
 		vector<ComPtr<ID3D12Resource>> m_BackBuffer;
 		vector<D3D12_RESOURCE_STATES> m_BufferStates;
+
+		void CreateRTV(ID3D12Device* _dev, UINT count);
 	public:
+		D3D12_RENDER_TARGET_VIEW_DESC m_RTVDesc;
 		RTVBuffer() {}
-		RTVBuffer(ID3D12Device* _dev, SwapChain* _swapChain) { Init(_dev,_swapChain); }
+		RTVBuffer(ID3D12Device* _dev, SwapChain* _swapChain) { InitFrameBuffer(_dev,_swapChain); }
 		~RTVBuffer() { }
 
-		void Init(ID3D12Device* _dev, SwapChain* _swapChain);
+		void InitFrameBuffer(ID3D12Device* _dev, SwapChain* _swapChain);
+		void Init(ID3D12Device* _dev);
 
 		ID3D12Resource* GetBackBuffer(size_t index) {
 			if (m_BackBuffer.size() <= index) throw;
@@ -74,7 +78,8 @@ namespace RNEngine {
 		SRVBuffer(){}
 		~SRVBuffer() {}
 		void Init(ID3D12Device* _dev, TextureBuffer& texBuffer,DXGI_FORMAT format);
-		void CreateSRVDesc(ID3D12Device* _dev, TextureBuffer& texBuffer, DXGI_FORMAT format);
+		void Init(ID3D12Device* _dev, DXGI_FORMAT format);
+		void CreateSRVDesc(ID3D12Device* _dev, DXGI_FORMAT format);
 	};
 	class ConstBuffer {
 		ComPtr<ID3D12Resource> m_ConstBuffer;
@@ -140,6 +145,9 @@ namespace RNEngine {
 		~TextureBuffer() {}
 
 		void Create(ID3D12Device* _dev,const wstring& filename );
+		void Create(ID3D12Device* _dev, UINT width, UINT height, DXGI_FORMAT format, array<float, 4> clearColor);
+		void CreateResource(UINT width, UINT height, DXGI_FORMAT format, D3D12_RESOURCE_FLAGS flag = D3D12_RESOURCE_FLAG_NONE, array<float, 4> clearColor = { 0,0,0,1 });
+
 		ID3D12Resource* GetBuffer()const { return m_TextureBuffer.Get(); }
 		void SetSRVHandle(UINT handle) { m_SRVHandle = handle; }
 		UINT GetSRVHandle()const { return m_SRVHandle; }

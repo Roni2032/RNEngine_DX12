@@ -14,12 +14,12 @@ namespace RNEngine {
 
 		cmdList->SetDescriptorHeaps(1, heap->GetHeapAddress());
 		auto startHandle = heap->GetGPUHandle();
-		auto handle = renderer->GetSRVDescriptorHandle(constantBuffer->GetCBVHandle());
+		auto handle = renderer->GetSRVDescriptorGPUHandle(constantBuffer->GetCBVHandle());
 		cmdList->SetGraphicsRootDescriptorTable(0, handle);
 
 		auto texture = ResourceManager::GetTextureBuffer(m_TextureFilename);
 
-		handle = renderer->GetSRVDescriptorHandle(texture->GetSRVHandle());
+		handle = renderer->GetSRVDescriptorGPUHandle(texture->GetSRVHandle());
 		cmdList->SetGraphicsRootDescriptorTable(1, handle);
 
 		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

@@ -31,7 +31,7 @@ namespace RNEngine {
 		}
 	}
 
-	void RendererComponent::UpdateWorldMatrix(XMFLOAT3 position, XMFLOAT3 scale, XMFLOAT3 rotation) {
+	void RendererComponent::UpdateWorldMatrix(Vector3 position, Vector3 scale, Vector3 rotation) {
 		m_Matrix.m_World = XMMatrixScaling(scale.x, scale.y, scale.z);
 		m_Matrix.m_World *= XMMatrixRotationRollPitchYaw(rotation.x,rotation.y,rotation.z);
 		m_Matrix.m_World *= XMMatrixTranslation(position.x, position.y, position.z);

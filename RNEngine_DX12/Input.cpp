@@ -96,7 +96,7 @@ namespace RNEngine {
 
 	bool Input::IsPressed(const string& actionName) {
 		auto it = m_ActionMap.find(actionName);
-		if (it != m_ActionMap.end()) {
+		if (it == m_ActionMap.end()) {
 			return false;
 		}
 

@@ -3,13 +3,12 @@
 #include "Device.h"
 #include "Window.h"
 #include "Renderer.h"
+#include "EditorGUI.h"
 #include "Timer.h"
 #include "RendererComponent.h"
 #include "Input.h"
 namespace RNEngine {
 #define FRAME_NONDEFINE 10000
-	class Renderer;
-	class Device;
 	class FrameTimer;
 	class Scene;
 
@@ -28,7 +27,6 @@ namespace RNEngine {
 		//テスト用モデル作成
 		vector<shared_ptr<GameObject>> m_GameObjects;
 		vector<shared_ptr<RendererComponent>> m_Renderers;
-		XMFLOAT3 position = { 0,0,0 };
 
 		void EnableDebugLayer();
 
@@ -56,6 +54,7 @@ namespace RNEngine {
 		static ID3D12Device* GetID3D12Device() { return g_pInstance->m_Device->GetPtr(); }
 		static Renderer* GetRenderer() { return g_pInstance->m_Renderer.get(); }
 		static Window* GetWindow() { return g_pInstance->m_Window.get(); }
+		static GUIRenderer* GetGUIRenderer() { return g_pInstance->m_GuiRenderer.get(); }
 
 		float GetFrameRate() {
 			return m_FrameRate;
@@ -65,7 +64,7 @@ namespace RNEngine {
 		}
 
 		void OnMove(InputActionContext& context) {
-			position.x -= 0.01f;
+			//position.x -= 0.01f;
 		}
 	};
 }

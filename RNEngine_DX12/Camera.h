@@ -2,9 +2,9 @@
 namespace RNEngine {
 	class Camera
 	{
-		XMFLOAT3 m_Eye;
-		XMFLOAT3 m_Target;
-		XMFLOAT3 m_Up;
+		Vector3 m_Eye;
+		Vector3 m_Target;
+		Vector3 m_Up;
 
 		XMMATRIX m_ViewMatrix;
 		XMMATRIX m_ProjectionMatrix;
@@ -21,26 +21,26 @@ namespace RNEngine {
 
 		void Update();
 
-		void SetEye(XMFLOAT3 eye) { 
+		void SetEye(Vector3 eye) {
 			m_Eye = eye;
 			if (m_IsOrthographic) m_Eye.z = -1.0f;
 			m_IsDirty = true;
 		}
-		void SetTarget(XMFLOAT3 target) {
+		void SetTarget(Vector3 target) {
 			m_Target = target;
 			if (m_IsOrthographic) m_Target.z = 0.0f;
 			m_IsDirty = true;
 		}
-		void SetUp(XMFLOAT3 up) { 
+		void SetUp(Vector3 up) {
 			m_Up = up;
 			m_IsDirty = true;
 		}
 
-		XMFLOAT3 GetEye() const { return m_Eye; }
-		XMFLOAT3 GetTarget() const { return m_Target; }
-		XMFLOAT3 GetUp() const { return m_Up; }
+		Vector3 GetEye() const { return m_Eye; }
+		Vector3 GetTarget() const { return m_Target; }
+		Vector3 GetUp() const { return m_Up; }
 
-		void SetViewMatrix(XMFLOAT3 eye, XMFLOAT3 target, XMFLOAT3 up);
+		void SetViewMatrix(Vector3 eye, Vector3 target, Vector3 up);
 		void UpdateViewMatrix();
 		void SetProjectionMatrix(float fovY, float aspectRatio, float nearZ, float farZ);
 
@@ -57,8 +57,8 @@ namespace RNEngine {
 		void SetOrthographic(bool isOrtho) { m_IsOrthographic = isOrtho; }
 		bool IsOrthographic() const { return m_IsOrthographic; }
 
-		void LookDirection(XMFLOAT3 direction) {
-			XMFLOAT3 target = { m_Eye.x + direction.x,m_Eye.x + direction.x ,m_Eye.x + direction.x };
+		void LookDirection(Vector3 direction) {
+			Vector3 target = m_Eye + direction;
 			SetTarget(target);
 		}
 	};

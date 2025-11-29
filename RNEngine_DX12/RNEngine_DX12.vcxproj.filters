@@ -52,6 +52,21 @@
     <Filter Include="Engine\GUI">
       <UniqueIdentifier>{4ea6a7ff-66d3-4d5b-94b6-660e0b3c5c3f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\GUI\Editor">
+      <UniqueIdentifier>{adfaa6ae-a408-49c3-b378-ffd0b04359fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\File">
+      <UniqueIdentifier>{bf6634bd-4903-403a-9492-645a3c3e6d5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Base">
+      <UniqueIdentifier>{ad70f7d8-340f-4672-b1ce-a9507ccd038e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Reflection">
+      <UniqueIdentifier>{40698875-ffc2-46df-9ae2-79c236cfd291}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Scene">
+      <UniqueIdentifier>{9527fb7f-39af-4bd7-8a7a-091e3fcdb9aa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -90,15 +105,6 @@
     <ClCompile Include="Input.cpp">
       <Filter>Engine\Input</Filter>
     </ClCompile>
-    <ClCompile Include="Object.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GameObject.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Component.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="RendererComponent.cpp">
       <Filter>Engine\Renderer</Filter>
     </ClCompile>
@@ -113,9 +119,6 @@
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Engine\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="include\imgui\imgui.cpp">
       <Filter>Engine\GUI</Filter>
@@ -134,6 +137,42 @@
     </ClCompile>
     <ClCompile Include="include\imgui\backends\imgui_impl_win32.cpp">
       <Filter>Engine\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="include\imgui\imgui_demo.cpp">
+      <Filter>Engine\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorGUI.cpp">
+      <Filter>Engine\GUI\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="File.cpp">
+      <Filter>Engine\File</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>Game\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>Game\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>Game\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="Reflection.cpp">
+      <Filter>Engine\Reflection</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Game\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentRegistry.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveComponent.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Util.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Serialize.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -176,15 +215,6 @@
     <ClInclude Include="Input.h">
       <Filter>Engine\Input</Filter>
     </ClInclude>
-    <ClInclude Include="Object.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameObject.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Component.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="RendererComponent.h">
       <Filter>Engine\Renderer</Filter>
     </ClInclude>
@@ -203,7 +233,37 @@
     <ClInclude Include="RendererHeader.h">
       <Filter>Engine\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="EditorGUI.h">
+      <Filter>Engine\GUI\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="File.h">
+      <Filter>Engine\File</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>Game\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>Game\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Game\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection.h">
+      <Filter>Engine\Reflection</Filter>
+    </ClInclude>
     <ClInclude Include="Scene.h">
+      <Filter>Game\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentRegistry.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveComponent.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Util.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Serialize.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

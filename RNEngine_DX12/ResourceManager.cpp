@@ -17,8 +17,8 @@ namespace RNEngine {
 		auto dev = Engine::GetID3D12Device();
 		shared_ptr<TextureBuffer> texture = make_shared<TextureBuffer>();
 
-		wstring_convert<codecvt_utf8<wchar_t>> converter;
-		texture->Create(dev, converter.from_bytes(filePath));
+		wstring result = Util::ConvertStrToWstr(filePath);
+		texture->Create(dev, result);
 		m_TextureBufferMap[filePath] = texture;
 
 		return texture;
@@ -62,15 +62,15 @@ namespace RNEngine {
 			return (*it).second;
 		}
 		Mesh mesh;
-		mesh.m_Verteces = vertices;
-		mesh.m_Indeces = indices;
+		mesh.m_Vertices = vertices;
+		mesh.m_Indices = indices;
 
 		auto dev = Engine::GetID3D12Device();
 		mesh.m_VertexBuffer = make_shared<VertexBuffer>();
-		mesh.m_VertexBuffer->Create(dev, mesh.m_Verteces);
+		mesh.m_VertexBuffer->Create(dev, mesh.m_Vertices);
 
 		mesh.m_IndexBuffer = make_shared<IndexBuffer>();
-		mesh.m_IndexBuffer->Create(dev, mesh.m_Indeces);
+		mesh.m_IndexBuffer->Create(dev, mesh.m_Indices);
 
 		m_MeshMap[name] = mesh;
 		return mesh;

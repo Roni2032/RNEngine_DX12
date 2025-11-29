@@ -1,10 +1,11 @@
 #pragma once
 #include "stdafx.h"
+#include "Reflection.h"
 namespace RNEngine
 {
 	class GameObject;
 
-	class Component : public Object
+	class Component : public Object,public ReflectInterface
 	{
 		weak_ptr<GameObject> m_Owner;
 	public:
@@ -12,33 +13,45 @@ namespace RNEngine
 		virtual ~Component() {}
 
 		shared_ptr<GameObject> GetOwner();
+
+		REGISTER_NAME(Component)
+		BEGIN_REFLECT()
+		END_REFLECT()
 	};
 	class Transform : public Component {
-		XMFLOAT3 m_Position;
-		XMFLOAT3 m_Scale;
-		XMFLOAT3 m_Rotation;
+		Vector3 m_Position;
+		Vector3 m_Scale;
+		Vector3 m_Rotation;
 	public:
 		Transform(const shared_ptr<GameObject>& ptr) :Component(ptr), m_Position{}, m_Scale{1,1,1}, m_Rotation{} {}
 		virtual ~Transform(){}
 
-		void SetPosition(XMFLOAT3 position) {
+		void SetPosition(Vector3 position) {
 			m_Position = position;
 		}
-		XMFLOAT3 GetPosition() {
+		Vector3 GetPosition() {
 			return m_Position;
 		}
-		void SetScale(XMFLOAT3 scale) {
+		void SetScale(Vector3 scale) {
 			m_Scale = scale;
 		}
-		XMFLOAT3 GetScale() {
+		Vector3 GetScale() {
 			return m_Scale;
 		}
-		void SetRotation(XMFLOAT3 rotation) {
+		void SetRotation(Vector3 rotation) {
 			m_Rotation = rotation;
 		}
-		XMFLOAT3 GetRotation() {
+		Vector3 GetRotation() {
 			return m_Rotation;
 		}
+
+		INSPECTOR_COMPONENT(Transform)
+		REGISTER_NAME(Transform)
+		BEGIN_REFLECT()
+			REGISTER_REFLECT(m_Position.x, FieldInfo::Type::Vec3, HeaderAttribute("position"))
+			REGISTER_REFLECT(m_Rotation.x, FieldInfo::Type::Vec3, HeaderAttribute("rotation"))
+			REGISTER_REFLECT(m_Scale.x, FieldInfo::Type::Vec3, HeaderAttribute("scale   "))
+		END_REFLECT()
 	};
 }
 
