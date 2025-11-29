@@ -49,6 +49,11 @@ namespace RNEngine {
 		weak_ptr<GameObject> m_GameObject;
 
 		void DrawComponentInInspector(shared_ptr<Component>& component);
+
+		void DrawIntField(const string& name, int* value,int width,ConvertToAttribute* convert = nullptr);
+		void DrawFloatField(const string& name, float* value, int width, ConvertToAttribute* convert = nullptr);
+		void DrawBoolField(const string& name, bool* value, ConvertToAttribute* convert = nullptr);
+		void DrawVec3Field(const string& name, float* value, int width, ConvertToAttribute* convert = nullptr);
 	public:
 		Inspector(const string& windowName):GUI(windowName){}
 		~Inspector(){}

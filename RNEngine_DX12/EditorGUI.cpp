@@ -72,39 +72,93 @@ namespace RNEngine {
 		for (auto& field : fields) {
 			void* addr = base + field.m_Offset;
 			string name = field.m_Name;
-
+			ConvertToAttribute* convert = nullptr;
 			for (auto& attribute : field.m_Attribute) {
 				if (auto header = dynamic_cast<HeaderAttribute*>(attribute.get())) {
 					name = header->m_Header;
 				}
+				if(auto c = dynamic_cast<ConvertToAttribute*>(attribute.get())){
+					convert = c;
+				}
 			}
 			switch (field.m_Type) {
 			case FieldInfo::Type::Int:
-				ImGui::Text(name.c_str());
-				ImGui::SameLine();
-				ImGui::SetNextItemWidth(100);
-				ImGui::InputScalar(("##" + name).c_str(), ImGuiDataType_S32, reinterpret_cast<int*>(addr));
+				DrawIntField(name, reinterpret_cast<int*>(addr), 100, convert);
 				break;
 			case FieldInfo::Type::Float:
-				ImGui::Text(name.c_str());
-				ImGui::SameLine();
-				ImGui::SetNextItemWidth(100);
-				ImGui::InputScalar(("##" + name).c_str(), ImGuiDataType_Float, reinterpret_cast<float*>(addr));
+				DrawFloatField(name, reinterpret_cast<float*>(addr), 100, convert);
 				break;
 			case FieldInfo::Type::Bool:
-				ImGui::Text(name.c_str());
-				ImGui::SameLine();
-				ImGui::Checkbox(("##" + name).c_str(), reinterpret_cast<bool*>(addr));
+				DrawBoolField(name, reinterpret_cast<bool*>(addr), convert);
 				break;
 			case FieldInfo::Type::Vec3:
-				ImGui::Text(name.c_str());
-				ImGui::SameLine();
-				ImGui::SetNextItemWidth(300);
-				ImGui::DragFloat3(("##" + name).c_str(), reinterpret_cast<float*>(addr), 0.1f);
+				DrawVec3Field(name, reinterpret_cast<float*>(addr), 300, convert);
 				break;
 			}
 		}
 	}
+	void Inspector::DrawIntField(const string& name, int* value, int width, ConvertToAttribute* convert) {
+		int display = *value;
+		if (convert) {
+			convert->m_ConvertToDisplay(value, &display);
+		}
+
+		ImGui::Text(name.c_str());
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(width);
+		if (ImGui::InputScalar(("##" + name).c_str(), ImGuiDataType_S32, value)) {
+			if (convert) {
+				convert->m_ConvertToInternal(&display, value);
+			}
+			else {
+				value = &display;
+			}
+		}
+	}
+	void Inspector::DrawFloatField(const string& name, float* value, int width, ConvertToAttribute* convert) {
+		float display = *value;
+		if(convert) {
+			convert->m_ConvertToDisplay(value, &display);
+		}
+		ImGui::Text(name.c_str());
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(width);
+		if (ImGui::InputScalar(("##" + name).c_str(), ImGuiDataType_Float, &display)) {
+			if (convert) {
+				convert->m_ConvertToInternal(&display, value);
+			}
+			else {
+				value = &display;
+			}
+		}
+	}
+	void Inspector::DrawBoolField(const string& name, bool* value, ConvertToAttribute* convert) {
+		ImGui::Text(name.c_str());
+		ImGui::SameLine();
+		ImGui::Checkbox(("##" + name).c_str(), value);
+	}
+	void Inspector::DrawVec3Field(const string& name, float* value, int width, ConvertToAttribute* convert) {
+		float display[3] = { value[0], value[1], value[2] };
+		if (convert) {
+			convert->m_ConvertToDisplay(value, display);
+		}
+
+		ImGui::Text(name.c_str());
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(width);
+		if (ImGui::DragFloat3(("##" + name).c_str(), display, 0.1f)) {
+			if (convert) {
+				convert->m_ConvertToInternal(display, value);
+			}
+			else {
+				value[0] = display[0];
+				value[1] = display[1];
+				value[2] = display[2];
+			}
+		}
+	}
+
+
 	void Inspector::Draw() {
 		GUI::Draw();
 		if (auto gameObject = m_GameObject.lock()) {
@@ -121,11 +175,13 @@ namespace RNEngine {
 		if (auto scene = m_GameScene.lock()) {
 			auto gameObjects = scene->GetGameObjects();
 			for (auto& gameObject : gameObjects) {
+				ImGui::PushID(gameObject.get());
 				if (ImGui::Button(gameObject->GetName().c_str())) {
 					auto renderer = Engine::GetGUIRenderer();
 					auto inspector = renderer->GetGui<Inspector>("inspector");
 					inspector->SetGameObject(gameObject);
 				}
+				ImGui::PopID();
 			}
 		}
 		ImGui::End();

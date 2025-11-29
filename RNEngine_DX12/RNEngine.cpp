@@ -53,10 +53,11 @@ namespace RNEngine {
 		m_FrameTimer.Init();
 
 		// テスト用リソース登録
-		ResourceManager::RegisterModel("Models/Furina/Furina.fbx");
-		ResourceManager::RegisterModel("Models/Harlequin/Harlequin.fbx");
-		ResourceManager::RegisterModel("Models/raiden/raiden.fbx");
-		ResourceManager::RegisterModel("Models/kaf/VRM/kaf_fukuro_hatdown.vrm");
+		ResourceManager::RegisterModel("Models/Furina/Furina.fbx","furina");
+		ResourceManager::RegisterModel("Models/Harlequin/Harlequin.fbx","harlequin");
+		ResourceManager::RegisterModel("Models/raiden/raiden.fbx","raiden");
+		ResourceManager::RegisterModel("Models/kaf/kaf_fukuro_hatdown.vrm","kaf");
+
 		ResourceManager::RegisterTexture("Textures/test.jpg");
 		ResourceManager::RegisterTexture("Editor/Texture/folder_icon.png");
 		ResourceManager::RegisterTexture("Editor/Texture/file_icon.png");
@@ -102,7 +103,9 @@ namespace RNEngine {
 			auto object = m_CurrentScene->AddGameObject<GameObject>();
 			auto renderer = object->AddComponent<ModelRenderer>();
 			renderer->Init(camera);
-			if (i == 0) {
+			renderer->SetModel("furina");
+			object->SetName(u8"花譜");
+			/*if (i == 0) {
 				renderer->SetModel("Models/Furina/Furina.fbx");
 				object->SetName("Furina");
 			}
@@ -111,9 +114,9 @@ namespace RNEngine {
 				object->SetName(u8"召使");
 			}
 			else if (i == 2) {
-				renderer->SetModel("Models/kaf/VRM/kaf_fukuro_hatdown.vrm");
+				renderer->SetModel("Models/kaf/kaf_fukuro_hatdown.vrm");
 				object->SetName(u8"花譜");
-			}
+			}*/
 			renderer->AddRenderTargetTag("GameView");
 			m_GameObjects.push_back(object);
 		}
