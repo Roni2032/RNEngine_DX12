@@ -13,9 +13,6 @@ namespace RNEngine {
 		ImGui::StyleColorsDark();
 		io.Fonts->AddFontFromFileTTF("../Assets/Font/851H-kktt_004.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
 
-
-		auto window = Engine::GetWindow();
-		io.DisplaySize = ImVec2(window->GetWidth(), window->GetHeight());
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.FramePadding = ImVec2(0,0);
 		style.Colors[ImGuiCol_WindowBg] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -24,6 +21,7 @@ namespace RNEngine {
 		style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
 
 		auto dev = Engine::GetID3D12Device();
+		auto window = Engine::GetWindow();
 		// 3. Platform + Renderer バックエンド初期化
 		ImGui_ImplWin32_Init(window->GetHwnd());
 		ImGui_ImplDX12_Init(
@@ -44,6 +42,18 @@ namespace RNEngine {
 
 	}
 	void GUIRenderer::UpdateRenderer(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* srvHeap) {
+		auto window = Engine::GetWindow();
+		RECT rect = window->GetClientRect();
+		float width = static_cast<float>(rect.right - rect.left);
+		float height = static_cast<float>(rect.bottom - rect.top);
+
+		POINT mousePos;
+		GetCursorPos(&mousePos);
+		window->ScreenToClient(&mousePos);
+
+		ImGuiIO& io = ImGui::GetIO();
+		io.DisplaySize = ImVec2(width, height);
+		io.MousePos = ImVec2(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
 		// 開始
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
@@ -65,6 +75,36 @@ namespace RNEngine {
 		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
 	}
+
+	void GUI::Text(const string& text, ImVec4 textColor, ImVec4 bgColor) {
+		ImVec2 currentPosition = ImGui::GetCursorPos();
+		if (bgColor.w != 0.0f) {
+			ImGui::GetWindowDrawList()->AddRectFilled(
+				currentPosition,
+				ImVec2(currentPosition.x + 200, currentPosition.y + ImGui::GetTextLineHeight()),
+				ImGui::GetColorU32(bgColor));
+			ImGui::PushStyleColor(ImGuiCol_Text, textColor);
+			ImGui::Text("%s", text.c_str());
+			ImGui::PopStyleColor();
+		}
+		else {
+			ImGui::TextColored(textColor, "%s", text.c_str());
+		}
+	}
+	bool GUI::SelectText(const string& text, ImVec4 textColor, ImVec4 bgColor) {
+		ImVec2 currentPosition = ImGui::GetCursorPos();
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
+		bool isClicked = Button("##" + text, ImVec2(100.0f, 18.0f));
+		ImGui::PopStyleColor(2);
+
+		ImGui::SetCursorPos(currentPosition);
+		Text(text, textColor, bgColor);
+		
+		return isClicked;
+	}
+
 	void Inspector::DrawComponentInInspector(shared_ptr<Component>& component) {
 		auto fields = component->GetReflection();
 		if (ImGui::CollapsingHeader(component->GetComponentName().c_str())) return;
@@ -176,11 +216,24 @@ namespace RNEngine {
 			auto gameObjects = scene->GetGameObjects();
 			for (auto& gameObject : gameObjects) {
 				ImGui::PushID(gameObject.get());
-				if (ImGui::Button(gameObject->GetName().c_str())) {
+				ImVec4 bgColor = ImVec4(0, 0, 0, 0);
+				if (m_SelectedGameObjectAddr == gameObject.get()) {
+					bgColor = ImVec4(0.5f, 0.5f, 0.5f, 0.5f);
+				}
+				if(SelectText(gameObject->GetName(), ImVec4(1,1,1,1), bgColor)) {
+					m_SelectedGameObjectAddr = gameObject.get();
 					auto renderer = Engine::GetGUIRenderer();
 					auto inspector = renderer->GetGui<Inspector>("inspector");
 					inspector->SetGameObject(gameObject);
 				}
+				//if(FoldOut(gameObject->GetName())) {
+				//	//ここに子オブジェクト表示処理
+				//}
+				/*if (ImGui::Button(gameObject->GetName().c_str())) {
+					auto renderer = Engine::GetGUIRenderer();
+					auto inspector = renderer->GetGui<Inspector>("inspector");
+					inspector->SetGameObject(gameObject);
+				}*/
 				ImGui::PopID();
 			}
 		}
@@ -292,7 +345,7 @@ namespace RNEngine {
 	}
 	void ProjectView::DrawBackButton(shared_ptr<Entry>& entry) {
 		ImVec2 currentPosition = ImGui::GetCursorPos();
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.5f, 1.0f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.5f, 1.0f, 0.0f));
 		if (ImGui::Button("<- Back", ImVec2(64, 16))) {
 			MoveFolderParent();
 			ImGui::PopStyleColor();
@@ -368,7 +421,7 @@ namespace RNEngine {
 		auto texture = m_RenderTarget->GetRenderTargetTexture();
 		ImTextureID id = (ImTextureID)renderer->GetSRVDescriptorGPUHandle(texture->GetSRVHandle()).ptr;
 		
-		ImGui::Image(id, ImGui::GetWindowSize());
+		ImGui::Image(id, ImGui::GetContentRegionAvail());
 		ImGui::End();
 	}
 }

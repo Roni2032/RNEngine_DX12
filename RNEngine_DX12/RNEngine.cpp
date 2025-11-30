@@ -14,7 +14,9 @@ namespace RNEngine {
 	}
 	void Engine::Init() {
 		// ウィンドウ初期化
-		m_Window = make_unique<Window>(L"RNEngine", 1280, 720);
+		UINT width = 1280, height = 720;
+		Window::GetDesktopWindowSize(&width, &height);
+		m_Window = make_unique<Window>(L"RNEngine", width, height);
 
 #ifdef _DEBUG
 		EnableDebugLayer();
