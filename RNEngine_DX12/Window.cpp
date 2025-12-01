@@ -34,9 +34,12 @@ namespace RNEngine {
 	}
 
 	void Window::Create(const wstring& appName, UINT width, UINT height) {
-
+		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 		auto result = CoInitializeEx(0, COINIT_MULTITHREADED);
 		assert(SUCCEEDED(result));
+
+		RECT rect = { 0,0,static_cast<LONG>(width),static_cast<LONG>(height) };
+		AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
 
 		WNDCLASSEX w = {
 			sizeof(WNDCLASSEX),
@@ -59,6 +62,7 @@ namespace RNEngine {
 			w.hInstance,
 			NULL
 		);
+
 		ShowWindow(m_Hwnd, SW_SHOW);
 
 		m_AppName = appName;
@@ -72,7 +76,8 @@ namespace RNEngine {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-
+		UINT dpi = GetDpiForWindow(m_Hwnd);
+		printf("DPI = %u\n", dpi);
 		return msg.message != WM_QUIT;
 	}
 }

@@ -22,7 +22,7 @@ namespace RNEngine {
 			filePath.erase(0, defaultPath.length());
 		}
 	}
-	void Model::SaveBinaryModel(const string& filename, vector<Mesh>& mesh, vector<string>& materialTextures) {
+	void Model::SaveBinaryModel(const string& filename, vector<Mesh>& mesh, vector<string>& materialTextures,vector<EmbeddedTexture>& embeddedTextures) {
 		Header header;
 		header.m_MeshCount = (uint32_t)mesh.size();
 		header.m_MaterialCount = (uint32_t)materialTextures.size();
@@ -57,13 +57,25 @@ namespace RNEngine {
 				}
 				ofs.write(reinterpret_cast<const char*>(&mesh[i].m_MaterialIndex), sizeof(mesh[i].m_MaterialIndex));
 			}
+
+			ofs.write(reinterpret_cast<const char*>(&m_TextureDataType), sizeof(m_TextureDataType));
 			for (uint32_t i = 0; i < header.m_MaterialCount; i++) {
 				ofs.write(reinterpret_cast<const char*>(&materialNameLength[i]), sizeof(materialNameLength[0]));
 				ofs.write(materialTextures[i].data(), materialNameLength[i]);
+				if(m_TextureDataType == TextureDataType::Embedded){
+					uint32_t formatLength = (uint32_t)embeddedTextures[i].m_Format.size();
+					ofs.write(reinterpret_cast<const char*>(&formatLength), sizeof(formatLength));
+					ofs.write(embeddedTextures[i].m_Format.data(), formatLength);
+
+					ofs.write(reinterpret_cast<const char*>(&embeddedTextures[i].m_Size), sizeof(embeddedTextures[i].m_Size));
+					for(uint32_t j = 0; j < embeddedTextures[i].m_Size; j++){
+						ofs.write(reinterpret_cast<const char*>(&embeddedTextures[i].m_Data[j]), sizeof(uint8_t));
+					}
+				}
 			}
 		}
 	}
-	void Model::LoadBinaryModel(const string& filename,vector<Mesh>& mesh, vector<string>& materialTextures) {
+	void Model::LoadBinaryModel(const string& filename,vector<Mesh>& mesh, vector<string>& materialTextures, vector<EmbeddedTexture>& embeddedTextures) {
 		Header header;
 		vector<MeshHeader> meshHeaders;
 		vector<uint32_t> materialNameLength;
@@ -76,6 +88,7 @@ namespace RNEngine {
 			meshHeaders.resize(header.m_MeshCount);
 			mesh.resize(header.m_MeshCount);
 			materialTextures.resize(header.m_MaterialCount);
+			embeddedTextures.resize(header.m_MaterialCount);
 
 			for (uint32_t i = 0; i < header.m_MeshCount; i++) {
 				ifs.read(reinterpret_cast<char*>(&meshHeaders[i]), sizeof(meshHeaders[0]));
@@ -92,11 +105,26 @@ namespace RNEngine {
 				}
 				ifs.read(reinterpret_cast< char*>(&mesh[i].m_MaterialIndex), sizeof(mesh[i].m_MaterialIndex));
 			}
+
+			ifs.read(reinterpret_cast<char*>(&m_TextureDataType), sizeof(m_TextureDataType));
 			materialNameLength.resize(header.m_MaterialCount);
 			for (uint32_t i = 0; i < header.m_MaterialCount; i++) {
 				ifs.read(reinterpret_cast< char*>(&materialNameLength[i]), sizeof(materialNameLength[0]));
 				materialTextures[i].resize(materialNameLength[i]);
 				ifs.read(materialTextures[i].data(), materialNameLength[i]);
+
+				embeddedTextures[i].m_Name = materialTextures[i];
+				if (m_TextureDataType == TextureDataType::Embedded) {
+					uint32_t formatLength = 0;
+					ifs.read(reinterpret_cast<char*>(&formatLength), sizeof(formatLength));
+					ifs.read(embeddedTextures[i].m_Format.data(), formatLength);
+
+					ifs.read(reinterpret_cast<char*>(&embeddedTextures[i].m_Size), sizeof(embeddedTextures[i].m_Size));
+					embeddedTextures[i].m_Data.resize(embeddedTextures[i].m_Size);
+					for (uint32_t j = 0; j < embeddedTextures[i].m_Size; j++) {
+						ifs.read(reinterpret_cast<char*>(&embeddedTextures[i].m_Data[j]), sizeof(uint8_t));
+					}
+				}
 			}
 		}
 	}
@@ -105,7 +133,7 @@ namespace RNEngine {
 	void Model::Load(ID3D12Device* _dev, const string& filename) {
 
 		if (File::IsExistFile(Util::ConvertStrToWstr(GetModelNameFromPath(filename)))) {
-			LoadBinaryModel(filename, m_Meshes, m_MaterialTextureName);
+			LoadBinaryModel(filename, m_Meshes, m_MaterialTextureName,m_EmbeddedTextures);
 
 			for (UINT i = 0; i < m_Meshes.size(); i++) {
 				m_Meshes[i].m_VertexBuffer = make_shared<VertexBuffer>();
@@ -114,9 +142,19 @@ namespace RNEngine {
 				m_Meshes[i].m_IndexBuffer = make_shared<IndexBuffer>();
 				m_Meshes[i].m_IndexBuffer->Create(_dev, m_Meshes[i].m_Indices);
 			}
-			for (auto& materialTexture : m_MaterialTextureName) {
-				ResourceManager::RegisterTexture(materialTexture);
+			if (m_TextureDataType == TextureDataType::File) {
+				for (auto& materialTexture : m_MaterialTextureName) {
+					ResourceManager::RegisterTexture(materialTexture);
+				}
 			}
+			else {
+				for (auto& embeddedTexture : m_EmbeddedTextures) {
+					shared_ptr<TextureBuffer> textureBuffer = make_shared<TextureBuffer>();
+					textureBuffer->Create(_dev, reinterpret_cast<const uint8_t*>(embeddedTexture.m_Data.data()), embeddedTexture.m_Size);
+					ResourceManager::RegisterTexture(embeddedTexture.m_Name, textureBuffer);
+				}
+			}
+			
 			return;
 		}
 		Assimp::Importer importer;
@@ -175,26 +213,48 @@ namespace RNEngine {
 		
 		auto numMaterials = scene->mNumMaterials;
 		m_MaterialTextureName.reserve(numMaterials);
+		m_EmbeddedTextures.reserve(numMaterials);
+
 		for (unsigned int i = 0; i < numMaterials; i++) {
 			auto& material = scene->mMaterials[i];
 			
 			aiString path;
 			material->GetTexture(aiTextureType_DIFFUSE, 0, &path);
 			string imageName = path.C_Str();
-
-			string filePath = filename;
-			size_t pos = filePath.find_last_of("/");
-			if (pos != string::npos) {
-				filePath = filePath.substr(0, pos + 1);
+			if(imageName.empty()) {
+				m_MaterialTextureName.push_back("");
+				m_EmbeddedTextures.push_back(EmbeddedTexture());
+				continue;
 			}
-			filePath += imageName;
+			if (imageName[0] != '*') {
+				string filePath = filename;
+				size_t pos = filePath.find_last_of("/");
+				if (pos != string::npos) {
+					filePath = filePath.substr(0, pos + 1);
+				}
+				filePath += imageName;
 
-			ResourceManager::RegisterTexture(filePath);
+				ResourceManager::RegisterTexture(filePath);
+				m_MaterialTextureName.push_back(filePath);
+				m_TextureDataType = TextureDataType::File;
+			}
+			else {
+				int index = stoi(imageName.substr(1));
+				auto embeddedTex = scene->mTextures[index];
 
-			m_MaterialTextureName.push_back(filePath);
+				EmbeddedTexture embeddedTexture = EmbeddedTexture("embedded_" + to_string(i), embeddedTex);
+
+				shared_ptr<TextureBuffer> textureBuffer = make_shared<TextureBuffer>();
+				textureBuffer->Create(_dev, reinterpret_cast<const uint8_t*>(embeddedTexture.m_Data.data()), embeddedTex->mWidth);
+
+				ResourceManager::RegisterTexture(embeddedTexture.m_Name, textureBuffer);
+				m_EmbeddedTextures.push_back(embeddedTexture);
+				m_MaterialTextureName.push_back(embeddedTexture.m_Name);
+				m_TextureDataType = TextureDataType::Embedded;
+			}
 		}
 
-		SaveBinaryModel(filename, m_Meshes, m_MaterialTextureName);
+		SaveBinaryModel(filename, m_Meshes, m_MaterialTextureName, m_EmbeddedTextures);
 		if (m_IsDebug) OutputDebug(scene);
 	}
 

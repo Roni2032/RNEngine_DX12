@@ -53,6 +53,24 @@ virtual vector<FieldInfo> GetReflection()override{ \
 		HideAttribute(){}
 	};
 
+	/// <summary>
+	/// インスペクターに表示・代入する値を変換する
+	/// </summary>
+	struct ConvertToAttribute : public Attribute {
+		function<void(void* internalPtr,void* displayPtr)> m_ConvertToDisplay;
+		function<void(void* displayPtr, void* internalPtr)> m_ConvertToInternal;
+
+		/// <summary>
+		/// コンストラクタ
+		/// </summary>
+		/// <param name="convertToDisplay">値から表示値への変換</param>
+		/// <param name="convertToInternal">表示値から値への変換</param>
+		ConvertToAttribute(
+			const function<void(void* internalPtr, void* displayPtr)>& convertToDisplay,
+			const function<void(void* displayPtr,  void* internalPtr)>& convertToInternal):
+			m_ConvertToDisplay(convertToDisplay),m_ConvertToInternal(convertToInternal) {}
+	};
+
 	struct FieldInfo {
 		string m_Name;
 		size_t m_Offset;

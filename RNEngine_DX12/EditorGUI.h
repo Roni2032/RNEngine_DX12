@@ -36,6 +36,22 @@ namespace RNEngine {
 
 	class GUI {
 		string m_WindowName;
+	protected:
+		/*
+		* ï\é¶Ç∑ÇÈGUIÇï¿Ç◊Ç‹Ç∑ÅB
+		* Button()
+		* ÅZÅZField()
+		* Text()
+		* FoldOut()
+		*/
+		void Text(const string& text, ImVec4 textColor, ImVec4 bgColor = ImVec4(0, 0, 0, 0));
+		bool SelectText(const string& text, ImVec4 textColor, ImVec4 bgColor = ImVec4(0, 0, 0, 0));
+		bool FoldOut(const string& name, bool defaultOpen = false) {
+			return ImGui::CollapsingHeader(name.c_str(), defaultOpen ? ImGuiTreeNodeFlags_DefaultOpen : 0);
+		}
+		bool Button(const string& name, const ImVec2& size = ImVec2(0, 0)) {
+			return ImGui::Button(name.c_str(), size);
+		}
 	public:
 		GUI(const string& windowName):m_WindowName(windowName){}
 		~GUI(){}
@@ -49,6 +65,11 @@ namespace RNEngine {
 		weak_ptr<GameObject> m_GameObject;
 
 		void DrawComponentInInspector(shared_ptr<Component>& component);
+
+		void DrawIntField(const string& name, int* value,int width,ConvertToAttribute* convert = nullptr);
+		void DrawFloatField(const string& name, float* value, int width, ConvertToAttribute* convert = nullptr);
+		void DrawBoolField(const string& name, bool* value, ConvertToAttribute* convert = nullptr);
+		void DrawVec3Field(const string& name, float* value, int width, ConvertToAttribute* convert = nullptr);
 	public:
 		Inspector(const string& windowName):GUI(windowName){}
 		~Inspector(){}
@@ -64,6 +85,7 @@ namespace RNEngine {
 	};
 	class Hierarchy : public GUI {
 		weak_ptr<Scene> m_GameScene;
+		GameObject* m_SelectedGameObjectAddr;
 	public:
 		Hierarchy(const string& windowName) :GUI(windowName) {}
 		~Hierarchy() {}

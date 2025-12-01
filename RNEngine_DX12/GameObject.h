@@ -41,6 +41,16 @@ namespace RNEngine {
 			}
 			return nullptr;
 		}
+		template<class T>
+		void RemoveComponent() {
+			auto it = m_Components.begin();
+			for (; it != m_Components.end(); it++) {
+				if (dynamic_pointer_cast<T>(*it)) {
+					m_Components.erase(it);
+					break;
+				}
+			}
+		}
 		vector<shared_ptr<Component>> GetComponents() {
 			return m_Components;
 		}

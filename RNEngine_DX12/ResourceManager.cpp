@@ -23,6 +23,16 @@ namespace RNEngine {
 
 		return texture;
 	}
+	void ResourceManager::RegisterTexture(const string& name, const shared_ptr<TextureBuffer>& texture) {
+		if (!texture->IsExistsTexture()) return;
+		string filePath = m_DefaultFilePath + name;
+
+		auto it = m_TextureBufferMap.find(filePath);
+		if (it != m_TextureBufferMap.end()) {
+			return;
+		}
+		m_TextureBufferMap[filePath] = texture;
+	}
 	shared_ptr<TextureBuffer> ResourceManager::GetTextureBuffer(const string& filename) {
 		string filePath = m_DefaultFilePath + filename;
 		auto it = m_TextureBufferMap.find(filePath);
@@ -32,10 +42,14 @@ namespace RNEngine {
 		return nullptr;
 	}
 
-
-	shared_ptr<Model> ResourceManager::RegisterModel(const string& filename) {
+	shared_ptr<Model> ResourceManager::RegisterModel(const string& filename,const string& key) {
 		string filePath = m_DefaultFilePath + filename;
-		auto it = m_ModelMap.find(filePath);
+
+		string registryKey = filePath;
+		if(!key.empty()) {
+			registryKey = m_DefaultFilePath + key;
+		}
+		auto it = m_ModelMap.find(registryKey);
 		if (it != m_ModelMap.end()) {
 			return (*it).second;
 		}
@@ -43,7 +57,7 @@ namespace RNEngine {
 		auto dev = Engine::GetID3D12Device();
 		auto model = make_shared<Model>();
 		model->Load(dev, filePath);
-		m_ModelMap[filePath] = model;
+		m_ModelMap[registryKey] = model;
 
 		return model;
 	}
