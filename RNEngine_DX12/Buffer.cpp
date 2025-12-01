@@ -278,9 +278,40 @@ namespace RNEngine {
 		assert(SUCCEEDED(result));
 
 		m_Filename = filename;
+		m_IsExistsFile = true;
 	}
 	void TextureBuffer::Create(ID3D12Device* _dev, UINT width, UINT height, DXGI_FORMAT format, array<float, 4> clearColor) {
 		CreateResource(width, height, format, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, clearColor);
+		m_IsExistsFile = false;
+	}
+	void TextureBuffer::Create(ID3D12Device* _dev, const uint8_t* data, size_t dataSize) {
+		if (dataSize == 0) return;
+
+		TexMetadata metadata;
+		ScratchImage image;
+		HRESULT result = LoadFromWICMemory(
+			data,
+			dataSize,
+			WIC_FLAGS_NONE,
+			&metadata,
+			image
+		);
+
+		assert(SUCCEEDED(result));
+		auto img = image.GetImage(0, 0, 0);
+
+		CreateResource(metadata.width, metadata.height, metadata.format);
+
+		result = m_TextureBuffer->WriteToSubresource(
+			0,
+			nullptr,
+			img->pixels,
+			(UINT)img->rowPitch,
+			(UINT)img->slicePitch
+		);
+		assert(SUCCEEDED(result));
+
+		m_IsExistsFile = false;
 	}
 	void TextureBuffer::CreateResource(UINT width, UINT height, DXGI_FORMAT format, D3D12_RESOURCE_FLAGS flag,array<float,4> clearColor) {
 

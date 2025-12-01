@@ -20,9 +20,11 @@ namespace RNEngine
 		static void SetDefaultFilePath(const string& path) { m_DefaultFilePath = path; }
 
 		static shared_ptr<TextureBuffer> RegisterTexture(const string& filename);
+		static void RegisterTexture(const string& name,const shared_ptr<TextureBuffer>& texture);
+
 		static shared_ptr<TextureBuffer> GetTextureBuffer(const string& filename);
 
-		static shared_ptr<Model> RegisterModel(const string& filename);
+		static shared_ptr<Model> RegisterModel(const string& filename,const string& key = "");
 		static shared_ptr<Model> GetModelData(const string& filename);
 
 		static Mesh RegisterMesh(const string& name,vector<Vertex>& vertices,vector<uint32_t>& indices);

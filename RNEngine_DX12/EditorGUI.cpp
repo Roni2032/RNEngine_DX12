@@ -13,9 +13,6 @@ namespace RNEngine {
 		ImGui::StyleColorsDark();
 		io.Fonts->AddFontFromFileTTF("../Assets/Font/851H-kktt_004.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
 
-
-		auto window = Engine::GetWindow();
-		io.DisplaySize = ImVec2(window->GetWidth(), window->GetHeight());
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.FramePadding = ImVec2(0,0);
 		style.Colors[ImGuiCol_WindowBg] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -24,6 +21,7 @@ namespace RNEngine {
 		style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
 
 		auto dev = Engine::GetID3D12Device();
+		auto window = Engine::GetWindow();
 		// 3. Platform + Renderer バックエンド初期化
 		ImGui_ImplWin32_Init(window->GetHwnd());
 		ImGui_ImplDX12_Init(
@@ -44,6 +42,18 @@ namespace RNEngine {
 
 	}
 	void GUIRenderer::UpdateRenderer(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* srvHeap) {
+		auto window = Engine::GetWindow();
+		RECT rect = window->GetClientRect();
+		float width = static_cast<float>(rect.right - rect.left);
+		float height = static_cast<float>(rect.bottom - rect.top);
+
+		POINT mousePos;
+		GetCursorPos(&mousePos);
+		window->ScreenToClient(&mousePos);
+
+		ImGuiIO& io = ImGui::GetIO();
+		io.DisplaySize = ImVec2(width, height);
+		io.MousePos = ImVec2(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
 		// 開始
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
@@ -65,6 +75,36 @@ namespace RNEngine {
 		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
 	}
+
+	void GUI::Text(const string& text, ImVec4 textColor, ImVec4 bgColor) {
+		ImVec2 currentPosition = ImGui::GetCursorPos();
+		if (bgColor.w != 0.0f) {
+			ImGui::GetWindowDrawList()->AddRectFilled(
+				currentPosition,
+				ImVec2(currentPosition.x + 200, currentPosition.y + ImGui::GetTextLineHeight()),
+				ImGui::GetColorU32(bgColor));
+			ImGui::PushStyleColor(ImGuiCol_Text, textColor);
+			ImGui::Text("%s", text.c_str());
+			ImGui::PopStyleColor();
+		}
+		else {
+			ImGui::TextColored(textColor, "%s", text.c_str());
+		}
+	}
+	bool GUI::SelectText(const string& text, ImVec4 textColor, ImVec4 bgColor) {
+		ImVec2 currentPosition = ImGui::GetCursorPos();
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
+		bool isClicked = Button("##" + text, ImVec2(100.0f, 18.0f));
+		ImGui::PopStyleColor(2);
+
+		ImGui::SetCursorPos(currentPosition);
+		Text(text, textColor, bgColor);
+		
+		return isClicked;
+	}
+
 	void Inspector::DrawComponentInInspector(shared_ptr<Component>& component) {
 		auto fields = component->GetReflection();
 		if (ImGui::CollapsingHeader(component->GetComponentName().c_str())) return;
@@ -72,39 +112,93 @@ namespace RNEngine {
 		for (auto& field : fields) {
 			void* addr = base + field.m_Offset;
 			string name = field.m_Name;
-
+			ConvertToAttribute* convert = nullptr;
 			for (auto& attribute : field.m_Attribute) {
 				if (auto header = dynamic_cast<HeaderAttribute*>(attribute.get())) {
 					name = header->m_Header;
 				}
+				if(auto c = dynamic_cast<ConvertToAttribute*>(attribute.get())){
+					convert = c;
+				}
 			}
 			switch (field.m_Type) {
 			case FieldInfo::Type::Int:
-				ImGui::Text(name.c_str());
-				ImGui::SameLine();
-				ImGui::SetNextItemWidth(100);
-				ImGui::InputScalar(("##" + name).c_str(), ImGuiDataType_S32, reinterpret_cast<int*>(addr));
+				DrawIntField(name, reinterpret_cast<int*>(addr), 100, convert);
 				break;
 			case FieldInfo::Type::Float:
-				ImGui::Text(name.c_str());
-				ImGui::SameLine();
-				ImGui::SetNextItemWidth(100);
-				ImGui::InputScalar(("##" + name).c_str(), ImGuiDataType_Float, reinterpret_cast<float*>(addr));
+				DrawFloatField(name, reinterpret_cast<float*>(addr), 100, convert);
 				break;
 			case FieldInfo::Type::Bool:
-				ImGui::Text(name.c_str());
-				ImGui::SameLine();
-				ImGui::Checkbox(("##" + name).c_str(), reinterpret_cast<bool*>(addr));
+				DrawBoolField(name, reinterpret_cast<bool*>(addr), convert);
 				break;
 			case FieldInfo::Type::Vec3:
-				ImGui::Text(name.c_str());
-				ImGui::SameLine();
-				ImGui::SetNextItemWidth(300);
-				ImGui::DragFloat3(("##" + name).c_str(), reinterpret_cast<float*>(addr), 0.1f);
+				DrawVec3Field(name, reinterpret_cast<float*>(addr), 300, convert);
 				break;
 			}
 		}
 	}
+	void Inspector::DrawIntField(const string& name, int* value, int width, ConvertToAttribute* convert) {
+		int display = *value;
+		if (convert) {
+			convert->m_ConvertToDisplay(value, &display);
+		}
+
+		ImGui::Text(name.c_str());
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(width);
+		if (ImGui::InputScalar(("##" + name).c_str(), ImGuiDataType_S32, value)) {
+			if (convert) {
+				convert->m_ConvertToInternal(&display, value);
+			}
+			else {
+				value = &display;
+			}
+		}
+	}
+	void Inspector::DrawFloatField(const string& name, float* value, int width, ConvertToAttribute* convert) {
+		float display = *value;
+		if(convert) {
+			convert->m_ConvertToDisplay(value, &display);
+		}
+		ImGui::Text(name.c_str());
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(width);
+		if (ImGui::InputScalar(("##" + name).c_str(), ImGuiDataType_Float, &display)) {
+			if (convert) {
+				convert->m_ConvertToInternal(&display, value);
+			}
+			else {
+				value = &display;
+			}
+		}
+	}
+	void Inspector::DrawBoolField(const string& name, bool* value, ConvertToAttribute* convert) {
+		ImGui::Text(name.c_str());
+		ImGui::SameLine();
+		ImGui::Checkbox(("##" + name).c_str(), value);
+	}
+	void Inspector::DrawVec3Field(const string& name, float* value, int width, ConvertToAttribute* convert) {
+		float display[3] = { value[0], value[1], value[2] };
+		if (convert) {
+			convert->m_ConvertToDisplay(value, display);
+		}
+
+		ImGui::Text(name.c_str());
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(width);
+		if (ImGui::DragFloat3(("##" + name).c_str(), display, 0.1f)) {
+			if (convert) {
+				convert->m_ConvertToInternal(display, value);
+			}
+			else {
+				value[0] = display[0];
+				value[1] = display[1];
+				value[2] = display[2];
+			}
+		}
+	}
+
+
 	void Inspector::Draw() {
 		GUI::Draw();
 		if (auto gameObject = m_GameObject.lock()) {
@@ -121,11 +215,26 @@ namespace RNEngine {
 		if (auto scene = m_GameScene.lock()) {
 			auto gameObjects = scene->GetGameObjects();
 			for (auto& gameObject : gameObjects) {
-				if (ImGui::Button(gameObject->GetName().c_str())) {
+				ImGui::PushID(gameObject.get());
+				ImVec4 bgColor = ImVec4(0, 0, 0, 0);
+				if (m_SelectedGameObjectAddr == gameObject.get()) {
+					bgColor = ImVec4(0.5f, 0.5f, 0.5f, 0.5f);
+				}
+				if(SelectText(gameObject->GetName(), ImVec4(1,1,1,1), bgColor)) {
+					m_SelectedGameObjectAddr = gameObject.get();
 					auto renderer = Engine::GetGUIRenderer();
 					auto inspector = renderer->GetGui<Inspector>("inspector");
 					inspector->SetGameObject(gameObject);
 				}
+				//if(FoldOut(gameObject->GetName())) {
+				//	//ここに子オブジェクト表示処理
+				//}
+				/*if (ImGui::Button(gameObject->GetName().c_str())) {
+					auto renderer = Engine::GetGUIRenderer();
+					auto inspector = renderer->GetGui<Inspector>("inspector");
+					inspector->SetGameObject(gameObject);
+				}*/
+				ImGui::PopID();
 			}
 		}
 		ImGui::End();
@@ -236,7 +345,7 @@ namespace RNEngine {
 	}
 	void ProjectView::DrawBackButton(shared_ptr<Entry>& entry) {
 		ImVec2 currentPosition = ImGui::GetCursorPos();
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.5f, 1.0f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.5f, 1.0f, 0.0f));
 		if (ImGui::Button("<- Back", ImVec2(64, 16))) {
 			MoveFolderParent();
 			ImGui::PopStyleColor();
@@ -312,7 +421,7 @@ namespace RNEngine {
 		auto texture = m_RenderTarget->GetRenderTargetTexture();
 		ImTextureID id = (ImTextureID)renderer->GetSRVDescriptorGPUHandle(texture->GetSRVHandle()).ptr;
 		
-		ImGui::Image(id, ImGui::GetWindowSize());
+		ImGui::Image(id, ImGui::GetContentRegionAvail());
 		ImGui::End();
 	}
 }

@@ -49,7 +49,22 @@ namespace RNEngine
 		REGISTER_NAME(Transform)
 		BEGIN_REFLECT()
 			REGISTER_REFLECT(m_Position.x, FieldInfo::Type::Vec3, HeaderAttribute("position"))
-			REGISTER_REFLECT(m_Rotation.x, FieldInfo::Type::Vec3, HeaderAttribute("rotation"))
+			REGISTER_REFLECT(m_Rotation.x, FieldInfo::Type::Vec3, HeaderAttribute("rotation"),
+				ConvertToAttribute(
+					[](void* internalPtr, void* displayPtr) {
+						float* displayF = reinterpret_cast<float*>(displayPtr);
+						float* internalF = reinterpret_cast<float*>(internalPtr);
+						displayF[0] = XMConvertToDegrees(internalF[0]);
+						displayF[1] = XMConvertToDegrees(internalF[1]);
+						displayF[2] = XMConvertToDegrees(internalF[2]);
+					},
+					[](void* displayPtr, void* internalPtr){
+						float* displayF = reinterpret_cast<float*>(displayPtr);
+						float* internalF = reinterpret_cast<float*>(internalPtr);
+						internalF[0] = XMConvertToRadians(displayF[0]);
+						internalF[1] = XMConvertToRadians(displayF[1]);
+						internalF[2] = XMConvertToRadians(displayF[2]);
+					}))
 			REGISTER_REFLECT(m_Scale.x, FieldInfo::Type::Vec3, HeaderAttribute("scale   "))
 		END_REFLECT()
 	};
