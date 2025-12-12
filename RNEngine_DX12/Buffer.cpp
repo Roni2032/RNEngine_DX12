@@ -263,10 +263,15 @@ namespace RNEngine {
 			&metadata,
 			image
 		);
-		assert(SUCCEEDED(result));
+		if (FAILED(result)) {
+			DebugLog::Log(u8"テクスチャの読み込みに失敗しました[" +
+				Util::ConvertWstrToStr(filename) + "]",
+				LogData::Type::Error);
+			return;
+		}
 		auto img = image.GetImage(0, 0, 0); 
 
-		CreateResource(metadata.width, metadata.height, metadata.format);
+		CreateResource((UINT)metadata.width, (UINT)metadata.height, metadata.format);
 
 		result = m_TextureBuffer->WriteToSubresource(
 			0,
@@ -275,7 +280,12 @@ namespace RNEngine {
 			(UINT)img->rowPitch,
 			(UINT)img->slicePitch
 		);
-		assert(SUCCEEDED(result));
+		if (FAILED(result)) {
+			DebugLog::Log("テクスチャのアップロードに失敗しました[" +
+				Util::ConvertWstrToStr(filename) + "]",
+				LogData::Type::Error);
+			return;
+		}
 
 		m_Filename = filename;
 		m_IsExistsFile = true;
@@ -300,7 +310,7 @@ namespace RNEngine {
 		assert(SUCCEEDED(result));
 		auto img = image.GetImage(0, 0, 0);
 
-		CreateResource(metadata.width, metadata.height, metadata.format);
+		CreateResource((UINT)metadata.width, (UINT)metadata.height, metadata.format);
 
 		result = m_TextureBuffer->WriteToSubresource(
 			0,

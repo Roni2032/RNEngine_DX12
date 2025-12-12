@@ -27,8 +27,15 @@ namespace RNEngine
 			RECT rect;
 			HWND desktop = GetDesktopWindow();
 			GetWindowRect(desktop, &rect);
-			*width = rect.right;
-			*height = rect.bottom;
+			UINT dpi = 96;
+			GetDesktopWindowDpi(&dpi);
+			float scale = (float)(dpi / 96);
+			*width = (UINT)((float)rect.right * scale);
+			*height = (UINT)((float)rect.bottom * scale);
+		}
+
+		static void GetDesktopWindowDpi(UINT* dpi) {
+			*dpi = GetDpiForSystem();
 		}
 
 		void Destroy() {
@@ -36,6 +43,10 @@ namespace RNEngine
 		}
 
 		bool ProcessMessage();
+
+		void Show() {
+			ShowWindow(m_Hwnd, SW_SHOW);
+		}
 
 		HWND GetHwnd()const { return m_Hwnd; }
 		UINT GetWidth()const { return m_Width; }

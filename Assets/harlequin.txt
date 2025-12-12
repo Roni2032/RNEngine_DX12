@@ -1,0 +1,43 @@
+----- Mesh Data -----
+Num Meshes : 19
+mesh 0 : 5904
+mesh 1 : 324
+mesh 2 : 468
+mesh 3 : 360
+mesh 4 : 192
+mesh 5 : 1800
+mesh 6 : 174
+mesh 7 : 990
+mesh 8 : 432
+mesh 9 : 192
+mesh 10 : 14643
+mesh 11 : 2628
+mesh 12 : 1230
+mesh 13 : 24207
+mesh 14 : 8796
+mesh 15 : 18510
+mesh 16 : 4038
+mesh 17 : 114
+mesh 18 : 7602
+
+----- Material Data -----
+Num Materials : 19
+Material 0 : Mat_Face  => tex\颜.png
+Material 1 : Mat_Face  => tex\颜.png
+Material 2 : Mat_Face  => tex\颜.png
+Material 3 : Mat_Hair  => tex\髮.png
+Material 4 : Mat_Face  => tex\颜.png
+Material 5 : Mat_Face  => tex\颜.png
+Material 6 : Mat_Face  => tex\颜.png
+Material 7 : Mat_Face  => tex\颜.png
+Material 8 : Mat_Face  => tex\颜.png
+Material 9 : Mat_Face  => tex\颜.png
+Material 10 : Mat_Hair  => tex\髮.png
+Material 11 : Mat_Hair  => tex\髮.png
+Material 12 : Mat_Body  => tex\体.png
+Material 13 : Mat_Body  => tex\体.png
+Material 14 : Mat_Body  => tex\体.png
+Material 15 : Mat_Hair  => tex\髮.png
+Material 16 : Mat_Hair  => tex\髮.png
+Material 17 : Mat_Hair  => tex\肌.png
+Material 18 : Mat_Dress  => tex\髮.png

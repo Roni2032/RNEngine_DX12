@@ -3,7 +3,7 @@
 
 namespace RNEngine {
 
-    void PipelineState::Create(ID3D12Device* _dev,const Shader* vs, const Shader* ps) {
+    void PipelineState::Create(ID3D12Device* _dev,const Shader* vs, const Shader* ps, const RasterizerState* rasterizerState) {
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 		m_RootSignature = make_unique<RootSignature>();
 		m_RootSignature->Create(_dev);
@@ -15,11 +15,13 @@ namespace RNEngine {
 
 
 		psoDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-		psoDesc.RasterizerState.MultisampleEnable = false;
-		psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
-		psoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
-		psoDesc.RasterizerState.DepthClipEnable = true;
-
+		if (rasterizerState) {
+			psoDesc.RasterizerState = rasterizerState->GetDesc();
+		}
+		else {
+			RasterizerState state = RasterizerState();
+			psoDesc.RasterizerState = state.GetDesc();
+		}
 		m_BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 		m_BlendState.RenderTarget->BlendEnable = true;
 		m_BlendState.RenderTarget->SrcBlend = D3D12_BLEND_SRC_ALPHA;
@@ -50,6 +52,22 @@ namespace RNEngine {
 
 
     }
+	void RasterizerState::Init() {
+		ZeroMemory(&m_RasterizerState, sizeof(m_RasterizerState));
+		m_RasterizerState = {
+			(D3D12_FILL_MODE)FillMode::SOLID,
+			(D3D12_CULL_MODE)CullMode::BACK,
+			TRUE,                    
+			D3D12_DEFAULT_DEPTH_BIAS,
+			D3D12_DEFAULT_DEPTH_BIAS_CLAMP,
+			D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS,
+			TRUE,                     // DepthClip
+			FALSE,                    // Multisample
+			FALSE,                    // AA line
+			0,                        // ForcedSampleCount
+			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF
+		};
+	}
 	void RootSignature::Create(ID3D12Device* _dev) {
 		D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
 
@@ -191,6 +209,11 @@ namespace RNEngine {
 		m_Viewport.MinDepth = 0.0f;
 		m_Viewport.MaxDepth = 1.0f;
 	}
+
+
+	Renderer::Renderer() : m_ClearColor({ 1,1,1,1 }) {}
+	Renderer::~Renderer() = default;
+
     void Renderer::Init(const Window* _window)
     {
 		auto dev = Engine::GetDevice();
@@ -218,8 +241,11 @@ namespace RNEngine {
 		Shader vs, ps;
 		vs.LoadVS(L"SampleVertexShader.hlsl", "VSMain");
 		ps.LoadPS(L"SamplePixelShader.hlsl", "PSMain");
+		RasterizerState wireRasterizerState = RasterizerState();
+		wireRasterizerState.SetFillMode(FillMode::WIREFRAME);
 
-		PipelineStatePool::RegisterPipelineState(L"Sample1", &vs, &ps, InputLayout::PUV);
+		PipelineStatePool::RegisterPipelineState(L"Sample1", InputLayout::PUV, &vs, &ps);
+		PipelineStatePool::RegisterPipelineState(L"WireFrame", InputLayout::PUV, &vs, &ps, &wireRasterizerState);
 
 		m_ViewPort = make_unique<Viewport>();
 		m_Sicssor = make_unique<SicssorRect>();
@@ -259,7 +285,7 @@ namespace RNEngine {
     void Renderer::EndRenderer(GUIRenderer* guiRenderer) {
 		auto idx = m_SwapChain->GetCurrentBackBufferIndex();
 		//m_FrameBufferRenderTargets[idx]->DrawBegin(m_CommandList.Get());
-		auto rtvH = m_RTVBuffer->GetDecsriptorHeap()->GetCPUHandle();
+		/*auto rtvH = m_RTVBuffer->GetDecsriptorHeap()->GetCPUHandle();
 		rtvH.ptr += idx * m_RTVBuffer->GetDecsriptorHeap()->GetHeapSize();
 
 		auto dsvH = m_DSVBuffer->GetDecsriptorHeap()->GetCPUHandle();
@@ -267,7 +293,7 @@ namespace RNEngine {
 		m_CommandList->OMSetRenderTargets(1, &rtvH, true, &dsvH);
 
 		m_CommandList->ClearRenderTargetView(rtvH, m_ClearColor.data(), 0, nullptr);
-		m_CommandList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+		m_CommandList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);*/
 
 		//すべての描画が終わった後にGUIを表示
 		if (guiRenderer != nullptr) {
@@ -323,7 +349,8 @@ namespace RNEngine {
 	}
 
 	void Renderer::Draw(shared_ptr<RendererComponent>& renderer) {
-		//renderer->Draw(m_CommandList.Get(), m_SrvCbvDescriptorHeap.get());
+		//複数のレンダーターゲットを利用できるようになったら消そうね
+		renderer->Draw(m_CommandList.Get(), m_SrvCbvDescriptorHeap.get());
 		
 		for (auto tag : renderer->GetRenderTargetTag()) {
 			if (m_RenderTargets.find(tag) != m_RenderTargets.end()) {

@@ -3,17 +3,20 @@
 
 namespace RNEngine {
 	string ResourceManager::m_DefaultFilePath = "";
+
 	unordered_map<string, Mesh> ResourceManager::m_MeshMap = {};
 	unordered_map<string, shared_ptr<Model>> ResourceManager::m_ModelMap = {};
 	unordered_map<string, shared_ptr<TextureBuffer>> ResourceManager::m_TextureBufferMap = {};
+	unordered_map<string, shared_ptr<Material>> ResourceManager::m_MaterialMap = {};
 
 	shared_ptr<TextureBuffer> ResourceManager::RegisterTexture(const string& filename) {
-		string filePath = m_DefaultFilePath + filename;
-		auto it = m_TextureBufferMap.find(filePath);
-		if (it != m_TextureBufferMap.end()) {
-			return (*it).second;
-		}
+		if (filename.empty()) return nullptr;
 
+		string filePath = m_DefaultFilePath + filename;
+		if (IsExistMap(filePath, m_TextureBufferMap)) {
+			return m_TextureBufferMap[filePath];
+		}
+		
 		auto dev = Engine::GetID3D12Device();
 		shared_ptr<TextureBuffer> texture = make_shared<TextureBuffer>();
 
@@ -27,58 +30,84 @@ namespace RNEngine {
 		if (!texture->IsExistsTexture()) return;
 		string filePath = m_DefaultFilePath + name;
 
-		auto it = m_TextureBufferMap.find(filePath);
-		if (it != m_TextureBufferMap.end()) {
+		if (IsExistMap(filePath, m_TextureBufferMap)) {
 			return;
 		}
 		m_TextureBufferMap[filePath] = texture;
 	}
+	shared_ptr<TextureBuffer> ResourceManager::RegisterTexture(const string& name, const uint8_t* data, size_t dataSize) {
+		string filePath = m_DefaultFilePath + name;
+		if (IsExistMap(filePath, m_TextureBufferMap)) {
+			return m_TextureBufferMap[filePath];
+		}
+
+		auto dev = Engine::GetID3D12Device();
+
+		shared_ptr<TextureBuffer> texture = make_shared<TextureBuffer>();
+		texture->Create(dev, reinterpret_cast<const uint8_t*>(data), dataSize);
+
+		if (!texture->IsExistsTexture()) return nullptr;
+		m_TextureBufferMap[filePath] = texture;
+		return m_TextureBufferMap[filePath];
+	}
 	shared_ptr<TextureBuffer> ResourceManager::GetTextureBuffer(const string& filename) {
 		string filePath = m_DefaultFilePath + filename;
-		auto it = m_TextureBufferMap.find(filePath);
-		if (it != m_TextureBufferMap.end()) {
-			return (*it).second;
+
+		if (IsExistMap(filePath, m_TextureBufferMap)) {
+			auto& texture = m_TextureBufferMap[filePath];
+			if (texture->IsExistsTexture()) return texture;
 		}
 		return nullptr;
 	}
 
 	shared_ptr<Model> ResourceManager::RegisterModel(const string& filename,const string& key) {
+		return RegisterModel(filename, key, {});
+	}
+	shared_ptr<Model> ResourceManager::RegisterModel(const string& filename, const DefaultModelTransform& defaultTransform = {}) {
+		return RegisterModel(filename, "", defaultTransform);
+	}
+	shared_ptr<Model> ResourceManager::RegisterModel(const string& filename, const string& key, const DefaultModelTransform& defaultTransform) {
+		if (filename.empty()) return nullptr;
+
 		string filePath = m_DefaultFilePath + filename;
 
 		string registryKey = filePath;
-		if(!key.empty()) {
+		if (!key.empty()) {
 			registryKey = m_DefaultFilePath + key;
 		}
-		auto it = m_ModelMap.find(registryKey);
-		if (it != m_ModelMap.end()) {
-			return (*it).second;
+		if (IsExistMap(registryKey, m_ModelMap)) {
+			return m_ModelMap[registryKey];
 		}
-
+		
 		auto dev = Engine::GetID3D12Device();
-		auto model = make_shared<Model>();
+
+		cout << filePath << ":モデル読み込み中..." << endl;
+		auto model = make_shared<Model>(true, registryKey);
 		model->Load(dev, filePath);
+		model->SetDefaultScale(defaultTransform.m_Scale);
+		model->SetDefaultRotation(defaultTransform.m_Rotation);
 		m_ModelMap[registryKey] = model;
 
-		return model;
+		return m_ModelMap[registryKey];
 	}
 	shared_ptr<Model> ResourceManager::GetModelData(const string& filename) {
 		string filePath = m_DefaultFilePath + filename;
-		auto it = m_ModelMap.find(filePath);
-		if (it != m_ModelMap.end()) {
-			return (*it).second->Clone();
+		if (IsExistMap(filePath, m_ModelMap)) {
+			return m_ModelMap[filePath];
 		}
 		return nullptr;
 	}
 
-	Mesh ResourceManager::RegisterMesh(const string& name, vector<Vertex>& vertices, vector<uint32_t>& indices) {
-		auto it = m_MeshMap.find(name);
-		if (it != m_MeshMap.end()) {
-			return (*it).second;
+	shared_ptr<Model> ResourceManager::RegisterMesh(const string& name, vector<Vertex>& vertices, vector<uint32_t>& indices) {
+		string registryKey = m_DefaultFilePath + name;
+		if (IsExistMap(registryKey, m_ModelMap)) {
+			return m_ModelMap[registryKey];
 		}
 		Mesh mesh;
 		mesh.m_Vertices = vertices;
 		mesh.m_Indices = indices;
 
+		cout << name << ":メッシュ作成中..." << endl;
 		auto dev = Engine::GetID3D12Device();
 		mesh.m_VertexBuffer = make_shared<VertexBuffer>();
 		mesh.m_VertexBuffer->Create(dev, mesh.m_Vertices);
@@ -86,8 +115,10 @@ namespace RNEngine {
 		mesh.m_IndexBuffer = make_shared<IndexBuffer>();
 		mesh.m_IndexBuffer->Create(dev, mesh.m_Indices);
 
-		m_MeshMap[name] = mesh;
-		return mesh;
+		auto model = make_shared<Model>();
+		model->Load(mesh);
+		m_ModelMap[registryKey] = model;
+		return m_ModelMap[registryKey];
 	}
 	Mesh ResourceManager::GetMeshData(const string& name) {
 		auto it = m_MeshMap.find(name);
@@ -96,10 +127,9 @@ namespace RNEngine {
 		}
 		return {};
 	}
-
 	//-----------------ここから下はメッシュテンプレート作成----------------------------
 
-	Mesh ResourceManager::CreateSquare2D() {
+	shared_ptr<Model> ResourceManager::CreateSquare2D() {
 		vector<Vertex> vertices = {
 			{{-0.5f, 0.5f,0.0f},{0.0f,1.0f}},
 			{{ 0.5f, 0.5f,0.0f},{1.0f,1.0f}},
@@ -112,15 +142,51 @@ namespace RNEngine {
 		return RegisterMesh("DEFAULT_SQUARE_2D", vertices, indices);
 
 	}
-	Mesh ResourceManager::CreateSquare3D() {
+	shared_ptr<Model> ResourceManager::CreateSquare3D() {
 		vector<Vertex> vertices = {
-			{{-0.5f, 0.5f,0.0f},{0.0f,0.0f}},
-			{{ 0.5f, 0.5f,0.0f},{1.0f,0.0f}},
-			{{-0.5f,-0.5f,0.0f},{0.0f,1.0f}},
-			{{ 0.5f,-0.5f,0.0f},{1.0f,1.0f}}
+			// 前面
+			{{-0.5f,  0.5f, 0.5f}, {0.0f, 0.0f}},
+			{{ 0.5f,  0.5f, 0.5f}, {1.0f, 0.0f}},
+			{{ 0.5f, -0.5f, 0.5f}, {1.0f, 1.0f}},
+			{{-0.5f, -0.5f, 0.5f}, {0.0f, 1.0f}},
+
+			// 右面
+			{{ 0.5f,  0.5f, 0.5f}, {0.0f, 0.0f}},
+			{{ 0.5f,  0.5f,-0.5f}, {1.0f, 0.0f}},
+			{{ 0.5f, -0.5f,-0.5f}, {1.0f, 1.0f}},
+			{{ 0.5f, -0.5f, 0.5f}, {0.0f, 1.0f}},
+
+			// 背面
+			{{ 0.5f,  0.5f,-0.5f}, {0.0f, 0.0f}},
+			{{-0.5f,  0.5f,-0.5f}, {1.0f, 0.0f}},
+			{{-0.5f, -0.5f,-0.5f}, {1.0f, 1.0f}},
+			{{ 0.5f, -0.5f,-0.5f}, {0.0f, 1.0f}},
+
+			// 左面
+			{{-0.5f,  0.5f,-0.5f}, {0.0f, 0.0f}},
+			{{-0.5f,  0.5f, 0.5f}, {1.0f, 0.0f}},
+			{{-0.5f, -0.5f, 0.5f}, {1.0f, 1.0f}},
+			{{-0.5f, -0.5f,-0.5f}, {0.0f, 1.0f}},
+
+			// 上面
+			{{-0.5f, 0.5f,-0.5f}, {0.0f, 0.0f}},
+			{{ 0.5f, 0.5f,-0.5f}, {1.0f, 0.0f}},
+			{{ 0.5f, 0.5f, 0.5f}, {1.0f, 1.0f}},
+			{{-0.5f, 0.5f, 0.5f}, {0.0f, 1.0f}},
+
+			// 下面
+			{{-0.5f,-0.5f, 0.5f}, {0.0f, 0.0f}},
+			{{ 0.5f,-0.5f, 0.5f}, {1.0f, 0.0f}},
+			{{ 0.5f,-0.5f,-0.5f}, {1.0f, 1.0f}},
+			{{-0.5f,-0.5f,-0.5f}, {0.0f, 1.0f}},
 		};
-		vector<uint32_t> indices{
-			0,1,2,2,1,3
+		vector<uint32_t> indices = {
+			0,1,2,  0,2,3,      // 前
+			4,5,6,  4,6,7,      // 右
+			8,9,10, 8,10,11,    // 後
+			12,13,14, 12,14,15, // 左
+			16,17,18, 16,18,19, // 上
+			20,21,22, 20,22,23  // 下
 		};
 		return RegisterMesh("DEFAULT_SQUARE_3D", vertices, indices);
 

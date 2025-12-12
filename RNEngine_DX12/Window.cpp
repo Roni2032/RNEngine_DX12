@@ -34,7 +34,6 @@ namespace RNEngine {
 	}
 
 	void Window::Create(const wstring& appName, UINT width, UINT height) {
-		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 		auto result = CoInitializeEx(0, COINIT_MULTITHREADED);
 		assert(SUCCEEDED(result));
 
@@ -63,8 +62,6 @@ namespace RNEngine {
 			NULL
 		);
 
-		ShowWindow(m_Hwnd, SW_SHOW);
-
 		m_AppName = appName;
 		m_Instance = w.hInstance;
 	}
@@ -76,8 +73,6 @@ namespace RNEngine {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		UINT dpi = GetDpiForWindow(m_Hwnd);
-		printf("DPI = %u\n", dpi);
 		return msg.message != WM_QUIT;
 	}
 }

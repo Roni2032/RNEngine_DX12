@@ -14,6 +14,10 @@ namespace RNEngine
 
 		shared_ptr<GameObject> GetOwner();
 
+		virtual void OnCollisionEnter(const shared_ptr<GameObject>& object){}
+		virtual void OnCollisionExecute(const shared_ptr<GameObject>& object){}
+		virtual void OnCollisionExit(const shared_ptr<GameObject>& object){}
+
 		REGISTER_NAME(Component)
 		BEGIN_REFLECT()
 		END_REFLECT()

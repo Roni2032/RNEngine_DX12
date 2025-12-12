@@ -1,0 +1,24 @@
+----- Mesh Data -----
+Num Meshes : 11
+mesh 0 : 3983
+mesh 1 : 578
+mesh 2 : 13612
+mesh 3 : 2506
+mesh 4 : 7421
+mesh 5 : 2519
+mesh 6 : 1243
+mesh 7 : 8680
+mesh 8 : 2538
+mesh 9 : 5281
+mesh 10 : 1381
+
+----- Material Data -----
+Num Materials : 8
+Material 0 : kaf_face  => *0
+Material 1 : kaf_eye  => *1
+Material 2 : kaf_hair  => *2
+Material 3 : kaf_cloth  => *3
+Material 4 : kaf_body  => *4
+Material 5 : orange  => 
+Material 6 : kaf_shoes  => *5
+Material 7 :   => 
