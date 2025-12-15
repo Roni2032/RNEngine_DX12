@@ -55,6 +55,7 @@ namespace RNEngine {
 		static Window* GetWindow();
 		static GUIRenderer* GetGUIRenderer();
 		static FrameTimer* GetFrameTimer();
+		static shared_ptr<Scene> GetCurrentScene();
 
 		float GetFrameRate() {
 			return m_FrameRate;

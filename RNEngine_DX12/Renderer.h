@@ -46,7 +46,7 @@ namespace RNEngine {
 
 		void SetCullMode(CullMode mode) { m_RasterizerState.CullMode = (D3D12_CULL_MODE)mode; }
 		void SetFillMode(FillMode mode) { m_RasterizerState.FillMode = (D3D12_FILL_MODE)mode; }
-		void SetDepthBias(float bias) { m_RasterizerState.DepthBias = bias; }
+		void SetDepthBias(int bias) { m_RasterizerState.DepthBias = bias; }
 		void SetSlopeScaledDepthBias(float biasScale) { m_RasterizerState.SlopeScaledDepthBias = biasScale; }
 		void SetDepthBiasClamp(float clamp) { m_RasterizerState.DepthBiasClamp = clamp; }
 	};

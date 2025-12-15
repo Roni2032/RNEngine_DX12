@@ -299,6 +299,8 @@ namespace RNEngine {
 		if (guiRenderer != nullptr) {
 			guiRenderer->UpdateRenderer(m_CommandList.Get(), m_SrvCbvDescriptorHeap.get());
 		}
+		DebugRenderer::DrawCubeWireFrame(Vector3(), Vector3(1.0f));
+		DebugRenderer::Flush();
 		m_CommandList->RSSetViewports(1, &m_ViewPort->GetViewport());
 		m_CommandList->RSSetScissorRects(1, &m_Sicssor->GetRect());
 

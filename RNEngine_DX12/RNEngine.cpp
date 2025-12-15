@@ -38,6 +38,8 @@ namespace RNEngine {
 		ResourceManager::SetDefaultFilePath("../Assets/");
 
 		Input::Init();
+		DebugRenderer::Init();
+
 		Timer timer = Timer();
 		timer.Init();
 
@@ -150,4 +152,5 @@ namespace RNEngine {
 	Window* Engine::GetWindow() { return g_pInstance->m_Window.get(); }
 	GUIRenderer* Engine::GetGUIRenderer() { return g_pInstance->m_GuiRenderer.get(); }
 	FrameTimer* Engine::GetFrameTimer() { return g_pInstance->m_FrameTimer.get(); }
+	shared_ptr<Scene> Engine::GetCurrentScene() { return g_pInstance->m_CurrentScene; }
 }

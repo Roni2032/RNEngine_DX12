@@ -118,10 +118,13 @@ namespace RNEngine {
 		auto model = make_shared<Model>();
 		model->Load(mesh);
 		m_ModelMap[registryKey] = model;
+		m_MeshMap[registryKey] = mesh;
 		return m_ModelMap[registryKey];
 	}
 	Mesh ResourceManager::GetMeshData(const string& name) {
-		auto it = m_MeshMap.find(name);
+		string registryKey = m_DefaultFilePath + name;
+
+		auto it = m_MeshMap.find(registryKey);
 		if (it != m_MeshMap.end()) {
 			return (*it).second;
 		}

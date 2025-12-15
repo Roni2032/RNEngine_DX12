@@ -11,6 +11,7 @@
 #include "Vector.h"
 #include "Device.h"
 #include "Renderer.h"
+#include "DebugRenderer.h"
 #include "EditorGUI.h"
 #include "PipelineState.h"
 #include "Input.h"
