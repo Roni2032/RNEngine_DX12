@@ -6,7 +6,7 @@
 namespace RNEngine {
 	unordered_map<wstring, shared_ptr<PipelineState>> PipelineStatePool::m_PipelineStateMap = {};
 
-	shared_ptr<PipelineState> PipelineStatePool::RegisterPipelineState(const wstring& name, const Shader* vs, const Shader* ps, InputLayout layout) {
+	shared_ptr<PipelineState> PipelineStatePool::RegisterPipelineState(const wstring& name, InputLayout layout, const Shader* vs, const Shader* ps, const RasterizerState* rasterizerState) {
 		
 		auto it = m_PipelineStateMap.find(name);
 		if (it != m_PipelineStateMap.end()) {
@@ -15,7 +15,7 @@ namespace RNEngine {
 		auto dev = Engine::GetID3D12Device();
 		auto pipelineState = make_shared<PipelineState>();
 		pipelineState->SetInputLayout(layout);
-		pipelineState->Create(dev, vs, ps);
+		pipelineState->Create(dev, vs, ps, rasterizerState);
 
 		m_PipelineStateMap[name] = pipelineState;
 

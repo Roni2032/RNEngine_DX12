@@ -42,4 +42,14 @@ namespace RNEngine{
 			::CopyMemory(m_Data.data(), texture->pcData, texture->mWidth);
 		}
 	};
+
+	//モデル初期行列データ
+	struct DefaultModelTransform {
+		float m_Scale;
+		Vector3 m_Rotation;
+		Vector3 m_Position;
+		DefaultModelTransform():DefaultModelTransform(1.0f,{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f}) {}
+		DefaultModelTransform(float scale,Vector3 rotation,Vector3 position)
+			:m_Scale(scale),m_Position(position),m_Rotation(rotation){}
+	};
 }

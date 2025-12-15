@@ -33,7 +33,7 @@ namespace RNEngine {
 
 		void CreateRTV(ID3D12Device* _dev, UINT count);
 	public:
-		D3D12_RENDER_TARGET_VIEW_DESC m_RTVDesc;
+		D3D12_RENDER_TARGET_VIEW_DESC m_RTVDesc{};
 		RTVBuffer() {}
 		RTVBuffer(ID3D12Device* _dev, SwapChain* _swapChain) { InitFrameBuffer(_dev,_swapChain); }
 		~RTVBuffer() { }

@@ -110,7 +110,13 @@ namespace RNEngine {
 		Vector3 operator+(const Vector3& other) {
 			return (Vector3)XMVectorAdd(*this, other);
 		}
+		Vector3 operator+=(const Vector3& other) {
+			return (Vector3)XMVectorAdd(*this, other);
+		}
 		Vector3 operator-(const Vector3& other) {
+			return (Vector3)XMVectorSubtract(*this, other);
+		}
+		Vector3 operator-=(const Vector3& other) {
 			return (Vector3)XMVectorSubtract(*this, other);
 		}
 		Vector3 operator*(const Vector3& other) {
@@ -120,6 +126,9 @@ namespace RNEngine {
 			Vector3 temp = { other };
 			return (Vector3)XMVectorMultiply(*this, temp);
 		}
+		Vector3 operator*=(const Vector3& other) {
+			return (Vector3)XMVectorMultiply(*this, other);
+		}
 		Vector3 operator/(const Vector3& other) {
 			return (Vector3)XMVectorDivide(*this, other);
 		}
@@ -127,11 +136,18 @@ namespace RNEngine {
 			Vector3 temp = { other };
 			return (Vector3)XMVectorDivide(*this, temp);
 		}
+		Vector3 operator/=(const Vector3& other) {
+			return (Vector3)XMVectorDivide(*this, other);
+		}
 		bool operator==(const Vector3& other) {
 			return XMVector3Equal(*this, other);
 		}
 		bool operator!=(const Vector3& other) {
 			return !XMVector3Equal(*this, other);
+		}
+
+		Vector3 Cross(const Vector3& other) {
+			return (Vector3)XMVector3Cross(*this, other);
 		}
 
 		void Set(float x, float y, float z) {

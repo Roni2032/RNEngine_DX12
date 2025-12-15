@@ -3,45 +3,33 @@
 #include "RendererHeader.h"
 namespace RNEngine
 {
-
-	/// <summary>
-	/// 未完成部分の忘れないように説明
-	/// 読み込んだモデルデータをバイナリデータとして保存
-	/// 2回目以降の読み込みを高速化する
-	/// 
-	/// .meshファイルとして保存する
-	/// Headerにはデータの詳細(メッシュ数や頂点数などデータの数)が含まれる
-	/// その後頂点、インデックス、マテリアルテクスチャ名などのデータが連続する
-	///
-	/// 読み込みの際はHeaderの情報をもとにデータを読み込む
-	/// </summary>
-	struct BainaryModelHeader {
-		uint32_t m_MeshCount;
-		uint32_t m_MaterialCount;
-		uint32_t m_VertexCount;
-		uint32_t m_IndexCount;
-	};
-	struct BainaryModelDeta {
-		BainaryModelHeader m_Header;
-		vector<string> m_MaterialTextureName;
-		vector<Mesh> m_Meshes;
-	};
-
 	enum class TextureDataType {
 		None,//未使用
 		File,//ファイルパス
 		Embedded//埋め込みデータ
 	};
+	struct Material {
+		TextureDataType m_TextureType;
 
+		string m_TextureName;
+		EmbeddedTexture m_EmbeddedTexture;
+
+		Material(TextureDataType type, const string& textureName, const EmbeddedTexture& embeddedTexture) :
+			m_TextureType(type), m_TextureName(textureName), m_EmbeddedTexture(embeddedTexture){}
+
+		Material() :Material(TextureDataType::None,"",{}) {}
+		Material(const string& filename):Material(TextureDataType::File,filename,{}) {}
+		Material(EmbeddedTexture& texture):Material(TextureDataType::Embedded,texture.m_Name,texture){}
+	};
 	class Model
 	{
 		wstring m_Filename;
-
 		vector<Mesh> m_Meshes;
-		vector<string> m_MaterialTextureName;
-		vector<EmbeddedTexture> m_EmbeddedTextures;
+		vector<shared_ptr<Material>> m_Materials;
 
-		TextureDataType m_TextureDataType;
+		float m_DefaultScale;
+		Vector3 m_DefaultRotation;
+
 		bool m_IsDebug;	//trueの場合は読み込みの際にtxtファイルでデータを書きだす
 		string m_DebugName;
 
@@ -57,27 +45,49 @@ namespace RNEngine
 		};
 		string GetModelNameFromPath(const string& filepath);
 		void DeleteDefaultFilePath(string& filePath);
-		void SaveBinaryModel(const string& filename, vector<Mesh>& mesh, vector<string>& materialTextures,vector<EmbeddedTexture>& embeddedTextures);
-		void LoadBinaryModel(const string& filename, vector<Mesh>& mesh, vector<string>& materialTextures, vector<EmbeddedTexture>& embeddedTextures);
+		void SaveBinaryModel(const string& filename, vector<Mesh>& mesh, vector<shared_ptr<Material>>& materials);
+		void LoadBinaryModel(const string& filename, vector<Mesh>& mesh, vector<shared_ptr<Material>>& materials);
+
+		void CreateBuffer(ID3D12Device* _dev,Mesh& mesh);
+		void OutputDebug(const aiScene* scene);
 	public:
-		Model():m_IsDebug(false){}
-		Model(bool isDebug,const string& name): m_IsDebug(isDebug), m_DebugName(name), m_TextureDataType(TextureDataType::None){}
+		Model():Model(false,""){}
+		Model(bool isDebug, const string& name);
 		~Model(){}
 
 		void Load(ID3D12Device* _dev, const string& filename);
+		void Load(const Mesh& mesh);
 
 		void Draw(ComPtr<ID3D12GraphicsCommandList> cmdList, DescriptorHeap* heap, const ConstBuffer* constantBuffer);
 
-		void OutputDebug(const aiScene* scene);
 
 		shared_ptr<Model> Clone() {
 			shared_ptr<Model> newModel = make_shared<Model>();
 			newModel->m_Filename = m_Filename;
 			newModel->m_Meshes = m_Meshes;
-			newModel->m_MaterialTextureName = m_MaterialTextureName;
-			
+			newModel->m_Materials = m_Materials;
+			newModel->m_DefaultScale = m_DefaultScale;
+			newModel->m_DefaultRotation = m_DefaultRotation;
 			return newModel;
 		}
+
+		void SetDefaultScale(float scale) {
+			m_DefaultScale = scale;
+		}
+		void SetDefaultRotation(Vector3 rotation) {
+			m_DefaultRotation = rotation;
+		}
+
+		float GetDefaultScale() {
+			return m_DefaultScale;
+		}
+		Vector3 GetDefaultRotation() {
+			return m_DefaultRotation;
+		}
+
+		void SetMaterial(const string& key,int index = 0);
+
+		shared_ptr<Material> GetMaterial(int index);
 	};
 
 

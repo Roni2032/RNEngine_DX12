@@ -1,0 +1,51 @@
+----- Mesh Data -----
+Num Meshes : 23
+mesh 0 : 5190
+mesh 1 : 276
+mesh 2 : 108
+mesh 3 : 450
+mesh 4 : 1356
+mesh 5 : 144
+mesh 6 : 990
+mesh 7 : 432
+mesh 8 : 696
+mesh 9 : 8829
+mesh 10 : 8829
+mesh 11 : 648
+mesh 12 : 390
+mesh 13 : 21012
+mesh 14 : 318
+mesh 15 : 1644
+mesh 16 : 4026
+mesh 17 : 1608
+mesh 18 : 2097
+mesh 19 : 9564
+mesh 20 : 240
+mesh 21 : 7512
+mesh 22 : 192
+
+----- Material Data -----
+Num Materials : 23
+Material 0 :   => tex/面.png
+Material 1 :   => tex/面.png
+Material 2 :   => tex/面.png
+Material 3 :   => tex/面.png
+Material 4 :   => tex/面.png
+Material 5 :   => tex/面.png
+Material 6 :   => tex/面.png
+Material 7 :   => tex/面.png
+Material 8 :   => tex/发.png
+Material 9 :   => tex/发.png
+Material 10 :   => tex/sph.png
+Material 11 :   => tex/发.png
+Material 12 :   => tex/衣.png
+Material 13 :   => tex/衣.png
+Material 14 :   => tex/衣.png
+Material 15 :   => tex/衣.png
+Material 16 :   => tex/衣.png
+Material 17 :   => tex/衣.png
+Material 18 :   => tex/衣.png
+Material 19 :   => tex/肌.png
+Material 20 :   => tex/衣.png
+Material 21 :   => tex/发.png
+Material 22 :   => tex/面.png

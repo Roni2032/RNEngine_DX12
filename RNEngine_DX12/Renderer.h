@@ -25,6 +25,32 @@ namespace RNEngine {
 	/// 
 	/// ----------------------------------------------------------------
 
+	enum CullMode {
+		NONE = D3D12_CULL_MODE_NONE,
+		FRONT = D3D12_CULL_MODE_FRONT,
+		BACK = D3D12_CULL_MODE_BACK
+	};
+	enum FillMode {
+		WIREFRAME = D3D12_FILL_MODE_WIREFRAME,
+		SOLID = D3D12_FILL_MODE_SOLID
+	};
+	class RasterizerState {
+		D3D12_RASTERIZER_DESC m_RasterizerState;
+
+		void Init();
+	public:
+		RasterizerState() :m_RasterizerState{} { Init(); }
+		~RasterizerState() {}
+
+		D3D12_RASTERIZER_DESC GetDesc()const { return m_RasterizerState; }
+
+		void SetCullMode(CullMode mode) { m_RasterizerState.CullMode = (D3D12_CULL_MODE)mode; }
+		void SetFillMode(FillMode mode) { m_RasterizerState.FillMode = (D3D12_FILL_MODE)mode; }
+		void SetDepthBias(int bias) { m_RasterizerState.DepthBias = bias; }
+		void SetSlopeScaledDepthBias(float biasScale) { m_RasterizerState.SlopeScaledDepthBias = biasScale; }
+		void SetDepthBiasClamp(float clamp) { m_RasterizerState.DepthBiasClamp = clamp; }
+	};
+
 	class RootSignature {
 		ComPtr<ID3D12RootSignature> m_RootSignature;
 		unique_ptr<DescriptorTable> m_DescriptorTable;
@@ -71,9 +97,10 @@ namespace RNEngine {
 		float m_Width;
 		float m_Height;
 
-		DXGI_FORMAT m_Format;
+		DXGI_FORMAT m_Format{};
 		array<float, 4> m_ClearColor;
 	public:
+		RenderTarget() :m_ClearColor{1,1,1,1}, m_Width(0),m_Height(0){}
 		void Create(Vector2 renderSize, DXGI_FORMAT format, array<float, 4> clearColor = {1.0f,1.0f,1.0f,1.0f});
 
 		void DrawBegin(ID3D12GraphicsCommandList* cmdList);
@@ -133,7 +160,7 @@ namespace RNEngine {
 		void SetInputLayout(const InputLayout& layout) { m_InputLayout = layout; }
 		void SetInputLayout(const vector<D3D12_INPUT_ELEMENT_DESC>& layout) { m_InputLayout = InputLayout(layout); }
 
-		void Create(ID3D12Device* _dev,const Shader* vs,const Shader* ps);
+		void Create(ID3D12Device* _dev, const Shader* vs, const Shader* ps, const RasterizerState* rasterizerState = nullptr);
 
 		void SetVSShader( Shader* shader) { m_VSShader = make_shared<Shader>(*shader); }
 		void SetPSShader( Shader* shader) { m_PSShader = make_shared<Shader>(*shader); }
@@ -169,8 +196,8 @@ namespace RNEngine {
 		unique_ptr<PipelineState> m_PipelineState;
 		array<float, 4> m_ClearColor;
 	public:
-		Renderer() : m_ClearColor({1,1,1,1}) {}
-		~Renderer() {}
+		Renderer();
+		~Renderer();
 
 		void Init(const Window* _window);
 		void BeginRenderer();
@@ -190,6 +217,9 @@ namespace RNEngine {
 			m_RenderTargets[name] = renderTarget;
 			m_CurrentFrameRenderObjects[name] = {};
 			m_RenderTargetOrder.push_back(name);
+		}
+		shared_ptr<RenderTarget> GetRenderTarget(const string& name) {
+			return m_RenderTargets[name];
 		}
 
 		void Draw(shared_ptr<RendererComponent>& renderer);

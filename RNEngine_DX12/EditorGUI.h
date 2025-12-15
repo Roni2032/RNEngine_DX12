@@ -20,8 +20,9 @@ namespace RNEngine {
 		void UpdateRenderer(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* srvHeap);
 		void Destroy();
 
-		void AddGui(const string& name,const shared_ptr<GUI>& gui) {
+		shared_ptr<GUI> AddGui(const string& name,const shared_ptr<GUI>& gui) {
 			m_Items[name] = gui;
+			return m_Items[name];
 		}
 
 		template<typename T>
@@ -66,10 +67,10 @@ namespace RNEngine {
 
 		void DrawComponentInInspector(shared_ptr<Component>& component);
 
-		void DrawIntField(const string& name, int* value,int width,ConvertToAttribute* convert = nullptr);
-		void DrawFloatField(const string& name, float* value, int width, ConvertToAttribute* convert = nullptr);
+		void DrawIntField(const string& name, int* value,float width,ConvertToAttribute* convert = nullptr);
+		void DrawFloatField(const string& name, float* value, float width, ConvertToAttribute* convert = nullptr);
 		void DrawBoolField(const string& name, bool* value, ConvertToAttribute* convert = nullptr);
-		void DrawVec3Field(const string& name, float* value, int width, ConvertToAttribute* convert = nullptr);
+		void DrawVec3Field(const string& name, float* value, float width, ConvertToAttribute* convert = nullptr);
 	public:
 		Inspector(const string& windowName):GUI(windowName){}
 		~Inspector(){}
@@ -164,6 +165,8 @@ namespace RNEngine {
 
 	class SRVBuffer;
 	class RTVBuffer;
+	class RenderTarget;
+
 	class GameView : public GUI {
 		shared_ptr<RenderTarget> m_RenderTarget;
 	public:
@@ -172,7 +175,7 @@ namespace RNEngine {
 
 		virtual void Draw()override;
 
-		void CreateSRV(shared_ptr<RenderTarget>& renderTarget);
+		void CreateSRV(const shared_ptr<RenderTarget>& renderTarget);
 	};
 }
 
