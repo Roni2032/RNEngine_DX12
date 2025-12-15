@@ -1,16 +1,18 @@
 #pragma once
 #include "stdafx.h"
-#include "Device.h"
-#include "Window.h"
-#include "Renderer.h"
-#include "EditorGUI.h"
-#include "Timer.h"
-#include "RendererComponent.h"
 #include "Input.h"
+
 namespace RNEngine {
 #define FRAME_NONDEFINE 10000
+
 	class FrameTimer;
 	class Scene;
+	class RendererComponent;
+
+	class Window;
+	class Renderer;
+	class Device;
+	class GUIRenderer;
 
 	class Engine
 	{
@@ -19,21 +21,18 @@ namespace RNEngine {
 		unique_ptr<Renderer> m_Renderer;	// 描画処理
 		unique_ptr<GUIRenderer> m_GuiRenderer;
 		unique_ptr<Device> m_Device;		// デバイス
-		FrameTimer m_FrameTimer;			// フレームタイマー
+		unique_ptr<FrameTimer> m_FrameTimer;// フレームタイマー
 
 		float m_FrameRate;					// フレームレート
 
 		shared_ptr<Scene> m_CurrentScene;
-		//テスト用モデル作成
-		vector<shared_ptr<GameObject>> m_GameObjects;
-		vector<shared_ptr<RendererComponent>> m_Renderers;
 
 		void EnableDebugLayer();
 
 		static Engine* g_pInstance;
 	public:
-		Engine() : m_Window(),m_FrameRate(120.0f) { g_pInstance = this; }
-		~Engine() {}
+		Engine();
+		~Engine();
 
 		/// <summary>
 		/// 初期化
@@ -50,11 +49,13 @@ namespace RNEngine {
 		/// </summary>
 		void Update();
 
-		static Device* GetDevice() { return g_pInstance->m_Device.get(); }
-		static ID3D12Device* GetID3D12Device() { return g_pInstance->m_Device->GetPtr(); }
-		static Renderer* GetRenderer() { return g_pInstance->m_Renderer.get(); }
-		static Window* GetWindow() { return g_pInstance->m_Window.get(); }
-		static GUIRenderer* GetGUIRenderer() { return g_pInstance->m_GuiRenderer.get(); }
+		static Device* GetDevice();
+		static ID3D12Device* GetID3D12Device();
+		static Renderer* GetRenderer();
+		static Window* GetWindow();
+		static GUIRenderer* GetGUIRenderer();
+		static FrameTimer* GetFrameTimer();
+		static shared_ptr<Scene> GetCurrentScene();
 
 		float GetFrameRate() {
 			return m_FrameRate;

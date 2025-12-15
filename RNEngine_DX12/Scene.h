@@ -11,9 +11,9 @@ namespace RNEngine {
 		Scene(){}
 		~Scene(){}
 
-		void Start();
-		void Update();
-		void Draw();
+		virtual void Start();
+		virtual void Update();
+		virtual void Draw();
 
 		template<class T,class... Params>
 		shared_ptr<T> AddGameObject(Params&&... params) {

@@ -23,6 +23,7 @@ namespace RNEngine {
 				renderer->Draw(rendererComponent);
 			}
 		}
-		renderer->DrawAll();
+		//複数のレンダーターゲットを利用できるようになったら戻そうね
+		//renderer->DrawAll();
 	}
 }

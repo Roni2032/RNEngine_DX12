@@ -15,6 +15,7 @@ namespace RNEngine {
 
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.FramePadding = ImVec2(0,0);
+
 		style.Colors[ImGuiCol_WindowBg] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 		style.Colors[ImGuiCol_TitleBg] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
 		style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
@@ -38,7 +39,7 @@ namespace RNEngine {
 		}
 		io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
 
-		io.DisplaySize = ImVec2(window->GetWidth(), window->GetHeight());
+		io.DisplaySize = ImVec2((float)window->GetWidth(), (float)window->GetHeight());
 
 	}
 	void GUIRenderer::UpdateRenderer(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* srvHeap) {
@@ -51,9 +52,14 @@ namespace RNEngine {
 		GetCursorPos(&mousePos);
 		window->ScreenToClient(&mousePos);
 
+		UINT dpi = 96;
+		Window::GetDesktopWindowDpi(&dpi);
+		float dpiScale = (float)(dpi / 96);
+
 		ImGuiIO& io = ImGui::GetIO();
 		io.DisplaySize = ImVec2(width, height);
 		io.MousePos = ImVec2(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+		io.DisplayFramebufferScale = ImVec2(dpiScale, dpiScale);
 		// 開始
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
@@ -123,21 +129,21 @@ namespace RNEngine {
 			}
 			switch (field.m_Type) {
 			case FieldInfo::Type::Int:
-				DrawIntField(name, reinterpret_cast<int*>(addr), 100, convert);
+				DrawIntField(name, reinterpret_cast<int*>(addr), 100.0f, convert);
 				break;
 			case FieldInfo::Type::Float:
-				DrawFloatField(name, reinterpret_cast<float*>(addr), 100, convert);
+				DrawFloatField(name, reinterpret_cast<float*>(addr), 100.0f, convert);
 				break;
 			case FieldInfo::Type::Bool:
 				DrawBoolField(name, reinterpret_cast<bool*>(addr), convert);
 				break;
 			case FieldInfo::Type::Vec3:
-				DrawVec3Field(name, reinterpret_cast<float*>(addr), 300, convert);
+				DrawVec3Field(name, reinterpret_cast<float*>(addr), 300.0f, convert);
 				break;
 			}
 		}
 	}
-	void Inspector::DrawIntField(const string& name, int* value, int width, ConvertToAttribute* convert) {
+	void Inspector::DrawIntField(const string& name, int* value, float width, ConvertToAttribute* convert) {
 		int display = *value;
 		if (convert) {
 			convert->m_ConvertToDisplay(value, &display);
@@ -155,7 +161,7 @@ namespace RNEngine {
 			}
 		}
 	}
-	void Inspector::DrawFloatField(const string& name, float* value, int width, ConvertToAttribute* convert) {
+	void Inspector::DrawFloatField(const string& name, float* value, float width, ConvertToAttribute* convert) {
 		float display = *value;
 		if(convert) {
 			convert->m_ConvertToDisplay(value, &display);
@@ -177,7 +183,7 @@ namespace RNEngine {
 		ImGui::SameLine();
 		ImGui::Checkbox(("##" + name).c_str(), value);
 	}
-	void Inspector::DrawVec3Field(const string& name, float* value, int width, ConvertToAttribute* convert) {
+	void Inspector::DrawVec3Field(const string& name, float* value, float width, ConvertToAttribute* convert) {
 		float display[3] = { value[0], value[1], value[2] };
 		if (convert) {
 			convert->m_ConvertToDisplay(value, display);
@@ -226,14 +232,7 @@ namespace RNEngine {
 					auto inspector = renderer->GetGui<Inspector>("inspector");
 					inspector->SetGameObject(gameObject);
 				}
-				//if(FoldOut(gameObject->GetName())) {
-				//	//ここに子オブジェクト表示処理
-				//}
-				/*if (ImGui::Button(gameObject->GetName().c_str())) {
-					auto renderer = Engine::GetGUIRenderer();
-					auto inspector = renderer->GetGui<Inspector>("inspector");
-					inspector->SetGameObject(gameObject);
-				}*/
+
 				ImGui::PopID();
 			}
 		}
@@ -304,12 +303,6 @@ namespace RNEngine {
 			}
 			ImGui::SetCursorPos(currentPosition);
 			if (ImGui::Button("##iconButton", ImVec2(m_IconSize, m_IconSize))) {
-				/*if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-					
-				}
-				else {
-					m_SelectedFolderAddr = entry.get();
-				}*/
 				if (entry->m_Type == Entry::Type::Folder) {
 					MoveFolderChildren(entry);
 					ImGui::PopStyleColor();
@@ -320,16 +313,14 @@ namespace RNEngine {
 					auto renderer = Engine::GetGUIRenderer();
 					auto inspector = renderer->GetGui<Inspector>("inspector");
 					auto object = inspector->GetCurrentGameObject();
-					ComponentRegistry::AddComponent(ConvertWstrToStr(entry->m_Name), object);
-					/*cout << "Open File:" << ConvertWstrToStr(entry->m_Path).c_str() << endl;
-					ShellExecuteA(NULL, "open", ConvertWstrToStr(entry->m_Path).c_str(), NULL, NULL, SW_SHOWNORMAL);*/
+					ComponentRegistry::AddComponent(Util::ConvertWstrToStr(entry->m_Name), object);
 				}
 			}
 			
 			ImGui::SetCursorPos(currentPosition);
 			ImGui::Image(entry->m_IconID, ImVec2(m_IconSize, m_IconSize));
 			ImGui::SetCursorPosX(currentPosition.x);
-			string text = ConvertWstrToStr(entry->m_Name).c_str();
+			string text = Util::ConvertWstrToStr(entry->m_Name).c_str();
 			if (text.size() > 20) {
 				text = text.substr(0, 15);
 				text += "...";
@@ -412,7 +403,7 @@ namespace RNEngine {
 		ImGui::End();
 	}
 
-	void GameView::CreateSRV(shared_ptr<RenderTarget>& renderTarget) {
+	void GameView::CreateSRV(const shared_ptr<RenderTarget>& renderTarget) {
 		m_RenderTarget = renderTarget;
 	}
 	void GameView::Draw() {

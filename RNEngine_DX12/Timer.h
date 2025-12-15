@@ -4,9 +4,10 @@ namespace RNEngine {
 
 	class Timer
 	{
+		using clock = std::chrono::high_resolution_clock;
 	protected:
-		steady_clock::time_point m_BeforeTime;
-		steady_clock::time_point m_CurrentTime;
+		clock::time_point m_BeforeTime;
+		clock::time_point m_CurrentTime;
 		float m_DeltaTime;
 
 	public:
@@ -16,7 +17,7 @@ namespace RNEngine {
 		/// 初期化
 		/// </summary>
 		void Init() {
-			m_BeforeTime = steady_clock::now();
+			m_BeforeTime = clock::now();
 			timeBeginPeriod(1);
 		}
 
@@ -24,7 +25,7 @@ namespace RNEngine {
 		/// 更新処理
 		/// </summary>
 		void Update() {
-			m_CurrentTime = steady_clock::now();
+			m_CurrentTime = clock::now();
 			m_DeltaTime = duration<float>(m_CurrentTime - m_BeforeTime).count();
 			m_BeforeTime = m_CurrentTime;
 		}
@@ -36,7 +37,7 @@ namespace RNEngine {
 		/// <param name="time">秒数</param>
 		/// <returns>経過したかの判定(trueが返るとリセット)</returns>
 		bool CheckTime(float time) {
-			m_CurrentTime = steady_clock::now();
+			m_CurrentTime = clock::now();
 			float delta = duration_cast<milliseconds>(m_CurrentTime - m_BeforeTime).count() * 0.001f;
 			if (delta >= time) {
 				m_BeforeTime = m_CurrentTime;
@@ -58,18 +59,27 @@ namespace RNEngine {
 		/// <param name="fps"></param>
 		/// <returns></returns>
 		float WaitFrame(float fps) {
-			const float frameTime = 1.0f / fps;
-			m_CurrentTime = steady_clock::now();
-			float delta = duration<float>(m_CurrentTime - m_BeforeTime).count();
+			// 現在時刻
+			m_CurrentTime = clock::now();
+			// 経過時間を ms 単位で取得
+			double elapsed = std::chrono::duration<double, milli>(m_CurrentTime - m_BeforeTime).count();
+			double delay = fps - elapsed;
 
-			float sleepTime = frameTime - delta;
-			if (sleepTime > 0) {
-				this_thread::sleep_for(milliseconds((long long)(sleepTime * 1000)));
+			// 残余時間が1ms以上あれば Sleep
+			if (delay > 1.0) {
+				Sleep(static_cast<DWORD>(delay));
 			}
-			m_CurrentTime = steady_clock::now();
-			m_DeltaTime = duration<float>(m_CurrentTime - m_BeforeTime).count();
-			m_BeforeTime = m_CurrentTime;
+
+			//待った結果をデータに保存
+			m_CurrentTime = clock::now();
+			m_DeltaTime = std::chrono::duration<float>(m_CurrentTime - m_BeforeTime).count();
+			// 次フレーム用に lastTime を更新
+			m_BeforeTime = clock::now();
 			return m_DeltaTime;
+		}
+
+		float GetFps() {
+			return 1.0f / m_DeltaTime;
 		}
 	};
 }
