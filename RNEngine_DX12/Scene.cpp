@@ -22,6 +22,10 @@ namespace RNEngine {
 			for (auto& rendererComponent : rendererComponents) {
 				renderer->Draw(rendererComponent);
 			}
+			auto components = object->GetComponents();
+			for(auto& component : components) {
+				component->Draw();
+			}
 		}
 		//複数のレンダーターゲットを利用できるようになったら戻そうね
 		//renderer->DrawAll();

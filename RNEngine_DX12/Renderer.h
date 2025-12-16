@@ -171,6 +171,11 @@ namespace RNEngine {
 
 
 
+
+	enum HeapType {
+		CBV,
+		SRV
+	};
 	/// <summary>
 	/// •`‰æˆ—‚ğs‚¤ƒNƒ‰ƒX
 	/// </summary>
