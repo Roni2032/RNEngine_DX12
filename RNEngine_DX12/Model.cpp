@@ -268,7 +268,7 @@ namespace RNEngine {
 			cmdList->SetDescriptorHeaps(1, heap->GetHeapAddress());
 			auto startHandle = heap->GetGPUHandle();
 			auto handle = renderer->GetSRVDescriptorGPUHandle(constantBuffer->GetCBVHandle());
-			cmdList->SetGraphicsRootDescriptorTable(0, handle);
+			cmdList->SetGraphicsRootDescriptorTable(HeapType::CBV, handle);
 			//テクスチャが読み込めなかったとき用のテクスチャ(エラーテクスチャ)
 			string textureName = "Textures/ErrorTexture.png";
 			if (m_Materials.size() > mesh.m_MaterialIndex && m_Materials[mesh.m_MaterialIndex]){
@@ -280,7 +280,7 @@ namespace RNEngine {
 			auto texture = ResourceManager::GetTextureBuffer(textureName);
 			if (texture) {
 				handle = renderer->GetSRVDescriptorGPUHandle(texture->GetSRVHandle());
-				cmdList->SetGraphicsRootDescriptorTable(1, handle);
+				cmdList->SetGraphicsRootDescriptorTable(HeapType::SRV, handle);
 			}
 
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

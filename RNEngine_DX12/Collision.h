@@ -60,5 +60,7 @@ namespace RNEngine {
 		void SetScale(float scale) { m_Scale = Vector3(scale); }
 
 		Vector3 GetScale()const { return m_Scale; }
+
+		virtual void Draw()override;
 	};
 }

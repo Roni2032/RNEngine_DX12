@@ -14,12 +14,16 @@ namespace RNEngine {
 		auto scene = Engine::GetCurrentScene();
 		auto renderer = Engine::GetRenderer();
 		auto cmdList = renderer->GetCommandList();
+		auto heap = renderer->GetSrvDescriptorHeap();
 
 		auto pipelineState = PipelineStatePool::GetPipelineState(L"WireFrame");
 		cmdList->SetPipelineState(pipelineState->GetPtr());
 		cmdList->SetGraphicsRootSignature(pipelineState->GetRootSignature()->GetPtr());
 
-		for (auto& command : g_Commands) {
+
+		string textureName = "Textures/WireFrameTexture.png";
+		for (auto& command : g_Commands){
+
 			auto camera = scene->GetCamera(command.camera);
 			if (!camera)continue;
 
@@ -31,13 +35,18 @@ namespace RNEngine {
 
 			g_ConstantBuffer->Upadte(&g_Matrix, sizeof(g_Matrix));
 
+
+			cmdList->SetDescriptorHeaps(1, heap->GetHeapAddress());
+			auto startHandle = heap->GetGPUHandle();
+			auto constHandle = renderer->GetSRVDescriptorGPUHandle(g_ConstantBuffer->GetCBVHandle());
+			cmdList->SetGraphicsRootDescriptorTable(HeapType::CBV, constHandle);
+
 			auto mesh = ResourceManager::GetMeshData(command.mesh);
-			string textureName = "Textures/ErrorTexture.png";
 
 			auto texture = ResourceManager::GetTextureBuffer(textureName);
 			if (texture) {
 				auto handle = renderer->GetSRVDescriptorGPUHandle(texture->GetSRVHandle());
-				cmdList->SetGraphicsRootDescriptorTable(1, handle);
+				cmdList->SetGraphicsRootDescriptorTable(HeapType::SRV, handle);
 			}
 
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -56,7 +65,7 @@ namespace RNEngine {
 		command.mesh = "DEFAULT_SQUARE_3D";
 		command.camera = "Game";
 		command.position = position;
-		command.scale = size;
+		command.scale = size * 1.001f;
 		command.rotation = Vector3();
 
 		g_Commands.push_back(command);

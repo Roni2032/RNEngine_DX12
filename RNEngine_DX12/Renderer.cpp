@@ -295,12 +295,13 @@ namespace RNEngine {
 		m_CommandList->ClearRenderTargetView(rtvH, m_ClearColor.data(), 0, nullptr);
 		m_CommandList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);*/
 
+		DebugRenderer::Flush();
+
 		//‚·‚×‚Ä‚Ì•`‰æ‚ªI‚í‚Á‚½Œã‚ÉGUI‚ð•\Ž¦
 		if (guiRenderer != nullptr) {
 			guiRenderer->UpdateRenderer(m_CommandList.Get(), m_SrvCbvDescriptorHeap.get());
 		}
-		DebugRenderer::DrawCubeWireFrame(Vector3(), Vector3(1.0f));
-		DebugRenderer::Flush();
+		//DebugRenderer::DrawCubeWireFrame(Vector3(), Vector3(1.0f));
 		m_CommandList->RSSetViewports(1, &m_ViewPort->GetViewport());
 		m_CommandList->RSSetScissorRects(1, &m_Sicssor->GetRect());
 

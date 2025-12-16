@@ -35,4 +35,9 @@ namespace RNEngine {
 
 		return AABB(max, min);
 	}
+
+	void CollisionCube::Draw() {
+		auto aabb = GetAABB();
+		DebugRenderer::DrawCubeWireFrame(aabb.m_Center, aabb.GetSize());
+	}
 }

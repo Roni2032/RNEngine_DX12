@@ -85,6 +85,7 @@ namespace RNEngine {
 		// テスト用リソース登録
 
 		ResourceManager::RegisterTexture("Textures/ErrorTexture.png");
+		ResourceManager::RegisterTexture("Textures/WireFrameTexture.png");
 
 		timer.Init();
 		m_CurrentScene = make_shared<GameScene>();
