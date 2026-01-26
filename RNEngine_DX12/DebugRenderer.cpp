@@ -3,10 +3,22 @@
 #include "project.h"
 namespace RNEngine {
 	vector<DebugCommand> DebugRenderer::g_Commands = {};
-	unique_ptr<ConstBuffer> DebugRenderer::g_ConstantBuffer = make_unique<ConstBuffer>();
+	unique_ptr<ConstantBuffer> DebugRenderer::g_ConstantBuffer = make_unique<ConstantBuffer>();
+	WireFrameCB DebugRenderer::g_FrameCB = {};
 	Matrix DebugRenderer::g_Matrix = {};
 
 	void DebugRenderer::Init() {
+		ResourceManager::RegisterTexture("Textures/WireFrameTexture.png");
+
+		Shader vs, ps;
+		vs.LoadVS(L"SampleVertexShader.hlsl", "VSMain");
+		ps.LoadPS(L"SamplePixelShader.hlsl", "PSMain");
+
+		RasterizerState wireRasterizerState = RasterizerState();
+		wireRasterizerState.SetFillMode(FillMode::WIREFRAME);
+
+		PipelineStatePool::RegisterPipelineState(L"WireFrame", InputLayout::PUV, &vs, &ps, &wireRasterizerState);
+
 		auto dev = Engine::GetID3D12Device();
 		g_ConstantBuffer->Create(dev, &g_Matrix);
 	}
@@ -33,12 +45,14 @@ namespace RNEngine {
 
 			g_Matrix.m_ViewProjection = camera->GetViewProjectionMatrix();
 
-			g_ConstantBuffer->Upadte(&g_Matrix, sizeof(g_Matrix));
+			g_FrameCB.m_Matrix = g_Matrix;
+			g_FrameCB.m_Color = Vector4(1, 1, 1, 1);
+			g_ConstantBuffer->Update(&g_Matrix, sizeof(g_Matrix));
 
 
 			cmdList->SetDescriptorHeaps(1, heap->GetHeapAddress());
 			auto startHandle = heap->GetGPUHandle();
-			auto constHandle = renderer->GetSRVDescriptorGPUHandle(g_ConstantBuffer->GetCBVHandle());
+			auto constHandle = renderer->GetSRVDescriptorGPUHandle(g_ConstantBuffer->GetHandle());
 			cmdList->SetGraphicsRootDescriptorTable(HeapType::CBV, constHandle);
 
 			auto mesh = ResourceManager::GetMeshData(command.mesh);
@@ -51,8 +65,8 @@ namespace RNEngine {
 
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-			cmdList->IASetVertexBuffers(0, 1, &mesh.m_VertexBuffer->m_VertexBufferView);
-			cmdList->IASetIndexBuffer(&mesh.m_IndexBuffer->m_IndexBufferView);
+			cmdList->IASetVertexBuffers(0, 1, &mesh.m_VertexBuffer->GetBufferView());
+			cmdList->IASetIndexBuffer(&mesh.m_IndexBuffer->GetBufferView());
 
 			cmdList->DrawIndexedInstanced((UINT)mesh.m_IndexBuffer->GetIndexCount(), 1, 0, 0, 0);
 

@@ -5,7 +5,7 @@ namespace RNEngine {
 	string ResourceManager::m_DefaultFilePath = "";
 
 	unordered_map<string, Mesh> ResourceManager::m_MeshMap = {};
-	unordered_map<string, shared_ptr<Model>> ResourceManager::m_ModelMap = {};
+	unordered_map<string, shared_ptr<ModelResource>> ResourceManager::m_ModelMap = {};
 	unordered_map<string, shared_ptr<TextureBuffer>> ResourceManager::m_TextureBufferMap = {};
 	unordered_map<string, shared_ptr<Material>> ResourceManager::m_MaterialMap = {};
 
@@ -60,13 +60,13 @@ namespace RNEngine {
 		return nullptr;
 	}
 
-	shared_ptr<Model> ResourceManager::RegisterModel(const string& filename,const string& key) {
+	shared_ptr<ModelResource> ResourceManager::RegisterModel(const string& filename,const string& key) {
 		return RegisterModel(filename, key, {});
 	}
-	shared_ptr<Model> ResourceManager::RegisterModel(const string& filename, const DefaultModelTransform& defaultTransform = {}) {
+	shared_ptr<ModelResource> ResourceManager::RegisterModel(const string& filename, const DefaultModelTransform& defaultTransform = {}) {
 		return RegisterModel(filename, "", defaultTransform);
 	}
-	shared_ptr<Model> ResourceManager::RegisterModel(const string& filename, const string& key, const DefaultModelTransform& defaultTransform) {
+	shared_ptr<ModelResource> ResourceManager::RegisterModel(const string& filename, const string& key, const DefaultModelTransform& defaultTransform) {
 		if (filename.empty()) return nullptr;
 
 		string filePath = m_DefaultFilePath + filename;
@@ -82,15 +82,16 @@ namespace RNEngine {
 		auto dev = Engine::GetID3D12Device();
 
 		cout << filePath << ":モデル読み込み中..." << endl;
-		auto model = make_shared<Model>(true, registryKey);
+		auto model = make_shared<ModelResource>();
 		model->Load(dev, filePath);
-		model->SetDefaultScale(defaultTransform.m_Scale);
-		model->SetDefaultRotation(defaultTransform.m_Rotation);
+		model->SetDefaultTransform(defaultTransform);
+		//model->SetDefaultScale(defaultTransform.m_Scale);
+		//model->SetDefaultRotation(defaultTransform.m_Rotation);
 		m_ModelMap[registryKey] = model;
 
 		return m_ModelMap[registryKey];
 	}
-	shared_ptr<Model> ResourceManager::GetModelData(const string& filename) {
+	shared_ptr<ModelResource> ResourceManager::GetModelResource(const string& filename) {
 		string filePath = m_DefaultFilePath + filename;
 		if (IsExistMap(filePath, m_ModelMap)) {
 			return m_ModelMap[filePath];
@@ -98,7 +99,7 @@ namespace RNEngine {
 		return nullptr;
 	}
 
-	shared_ptr<Model> ResourceManager::RegisterMesh(const string& name, vector<Vertex>& vertices, vector<uint32_t>& indices) {
+	shared_ptr<ModelResource> ResourceManager::RegisterMesh(const string& name, vector<Vertex>& vertices, vector<uint32_t>& indices) {
 		string registryKey = m_DefaultFilePath + name;
 		if (IsExistMap(registryKey, m_ModelMap)) {
 			return m_ModelMap[registryKey];
@@ -115,7 +116,7 @@ namespace RNEngine {
 		mesh.m_IndexBuffer = make_shared<IndexBuffer>();
 		mesh.m_IndexBuffer->Create(dev, mesh.m_Indices);
 
-		auto model = make_shared<Model>();
+		auto model = make_shared<ModelResource>();
 		model->Load(mesh);
 		m_ModelMap[registryKey] = model;
 		m_MeshMap[registryKey] = mesh;
@@ -132,7 +133,7 @@ namespace RNEngine {
 	}
 	//-----------------ここから下はメッシュテンプレート作成----------------------------
 
-	shared_ptr<Model> ResourceManager::CreateSquare2D() {
+	shared_ptr<ModelResource> ResourceManager::CreateSquare2D() {
 		vector<Vertex> vertices = {
 			{{-0.5f, 0.5f,0.0f},{0.0f,1.0f}},
 			{{ 0.5f, 0.5f,0.0f},{1.0f,1.0f}},
@@ -145,7 +146,7 @@ namespace RNEngine {
 		return RegisterMesh("DEFAULT_SQUARE_2D", vertices, indices);
 
 	}
-	shared_ptr<Model> ResourceManager::CreateSquare3D() {
+	shared_ptr<ModelResource> ResourceManager::CreateSquare3D() {
 		vector<Vertex> vertices = {
 			// 前面
 			{{-0.5f,  0.5f, 0.5f}, {0.0f, 0.0f}},

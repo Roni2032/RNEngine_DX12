@@ -57,6 +57,16 @@ namespace RNEngine {
 		collision = m_Ground->AddComponent<CollisionCube>();
 		collision->SetScale(Vector3(1.0f, 10.0f, 10.0f));
 
+		m_Texture = AddGameObject<GameObject>();
+		auto texRenderer = m_Texture->AddComponent<ImageRenderer>();
+		texRenderer->Init(GetCamera("UI"));
+		texRenderer->SetTexture(L"Textures/test.jpg");
+		texRenderer->SetPivot(Anchor::TopLeft);
+		transform = m_Texture->GetComponent<Transform>();
+		transform->SetPosition({ 0.0f,0.0f,0.0f });
+		transform->SetScale({ 100.0f,100.0f,1.0f });
+
+
 	}
 	void GameScene::Update() {
 		Scene::Update();

@@ -3,21 +3,29 @@
 #include "RendererHeader.h"
 namespace RNEngine {
 
-	class Image
+	class TextureResource
 	{
 		Mesh m_Mesh;
-		string m_TextureFilename;
+		shared_ptr<TextureBuffer> m_Texture;
+		shared_ptr<PipelineState> m_PipelineState;
 
-		void Init();
+		Matrix m_Matrix;
+		vector<shared_ptr<ConstantBuffer>> m_ConstantBuffers;
+		vector<ConstantBufferData> m_ConstantDates;
 	public:
-		Image() { Init(); }
-		~Image(){}
+		TextureResource();
+		~TextureResource(){}
 
-		void SetTexture(const string& filename) {
-			m_TextureFilename = filename;
-		}
+		void SetPipelineState(const wstring& key);
+		void SetTexture(const wstring& key);
 
-		void Draw(ComPtr<ID3D12GraphicsCommandList> cmdList, DescriptorHeap* heap, const ConstBuffer* constantBuffer);
+		void SetCamera(const shared_ptr<Camera>& camera);
+		void UpdateWorldMatrix(const shared_ptr<Transform>& transform);
+		void UpdateWorldMatrix(const Vector3& position, const Vector3& scale, const Vector3& rotation);
+		void RegisterConstantBuffer(void* data, size_t size);
+		void CopyToGPU(shared_ptr<ConstantBuffer>& buffer, ConstantBufferData& data);
+
+		void Draw(ComPtr<ID3D12GraphicsCommandList> cmdList, DescriptorHeap* heap);
 	};
 }
 

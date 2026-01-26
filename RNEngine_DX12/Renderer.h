@@ -216,7 +216,7 @@ namespace RNEngine {
 		array<float, 4> GetClearColor() { return m_ClearColor; }
 
 		void RegisterTextureBuffer(TextureBuffer& texBuffer);
-		void RegisterConstantBuffer(ConstBuffer& constBuffer);
+		void RegisterConstantBuffer(ConstantBuffer& constBuffer);
 
 		void RegisterRenderTarget(const string& name, shared_ptr<RenderTarget>& renderTarget) {
 			m_RenderTargets[name] = renderTarget;

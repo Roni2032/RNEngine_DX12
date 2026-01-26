@@ -5,75 +5,65 @@
 namespace RNEngine
 {
 	class DescriptorHeap;
-	class Model;
-	class ConstBuffer;
-	class Image;
+	class ModelResource;
+	class ConstantBuffer;
+	class TextureResource;
 	class Camera;
 
 	class RendererComponent : public Component{
-		struct ConstantBufferData {
-			void* m_Data;
-			size_t m_DataSize;
-		};
-		shared_ptr<PipelineState> m_PipelineState;
 	protected:
 		weak_ptr<Camera> m_TargetCamera;
-		vector<unique_ptr<ConstBuffer>> m_ConstantBuffers;
-		Matrix m_Matrix;
-
-		vector<ConstantBufferData> m_ConstantDatas;
-
 		vector<string> m_RenderTargetTag;
-
-		void UpdateConstantBuffers();
-
 	public:
 		RendererComponent(const shared_ptr<GameObject>& ptr);
-		RendererComponent(const shared_ptr<GameObject>& ptr, const Matrix& matrix);
 		~RendererComponent(){}
 
 		void Init(const shared_ptr<Camera>& camera);
 
-		virtual void Update()override;
-
-		void UpdateWorldMatrix(Vector3 position, Vector3 scale, Vector3 rotation);
-
-		void DrawMesh(ID3D12GraphicsCommandList* cmdList,Mesh& mesh);
-
+		virtual void Update()override{}
 		virtual void Draw(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* heap){}
-
-		void RegisterConstantBuffer(void* data, size_t size);
 
 		void AddRenderTargetTag(const string& tag) {
 			m_RenderTargetTag.push_back(tag);
 		}
 		vector<string> GetRenderTargetTag()const { return m_RenderTargetTag; }
-
-		void SetPipelineState(const wstring& key);
 	};
 
 	class ModelRenderer : public RendererComponent{
-		shared_ptr<Model> m_Model;
+		shared_ptr<ModelResource> m_Model;
 	public:
 		ModelRenderer(const shared_ptr<GameObject>& ptr):RendererComponent(ptr){}
 		~ModelRenderer() {}
 
 		void SetModel(const string& filename);
 
-		shared_ptr<Model>& GetModel();
+		shared_ptr<ModelResource>& GetModel();
 		virtual void Update()override;
 		virtual void Draw(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* heap)override;
 
 		REGISTER_NAME(ModelRenderer)
 	};
 
+
+	enum class Anchor {
+		   TopLeft,    Top,    TopRight,
+		      Left, Center,       Right,
+		ButtomLeft, Buttom, ButtomRight
+	};
 	class ImageRenderer : public RendererComponent {
-		shared_ptr<Image> m_Image;
+		shared_ptr<TextureResource> m_Texture;
+		Vector2 m_Pivot;
 	public:
 		ImageRenderer(const shared_ptr<GameObject>& ptr);
 		~ImageRenderer(){}
-		void Init(const shared_ptr<Camera>& camera);
-		void SetTexture(const string& filename);
+		void SetTexture(const wstring& filename);
+		virtual void Update()override;
 		virtual void Draw(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* heap)override;
+
+		void SetPivot(const Vector2& pivot);
+		void SetPivot(Anchor anchor);
+		Vector2 GetPivot();
+
+		Vector2 GetAnchorNormalize(Anchor anchor);
 	};
 }

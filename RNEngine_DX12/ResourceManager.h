@@ -3,7 +3,7 @@
 namespace RNEngine
 {
 	class TextureBuffer;
-	class Model;
+	class ModelResource;
 	struct Mesh;
 	struct Vertex;
 	struct DefaultModelTransform;
@@ -14,7 +14,7 @@ namespace RNEngine
 		static string m_DefaultFilePath;
 
 		static unordered_map<string, Mesh> m_MeshMap;
-		static unordered_map<string, shared_ptr<Model>> m_ModelMap;
+		static unordered_map<string, shared_ptr<ModelResource>> m_ModelMap;
 		static unordered_map<string, shared_ptr<TextureBuffer>> m_TextureBufferMap;
 		static unordered_map<string, shared_ptr<Material>> m_MaterialMap;
 
@@ -33,17 +33,17 @@ namespace RNEngine
 		static shared_ptr<TextureBuffer> RegisterTexture(const string& name, const uint8_t* data, size_t dataSize);
 		static shared_ptr<TextureBuffer> GetTextureBuffer(const string& filename);
 
-		static shared_ptr<Model> RegisterModel(const string& filename,const string& key = "");
-		static shared_ptr<Model> RegisterModel(const string& filename,const DefaultModelTransform& defaultTransform);
-		static shared_ptr<Model> RegisterModel(const string& filename,const string& key, const DefaultModelTransform& defaultTransform);
-		static shared_ptr<Model> GetModelData(const string& filename);
+		static shared_ptr<ModelResource> RegisterModel(const string& filename,const string& key = "");
+		static shared_ptr<ModelResource> RegisterModel(const string& filename,const DefaultModelTransform& defaultTransform);
+		static shared_ptr<ModelResource> RegisterModel(const string& filename,const string& key, const DefaultModelTransform& defaultTransform);
+		static shared_ptr<ModelResource> GetModelResource(const string& filename);
 
-		static shared_ptr<Model> RegisterMesh(const string& name,vector<Vertex>& vertices,vector<uint32_t>& indices);
+		static shared_ptr<ModelResource> RegisterMesh(const string& name,vector<Vertex>& vertices,vector<uint32_t>& indices);
 		static Mesh GetMeshData(const string& name);
 		//static shared_ptr<Material> RegisterMaterial(const string& name,)
 
-		static shared_ptr<Model> CreateSquare2D();
-		static shared_ptr<Model> CreateSquare3D();
+		static shared_ptr<ModelResource> CreateSquare2D();
+		static shared_ptr<ModelResource> CreateSquare3D();
 	};
 }
 

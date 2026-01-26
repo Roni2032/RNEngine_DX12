@@ -178,7 +178,7 @@ namespace RNEngine {
 		barrier->Transition(cmdList, m_RenderTargetTexture->GetBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		//m_Rtv->SetBufferState(0, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		auto rtvH = m_Rtv->GetDecsriptorHeap()->GetCPUHandle();
-		auto dsvH = m_Dsv->GetDecsriptorHeap()->GetCPUHandle();
+		auto dsvH = m_Dsv->GetDescriptorHeap()->GetCPUHandle();
 		cmdList->OMSetRenderTargets(1, &rtvH, true, &dsvH);
 
 		cmdList->ClearRenderTargetView(rtvH, m_ClearColor.data(), 0, nullptr);
@@ -241,11 +241,8 @@ namespace RNEngine {
 		Shader vs, ps;
 		vs.LoadVS(L"SampleVertexShader.hlsl", "VSMain");
 		ps.LoadPS(L"SamplePixelShader.hlsl", "PSMain");
-		RasterizerState wireRasterizerState = RasterizerState();
-		wireRasterizerState.SetFillMode(FillMode::WIREFRAME);
 
 		PipelineStatePool::RegisterPipelineState(L"Sample1", InputLayout::PUV, &vs, &ps);
-		PipelineStatePool::RegisterPipelineState(L"WireFrame", InputLayout::PUV, &vs, &ps, &wireRasterizerState);
 
 		m_ViewPort = make_unique<Viewport>();
 		m_Sicssor = make_unique<SicssorRect>();
@@ -268,7 +265,7 @@ namespace RNEngine {
         auto rtvH = m_RTVBuffer->GetDecsriptorHeap()->GetCPUHandle();
         rtvH.ptr += idx * m_RTVBuffer->GetDecsriptorHeap()->GetHeapSize();
 
-		auto dsvH = m_DSVBuffer->GetDecsriptorHeap()->GetCPUHandle();
+		auto dsvH = m_DSVBuffer->GetDescriptorHeap()->GetCPUHandle();
 
         m_CommandList->OMSetRenderTargets(1, &rtvH, true, &dsvH);
 
@@ -333,21 +330,21 @@ namespace RNEngine {
 			m_SrvCbvDescriptorHeap->GetHeapCount(),
 			m_SrvCbvDescriptorHeap->GetHeapSize()
 		);
-		D3D12_SHADER_RESOURCE_VIEW_DESC desc = texBuffer.GetSRV()->m_SRVDesc;
+		D3D12_SHADER_RESOURCE_VIEW_DESC desc = texBuffer.GetSRV()->GetDesc();
 		auto dev = Engine::GetID3D12Device();
 		dev->CreateShaderResourceView(texBuffer.GetBuffer(), &desc, handle);
 		texBuffer.SetSRVHandle(m_SrvCbvDescriptorHeap->GetHeapCount());
 		m_SrvCbvDescriptorHeap->AddHeapCount();
 	}
-	void Renderer::RegisterConstantBuffer(ConstBuffer& constBuffer) {
+	void Renderer::RegisterConstantBuffer(ConstantBuffer& constBuffer) {
 		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
 			m_SrvCbvDescriptorHeap->GetHeap()->GetCPUDescriptorHandleForHeapStart(),
 			m_SrvCbvDescriptorHeap->GetHeapCount(),
 			m_SrvCbvDescriptorHeap->GetHeapSize()
 		);
 		auto dev = Engine::GetID3D12Device();
-		dev->CreateConstantBufferView(&constBuffer.m_CBVDesc, handle);
-		constBuffer.SetCBVHandle(m_SrvCbvDescriptorHeap->GetHeapCount());
+		dev->CreateConstantBufferView(&constBuffer.GetDesc(), handle);
+		constBuffer.SetHandle(m_SrvCbvDescriptorHeap->GetHeapCount());
 		m_SrvCbvDescriptorHeap->AddHeapCount();
 	}
 
