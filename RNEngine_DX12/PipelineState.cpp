@@ -1,12 +1,10 @@
 #include "stdafx.h"
 #include "PipelineState.h"
-#include "Shader.h"
-#include "Renderer.h"
-#include "RNEngine.h"
+
 namespace RNEngine {
 	unordered_map<wstring, shared_ptr<PipelineState>> PipelineStatePool::m_PipelineStateMap = {};
 
-	shared_ptr<PipelineState> PipelineStatePool::RegisterPipelineState(const wstring& name, InputLayout layout, const Shader* vs, const Shader* ps, const RasterizerState* rasterizerState) {
+	shared_ptr<PipelineState> PipelineStatePool::RegisterPipelineState(const wstring& name, InputLayout layout,const PipelineStateSetup& setup) {
 		
 		auto it = m_PipelineStateMap.find(name);
 		if (it != m_PipelineStateMap.end()) {
@@ -15,7 +13,7 @@ namespace RNEngine {
 		auto dev = Engine::GetID3D12Device();
 		auto pipelineState = make_shared<PipelineState>();
 		pipelineState->SetInputLayout(layout);
-		pipelineState->Create(dev, vs, ps, rasterizerState);
+		pipelineState->Create(dev, setup);
 
 		m_PipelineStateMap[name] = pipelineState;
 

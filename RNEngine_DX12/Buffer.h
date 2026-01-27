@@ -71,7 +71,7 @@ namespace RNEngine {
 			m_BufferStates[index] = state;
 
 		}
-		DescriptorHeap* GetDecsriptorHeap() { return m_RTVHeap.get(); }
+		DescriptorHeap* GetDescriptorHeap() { return m_RTVHeap.get(); }
 	};
 	class DSVBuffer : public DescBuffer<D3D12_DEPTH_STENCIL_VIEW_DESC> {
 		unique_ptr<DescriptorHeap> m_DSVHeap;

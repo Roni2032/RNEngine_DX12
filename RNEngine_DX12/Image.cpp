@@ -16,6 +16,9 @@ namespace RNEngine {
 	void TextureResource::SetTexture(const wstring& key) {
 		m_Texture = ResourceManager::GetTextureBuffer(Util::ConvertWstrToStr(key));
 	}
+	void TextureResource::SetTexture(const shared_ptr<TextureBuffer>& buffer) {
+		m_Texture = buffer;
+	}
 
 	void TextureResource::SetCamera(const shared_ptr<Camera>& camera) {
 		if (!camera) return;

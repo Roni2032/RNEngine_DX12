@@ -18,6 +18,8 @@ namespace RNEngine {
 
 		void SetPipelineState(const wstring& key);
 		void SetTexture(const wstring& key);
+		void SetTexture(const shared_ptr<TextureBuffer>& buffer);
+		shared_ptr<TextureBuffer> GetTexture()const { return m_Texture; }
 
 		void SetCamera(const shared_ptr<Camera>& camera);
 		void UpdateWorldMatrix(const shared_ptr<Transform>& transform);

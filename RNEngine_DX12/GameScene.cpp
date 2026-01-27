@@ -43,7 +43,7 @@ namespace RNEngine {
 		moveComp->SetJumpPower(4.9f);
 		moveComp->SetMoveKeys("up", "down", "right", "left");
 		auto collision = m_Player->AddComponent<CollisionCube>();
-		collision->SetScale(Vector3(1.0f, 5.0f, 1.0f));
+		collision->SetScale(Vector3(1.0f, 2.0f, 1.0f));
 
 		m_Ground = AddGameObject<GameObject>();
 		renderer = m_Ground->AddComponent<ModelRenderer>();
