@@ -7,7 +7,7 @@ Index of this file:
 
 // [SECTION] Forward Declarations
 // [SECTION] Widgets: Text, etc.
-// [SECTION] Widgets: Main (Button, Image, Checkbox, RadioButton, ProgressBar, Bullet, etc.)
+// [SECTION] Widgets: Main (Button, TextureResource, Checkbox, RadioButton, ProgressBar, Bullet, etc.)
 // [SECTION] Widgets: Low-level Layout helpers (Spacing, Dummy, NewLine, Separator, etc.)
 // [SECTION] Widgets: ComboBox
 // [SECTION] Data Type and Data Formatting Helpers
@@ -464,7 +464,7 @@ void ImGui::BulletTextV(const char* fmt, va_list args)
 // - GetWindowScrollbarRect() [Internal]
 // - Scrollbar() [Internal]
 // - ScrollbarEx() [Internal]
-// - Image()
+// - TextureResource()
 // - ImageButton()
 // - Checkbox()
 // - CheckboxFlagsT() [Internal]
@@ -1113,7 +1113,7 @@ bool ImGui::ScrollbarEx(const ImRect& bb_frame, ImGuiID id, ImGuiAxis axis, ImS6
     return held;
 }
 
-// - Read about ImTextureID/ImTextureRef here: https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples
+// - Read about ImTextureID/ImTextureRef here: https://github.com/ocornut/imgui/wiki/TextureResource-Loading-and-Displaying-Examples
 // - 'uv0' and 'uv1' are texture coordinates. Read about them from the same link above.
 void ImGui::ImageWithBg(ImTextureRef tex_ref, const ImVec2& image_size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& bg_col, const ImVec4& tint_col)
 {

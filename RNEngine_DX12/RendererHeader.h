@@ -2,11 +2,13 @@
 /// -------------------------------------------------
 ///   描画に必要なデータまとめ
 /// -------------------------------------------------
+
+#include "Vector.h"
 namespace RNEngine{
 	//GPU用頂点データ
 	struct Vertex {
-		XMFLOAT3 m_Position;
-		XMFLOAT2 m_Uv;
+		Vector3 m_Position;
+		Vector2 m_Uv;
 	};
 	//GPU用行列データ
 	struct Matrix {
@@ -26,6 +28,11 @@ namespace RNEngine{
 		uint32_t m_MaterialIndex = 0;
 	};
 
+	enum class TextureDataType {
+		None,//未使用
+		File,//ファイルパス
+		Embedded//埋め込みデータ
+	};
 	// 埋め込みテクスチャデータ
 	struct EmbeddedTexture {
 		string m_Name;
@@ -42,14 +49,40 @@ namespace RNEngine{
 			::CopyMemory(m_Data.data(), texture->pcData, texture->mWidth);
 		}
 	};
+	struct Material {
+		TextureDataType m_TextureType;
+
+		string m_TextureName;
+		EmbeddedTexture m_EmbeddedTexture;
+
+		bool IsEmpty() {
+			return m_TextureType == TextureDataType::None;
+		}
+		Material(TextureDataType type, const string& textureName, const EmbeddedTexture& embeddedTexture) :
+			m_TextureType(type), m_TextureName(textureName), m_EmbeddedTexture(embeddedTexture) {
+		}
+
+		Material() :Material(TextureDataType::None, "", {}) {}
+		Material(const string& filename) :Material(TextureDataType::File, filename, {}) {}
+		Material(EmbeddedTexture& texture) :Material(TextureDataType::Embedded, texture.m_Name, texture) {}
+	};
+
+	struct Model {
+		vector<Mesh> m_Meshes;
+		vector<Material> m_Materials;
+	};
 
 	//モデル初期行列データ
 	struct DefaultModelTransform {
 		float m_Scale;
 		Vector3 m_Rotation;
 		Vector3 m_Position;
-		DefaultModelTransform():DefaultModelTransform(1.0f,{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f}) {}
-		DefaultModelTransform(float scale,Vector3 rotation,Vector3 position)
-			:m_Scale(scale),m_Position(position),m_Rotation(rotation){}
+		DefaultModelTransform();
+		DefaultModelTransform(float scale, Vector3 rotation, Vector3 position);
+	};
+
+	struct ConstantBufferData {
+		void* m_Data;
+		size_t m_DataSize;
 	};
 }

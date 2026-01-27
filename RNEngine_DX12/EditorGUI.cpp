@@ -410,7 +410,8 @@ namespace RNEngine {
 		GUI::Draw();
 		auto renderer = Engine::GetRenderer();
 		auto texture = m_RenderTarget->GetRenderTargetTexture();
-		ImTextureID id = (ImTextureID)renderer->GetSRVDescriptorGPUHandle(texture->GetSRVHandle()).ptr;
+		auto textureBuffer = texture->GetTexture();
+		ImTextureID id = (ImTextureID)renderer->GetSRVDescriptorGPUHandle(textureBuffer->GetSRVHandle()).ptr;
 		
 		ImGui::Image(id, ImGui::GetContentRegionAvail());
 		ImGui::End();

@@ -3,20 +3,29 @@
 
 namespace RNEngine {
 
-    void PipelineState::Create(ID3D12Device* _dev,const Shader* vs, const Shader* ps, const RasterizerState* rasterizerState) {
+    void PipelineState::Create(ID3D12Device* _dev, const PipelineStateSetup& setup) {
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 		m_RootSignature = make_unique<RootSignature>();
 		m_RootSignature->Create(_dev);
 
 		psoDesc.pRootSignature = m_RootSignature->GetPtr();
 
-		psoDesc.VS = vs->GetBytecode();
-		psoDesc.PS = ps->GetBytecode();
+		if (setup.m_Vs == nullptr) {
+			DebugLog::Log(u8"頂点シェーダーが登録されていません。", LogData::Type::Error);
+			return;
+		}
+		if (setup.m_Ps == nullptr) {
+			DebugLog::Log(u8"ピクセルシェーダーが登録されていません。",LogData::Type::Error);
+			return;
+		}
+
+		psoDesc.VS = setup.m_Vs->GetBytecode();
+		psoDesc.PS = setup.m_Ps->GetBytecode();
 
 
 		psoDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-		if (rasterizerState) {
-			psoDesc.RasterizerState = rasterizerState->GetDesc();
+		if (setup.m_RasterizerState) {
+			psoDesc.RasterizerState = setup.m_RasterizerState->GetDesc();
 		}
 		else {
 			RasterizerState state = RasterizerState();
@@ -33,8 +42,8 @@ namespace RNEngine {
 		psoDesc.InputLayout.NumElements = (UINT)m_InputLayout.m_Layout.size();
 		psoDesc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;//カットなし
 
-		psoDesc.DepthStencilState.DepthEnable = true;
-		psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+		psoDesc.DepthStencilState.DepthEnable = setup.m_DepthEnable;
+		psoDesc.DepthStencilState.DepthWriteMask = setup.m_DepthMask;
 		psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS; // 既存の深度値よりも小さかったら更新する
 		psoDesc.DepthStencilState.StencilEnable = false;
 		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
@@ -152,12 +161,15 @@ namespace RNEngine {
 		auto window = Engine::GetWindow();
 		m_Dsv->Init(dev, window);
 
-		m_RenderTargetTexture = make_shared<TextureBuffer>();
-		m_RenderTargetTexture->Create(dev,(UINT)renderSize.x, (UINT)renderSize.y, format, clearColor);
+		shared_ptr<TextureResource> tex;
+		auto textureBuffer = make_shared<TextureBuffer>();
+		textureBuffer->Create(dev,(UINT)renderSize.x, (UINT)renderSize.y, format, clearColor);
 		
-		dev->CreateRenderTargetView(m_RenderTargetTexture->GetBuffer(), &m_Rtv->m_RTVDesc, m_Rtv->GetDecsriptorHeap()->GetCPUHandle());
+		dev->CreateRenderTargetView(textureBuffer->GetBuffer(), &m_Rtv->m_RTVDesc, m_Rtv->GetDescriptorHeap()->GetCPUHandle());
 	
-		auto res = m_RenderTargetTexture->GetBuffer();
+		m_RenderTargetTexture = make_shared<TextureResource>();
+		m_RenderTargetTexture->SetTexture(textureBuffer);
+		auto res = textureBuffer->GetBuffer();
 		if (!res) { printf("ERROR: resource null\n"); }
 
 		auto desc = res->GetDesc();
@@ -168,25 +180,28 @@ namespace RNEngine {
 		D3D12_RENDER_TARGET_VIEW_DESC rtv = m_Rtv->m_RTVDesc; // or log fields individually
 		printf("RTVDesc: Format=%u ViewDim=%u\n", (unsigned)rtv.Format, (unsigned)rtv.ViewDimension);
 
-		auto heap = m_Rtv->GetDecsriptorHeap();
+		auto heap = m_Rtv->GetDescriptorHeap();
 		printf("Heap: type? (not accessible here) Count or pointer: %p  CPU.ptr=%llu\n",
 			heap, (unsigned long long)heap->GetCPUHandle().ptr);
 	}
 
 	void RenderTarget::DrawBegin(ID3D12GraphicsCommandList* cmdList) {
-		auto barrier = make_unique<Barrier>();
-		barrier->Transition(cmdList, m_RenderTargetTexture->GetBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		auto textureBuffer = m_RenderTargetTexture->GetTexture();
+		auto barrier = Barrier();
+
+		barrier.Transition(cmdList, textureBuffer->GetBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		//m_Rtv->SetBufferState(0, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		auto rtvH = m_Rtv->GetDecsriptorHeap()->GetCPUHandle();
-		auto dsvH = m_Dsv->GetDecsriptorHeap()->GetCPUHandle();
+		auto rtvH = m_Rtv->GetDescriptorHeap()->GetCPUHandle();
+		auto dsvH = m_Dsv->GetDescriptorHeap()->GetCPUHandle();
 		cmdList->OMSetRenderTargets(1, &rtvH, true, &dsvH);
 
 		cmdList->ClearRenderTargetView(rtvH, m_ClearColor.data(), 0, nullptr);
 		cmdList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 	}
 	void RenderTarget::DrawEnd(ID3D12GraphicsCommandList* cmdList) {
-		auto barrier = make_unique<Barrier>();
-		barrier->Transition(cmdList, m_RenderTargetTexture->GetBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		auto textureBuffer = m_RenderTargetTexture->GetTexture();
+		auto barrier = Barrier();
+		barrier.Transition(cmdList, textureBuffer->GetBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 		//m_Rtv->SetBufferState(0, D3D12_RESOURCE_STATE_PRESENT);
 	}
 	void RenderTarget::Draw(ID3D12GraphicsCommandList* cmdList, vector<shared_ptr<RendererComponent>>& renderers) {
@@ -198,6 +213,7 @@ namespace RNEngine {
 		}
 		DrawEnd(cmdList);
 	}
+	shared_ptr<TextureResource> RenderTarget::GetRenderTargetTexture() { return m_RenderTargetTexture; }
 	void Viewport::Create(const Window* _window) {
 		Create(_window->GetWidth(), _window->GetHeight(), 0, 0);
 	}
@@ -238,14 +254,12 @@ namespace RNEngine {
 		m_Fence = make_unique<Fence>(d3d12Device);
 		m_Barrier = make_unique<Barrier>();
 
-		Shader vs, ps;
-		vs.LoadVS(L"SampleVertexShader.hlsl", "VSMain");
-		ps.LoadPS(L"SamplePixelShader.hlsl", "PSMain");
-		RasterizerState wireRasterizerState = RasterizerState();
-		wireRasterizerState.SetFillMode(FillMode::WIREFRAME);
-
-		PipelineStatePool::RegisterPipelineState(L"Sample1", InputLayout::PUV, &vs, &ps);
-		PipelineStatePool::RegisterPipelineState(L"WireFrame", InputLayout::PUV, &vs, &ps, &wireRasterizerState);
+		PipelineStateSetup setup = {};
+		setup.m_Vs = new Shader();
+		setup.m_Vs->LoadVS(L"SampleVertexShader.hlsl", "VSMain");
+		setup.m_Ps = new Shader();
+		setup.m_Ps->LoadPS(L"SamplePixelShader.hlsl", "PSMain");
+		PipelineStatePool::RegisterPipelineState(L"Sample1", InputLayout::PUV, setup);
 
 		m_ViewPort = make_unique<Viewport>();
 		m_Sicssor = make_unique<SicssorRect>();
@@ -253,6 +267,8 @@ namespace RNEngine {
 		m_Sicssor->Create(m_ViewPort.get());
         //灰色に初期化
 		m_ClearColor = { 0.5f,0.5f,0.5f,1.0f };
+
+		Debug::Get().Initialize();
 	}
 
     void Renderer::BeginRenderer() {
@@ -265,10 +281,10 @@ namespace RNEngine {
 			m_RTVBuffer->SetBufferState(idx, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		}
 
-        auto rtvH = m_RTVBuffer->GetDecsriptorHeap()->GetCPUHandle();
-        rtvH.ptr += idx * m_RTVBuffer->GetDecsriptorHeap()->GetHeapSize();
+        auto rtvH = m_RTVBuffer->GetDescriptorHeap()->GetCPUHandle();
+        rtvH.ptr += idx * m_RTVBuffer->GetDescriptorHeap()->GetHeapSize();
 
-		auto dsvH = m_DSVBuffer->GetDecsriptorHeap()->GetCPUHandle();
+		auto dsvH = m_DSVBuffer->GetDescriptorHeap()->GetCPUHandle();
 
         m_CommandList->OMSetRenderTargets(1, &rtvH, true, &dsvH);
 
@@ -285,25 +301,22 @@ namespace RNEngine {
     void Renderer::EndRenderer(GUIRenderer* guiRenderer) {
 		auto idx = m_SwapChain->GetCurrentBackBufferIndex();
 		//m_FrameBufferRenderTargets[idx]->DrawBegin(m_CommandList.Get());
-		/*auto rtvH = m_RTVBuffer->GetDecsriptorHeap()->GetCPUHandle();
-		rtvH.ptr += idx * m_RTVBuffer->GetDecsriptorHeap()->GetHeapSize();
+		/*auto rtvH = m_RTVBuffer->GetDescriptorHeap()->GetCPUHandle();
+		rtvH.ptr += idx * m_RTVBuffer->GetDescriptorHeap()->GetHeapSize();
 
-		auto dsvH = m_DSVBuffer->GetDecsriptorHeap()->GetCPUHandle();
+		auto dsvH = m_DSVBuffer->GetDescriptorHeap()->GetCPUHandle();
 
 		m_CommandList->OMSetRenderTargets(1, &rtvH, true, &dsvH);
 
 		m_CommandList->ClearRenderTargetView(rtvH, m_ClearColor.data(), 0, nullptr);
 		m_CommandList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);*/
 
-		DebugRenderer::Flush();
-
+		Debug::Get().Flush();
 		//すべての描画が終わった後にGUIを表示
 		if (guiRenderer != nullptr) {
 			guiRenderer->UpdateRenderer(m_CommandList.Get(), m_SrvCbvDescriptorHeap.get());
 		}
 		//DebugRenderer::DrawCubeWireFrame(Vector3(), Vector3(1.0f));
-		m_CommandList->RSSetViewports(1, &m_ViewPort->GetViewport());
-		m_CommandList->RSSetScissorRects(1, &m_Sicssor->GetRect());
 
 		//m_FrameBufferRenderTargets[idx]->DrawEnd(m_CommandList.Get());
 
@@ -327,27 +340,43 @@ namespace RNEngine {
 		m_Fence->WaitGPU(m_CommandQueue.Get());
 	}
 
+	void Renderer::CopyToFrameBuffer(RenderTarget* renderTarget) {
+		auto idx = m_SwapChain->GetCurrentBackBufferIndex();
+		
+		auto rtvH = m_RTVBuffer->GetDescriptorHeap()->GetCPUHandle();
+		rtvH.ptr += idx * m_RTVBuffer->GetDescriptorHeap()->GetHeapSize();
+
+		auto dsvH = m_DSVBuffer->GetDescriptorHeap()->GetCPUHandle();
+		m_CommandList->OMSetRenderTargets(1, &rtvH, true, &dsvH);
+
+		m_CommandList->RSSetViewports(1, &m_ViewPort->GetViewport());
+		m_CommandList->RSSetScissorRects(1, &m_Sicssor->GetRect());
+
+		auto texture = renderTarget->GetRenderTargetTexture();
+		texture->Draw(m_CommandList, m_SrvCbvDescriptorHeap.get());
+	}
+
 	void Renderer::RegisterTextureBuffer(TextureBuffer& texBuffer) {
 		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
 			m_SrvCbvDescriptorHeap->GetCPUHandle(),
 			m_SrvCbvDescriptorHeap->GetHeapCount(),
 			m_SrvCbvDescriptorHeap->GetHeapSize()
 		);
-		D3D12_SHADER_RESOURCE_VIEW_DESC desc = texBuffer.GetSRV()->m_SRVDesc;
+		D3D12_SHADER_RESOURCE_VIEW_DESC desc = texBuffer.GetSRV()->GetDesc();
 		auto dev = Engine::GetID3D12Device();
 		dev->CreateShaderResourceView(texBuffer.GetBuffer(), &desc, handle);
 		texBuffer.SetSRVHandle(m_SrvCbvDescriptorHeap->GetHeapCount());
 		m_SrvCbvDescriptorHeap->AddHeapCount();
 	}
-	void Renderer::RegisterConstantBuffer(ConstBuffer& constBuffer) {
+	void Renderer::RegisterConstantBuffer(ConstantBuffer& constBuffer) {
 		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
 			m_SrvCbvDescriptorHeap->GetHeap()->GetCPUDescriptorHandleForHeapStart(),
 			m_SrvCbvDescriptorHeap->GetHeapCount(),
 			m_SrvCbvDescriptorHeap->GetHeapSize()
 		);
 		auto dev = Engine::GetID3D12Device();
-		dev->CreateConstantBufferView(&constBuffer.m_CBVDesc, handle);
-		constBuffer.SetCBVHandle(m_SrvCbvDescriptorHeap->GetHeapCount());
+		dev->CreateConstantBufferView(&constBuffer.GetDesc(), handle);
+		constBuffer.SetHandle(m_SrvCbvDescriptorHeap->GetHeapCount());
 		m_SrvCbvDescriptorHeap->AddHeapCount();
 	}
 

@@ -23,6 +23,9 @@ namespace RNEngine {
 #ifdef _DEBUG
 		EnableDebugLayer();
 #endif
+		// リソースマネージャー初期化
+		ResourceManager::SetDefaultFilePath("../Assets/");
+
 		// デバイス、レンダラー初期化
 		m_Device = make_unique<Device>();
 		m_Renderer = make_unique<Renderer>();
@@ -34,11 +37,8 @@ namespace RNEngine {
 		m_GuiRenderer->Init(m_Renderer->GetSrvDescriptorHeap());
 
 		m_Renderer->SetClearColor(0.1f, 0.25f, 0.5f, 1.0f);
-		// リソースマネージャー初期化
-		ResourceManager::SetDefaultFilePath("../Assets/");
 
 		Input::Init();
-		DebugRenderer::Init();
 
 		Timer timer = Timer();
 		timer.Init();
@@ -85,7 +85,6 @@ namespace RNEngine {
 		// テスト用リソース登録
 
 		ResourceManager::RegisterTexture("Textures/ErrorTexture.png");
-		ResourceManager::RegisterTexture("Textures/WireFrameTexture.png");
 
 		timer.Init();
 		m_CurrentScene = make_shared<GameScene>();

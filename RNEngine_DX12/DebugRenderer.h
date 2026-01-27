@@ -1,8 +1,10 @@
 #pragma once
 #include "stdafx.h"
 #include "RendererHeader.h"
+#include "Singleton.h"
+
 namespace RNEngine {
-	class ConstBuffer;
+	class ConstantBuffer;
 
 	struct DebugCommand {
 		Vector3 position;
@@ -11,15 +13,15 @@ namespace RNEngine {
 		string mesh;
 		string camera;
 	};
-	class DebugRenderer{
-		static vector<DebugCommand> g_Commands;
-		static unique_ptr<ConstBuffer> g_ConstantBuffer;
-		static Matrix g_Matrix;
+
+	class Debug : public SingletonBase<Debug> {
+		friend class SingletonBase<Debug>;
+		vector<unique_ptr<ConstantBuffer>> m_ConstantBuffers;
+		vector<Matrix> m_Matrices;
+		vector<DebugCommand> m_Commands;
 	public:
-		static void DrawCubeWireFrame(Vector3 position, Vector3 size);
-
-
-		static void Init();
-		static void Flush();
+		void DrawCubeWireFrame(const Vector3& position, const Vector3& size);
+		void Initialize();
+		void Flush();
 	};
 }

@@ -1,5 +1,8 @@
 #pragma once
 #include "stdafx.h"
+#include "Shader.h"
+#include "Renderer.h"
+#include "RNEngine.h"
 
 namespace RNEngine {
 	class PipelineState;
@@ -11,7 +14,7 @@ namespace RNEngine {
 	{
 		static unordered_map<wstring, shared_ptr<PipelineState>> m_PipelineStateMap;
 	public:
-		static shared_ptr<PipelineState> RegisterPipelineState(const wstring& name, InputLayout layout,const Shader* vs, const Shader* ps,const RasterizerState* rasterizerState = nullptr );
+		static shared_ptr<PipelineState> RegisterPipelineState(const wstring& name, InputLayout layout, const PipelineStateSetup& setup);
 
 		static shared_ptr<PipelineState> GetPipelineState(const wstring& name);
 	};
