@@ -56,14 +56,14 @@ namespace RNEngine {
 	}
 
 	void DSVBuffer::CreateDSVDesc(ID3D12Device* _dev) {
-		ZeroMemory(&m_DSVDesc, sizeof(m_DSVDesc));
-		m_DSVDesc.Format = DXGI_FORMAT_D32_FLOAT;
-		m_DSVDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-		m_DSVDesc.Flags = D3D12_DSV_FLAG_NONE;
+		ZeroMemory(&m_Desc, sizeof(m_Desc));
+		m_Desc.Format = DXGI_FORMAT_D32_FLOAT;
+		m_Desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+		m_Desc.Flags = D3D12_DSV_FLAG_NONE;
 
 		_dev->CreateDepthStencilView(
-			m_DSBuffer.Get(), // ComPtrが管理しているデータを渡す
-			&m_DSVDesc,
+			m_Buffer.Get(), // ComPtrが管理しているデータを渡す
+			&m_Desc,
 			m_DSVHeap->GetCPUHandle());
 	}
 
@@ -92,7 +92,7 @@ namespace RNEngine {
 			&resourceDesc,
 			D3D12_RESOURCE_STATE_DEPTH_WRITE,
 			&clearValue,
-			IID_PPV_ARGS(m_DSBuffer.GetAddressOf()));
+			IID_PPV_ARGS(m_Buffer.GetAddressOf()));
 
 		printf("Create RT: size=%ux%u format=%u flags=%u\n",
 			_window->GetWidth(), _window->GetHeight(), (unsigned)resourceDesc.Format, (unsigned)resourceDesc.Flags);
@@ -109,11 +109,11 @@ namespace RNEngine {
 		CreateDSVDesc(_dev);
 	}
 	void SRVBuffer::CreateSRVDesc(ID3D12Device* _dev, DXGI_FORMAT format) {
-		ZeroMemory(&m_SRVDesc, sizeof(m_SRVDesc));
-		m_SRVDesc.Format = format;
-		m_SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		m_SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		m_SRVDesc.Texture2D.MipLevels = 1;
+		ZeroMemory(&m_Desc, sizeof(m_Desc));
+		m_Desc.Format = format;
+		m_Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		m_Desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		m_Desc.Texture2D.MipLevels = 1;
 	}
 	void SRVBuffer::Init(ID3D12Device* _dev, TextureBuffer& texBuffer, DXGI_FORMAT format) {
 		CreateSRVDesc(_dev, format);
@@ -125,7 +125,7 @@ namespace RNEngine {
 		CreateSRVDesc(_dev, format);
 	}
 
-	void ConstBuffer::Create(ID3D12Device* _dev, void* data) {
+	void ConstantBuffer::Create(ID3D12Device* _dev, void* data) {
 		m_BufferSize = (sizeof(data) + 0xff) & ~0xff;
 		auto heap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
 		auto resDesc = CD3DX12_RESOURCE_DESC::Buffer(m_BufferSize);
@@ -135,27 +135,27 @@ namespace RNEngine {
 			&resDesc,
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr, 
-			IID_PPV_ARGS(m_ConstBuffer.GetAddressOf()));
+			IID_PPV_ARGS(m_Buffer.GetAddressOf()));
 		assert(SUCCEEDED(result));
 
 		CD3DX12_RANGE readRange(0, 0);
-		result = m_ConstBuffer->Map(0, &readRange, (void**)&m_MappedData);
+		result = m_Buffer->Map(0, &readRange, (void**)&m_MappedData);
 		if (data) memcpy(m_MappedData, data, sizeof(data));
 
-		ZeroMemory(&m_CBVDesc, sizeof(m_CBVDesc));
-		m_CBVDesc.BufferLocation = m_ConstBuffer->GetGPUVirtualAddress();
-		m_CBVDesc.SizeInBytes = (UINT)m_ConstBuffer->GetDesc().Width;
+		ZeroMemory(&m_Desc, sizeof(m_Desc));
+		m_Desc.BufferLocation = m_Buffer->GetGPUVirtualAddress();
+		m_Desc.SizeInBytes = (UINT)m_Buffer->GetDesc().Width;
 		auto renderer = Engine::GetRenderer();
 		renderer->RegisterConstantBuffer(*this);
 	}
 
-	void ConstBuffer::Upadte(void* data,size_t size) {
+	void ConstantBuffer::Update(void* data,size_t size) {
 		memcpy(m_MappedData, data, size);
 	}
-	void VertexBuffer::InitVertexBufferView(const vector<Vertex>& vertex) {
-		m_VertexBufferView.BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();
-		m_VertexBufferView.SizeInBytes = sizeof(Vertex) * (UINT)vertex.size();
-		m_VertexBufferView.StrideInBytes = sizeof(vertex[0]);
+	void VertexBuffer::InitVertexBufferView() {
+		m_VertexBufferView.BufferLocation = m_Buffer->GetGPUVirtualAddress();
+		m_VertexBufferView.SizeInBytes = sizeof(Vertex) * (UINT)m_Vertex.size();
+		m_VertexBufferView.StrideInBytes = sizeof(m_Vertex[0]);
 	}
 	void VertexBuffer::CreateVertexBuffer(ID3D12Device* _dev, const vector<Vertex>& vertex) {
 		D3D12_HEAP_PROPERTIES heapProp = {};
@@ -180,7 +180,7 @@ namespace RNEngine {
 			&resDesc,
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr,
-			IID_PPV_ARGS(m_VertexBuffer.GetAddressOf()));
+			IID_PPV_ARGS(m_Buffer.GetAddressOf()));
 
 		if (FAILED(result)) {
 			_com_error err(result);
@@ -190,21 +190,21 @@ namespace RNEngine {
 
 		Vertex* vertMap = nullptr;
 
-		result = m_VertexBuffer->Map(0, nullptr, (void**)&vertMap);
+		result = m_Buffer->Map(0, nullptr, (void**)&vertMap);
 		copy(vertex.begin(), vertex.end(), vertMap);
-		m_VertexBuffer->Unmap(0, nullptr);
+		m_Buffer->Unmap(0, nullptr);
 	}
 
 	void VertexBuffer::Create(ID3D12Device* _dev, const vector<Vertex>& vertex) {
 		CreateVertexBuffer(_dev, vertex);
-		InitVertexBufferView(vertex);
-		m_VertexData = vertex;
+		m_Vertex = vertex;
+		InitVertexBufferView();
 	}
 
 
-	void IndexBuffer::InitIndexBufferView(const vector<UINT>& index) {
-		m_IndexBufferView.BufferLocation = m_IndexBuffer->GetGPUVirtualAddress();
-		m_IndexBufferView.SizeInBytes = sizeof(UINT) * (UINT)index.size();
+	void IndexBuffer::InitIndexBufferView() {
+		m_IndexBufferView.BufferLocation = m_Buffer->GetGPUVirtualAddress();
+		m_IndexBufferView.SizeInBytes = sizeof(UINT) * (UINT)m_Indices.size();
 		m_IndexBufferView.Format = DXGI_FORMAT_R32_UINT;
 	}
 	void IndexBuffer::CreateIndexBuffer(ID3D12Device* _dev, const vector<UINT>& index) {
@@ -230,7 +230,7 @@ namespace RNEngine {
 			&resDesc,
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr,
-			IID_PPV_ARGS(m_IndexBuffer.GetAddressOf()));
+			IID_PPV_ARGS(m_Buffer.GetAddressOf()));
 
 		if (FAILED(result)) {
 			_com_error err(result);
@@ -240,15 +240,15 @@ namespace RNEngine {
 
 		UINT* indexMap = nullptr;
 
-		result = m_IndexBuffer->Map(0, nullptr, (void**)&indexMap);
+		result = m_Buffer->Map(0, nullptr, (void**)&indexMap);
 		copy(index.begin(), index.end(), indexMap);
-		m_IndexBuffer->Unmap(0, nullptr);
+		m_Buffer->Unmap(0, nullptr);
 	}
 
 	void IndexBuffer::Create(ID3D12Device* _dev, const vector<UINT>& index) {
 		CreateIndexBuffer(_dev, index);
-		InitIndexBufferView(index);
-		m_IndexData = index;
+		m_Indices = index;
+		InitIndexBufferView();
 	}
 
 
@@ -273,7 +273,7 @@ namespace RNEngine {
 
 		CreateResource((UINT)metadata.width, (UINT)metadata.height, metadata.format);
 
-		result = m_TextureBuffer->WriteToSubresource(
+		result = m_Buffer->WriteToSubresource(
 			0,
 			nullptr,
 			img->pixels,
@@ -312,7 +312,7 @@ namespace RNEngine {
 
 		CreateResource((UINT)metadata.width, (UINT)metadata.height, metadata.format);
 
-		result = m_TextureBuffer->WriteToSubresource(
+		result = m_Buffer->WriteToSubresource(
 			0,
 			nullptr,
 			img->pixels,
@@ -360,7 +360,7 @@ namespace RNEngine {
 				&desc,
 				D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
 				&clearValue,
-				IID_PPV_ARGS(m_TextureBuffer.GetAddressOf()));
+				IID_PPV_ARGS(m_Buffer.GetAddressOf()));
 
 			assert(SUCCEEDED(result));
 		}
@@ -371,13 +371,13 @@ namespace RNEngine {
 				&desc,
 				D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
 				nullptr,
-				IID_PPV_ARGS(m_TextureBuffer.GetAddressOf()));
+				IID_PPV_ARGS(m_Buffer.GetAddressOf()));
 
 			assert(SUCCEEDED(result));
 		}
 
 		//SRVを作成
-		m_SRV = make_unique<SRVBuffer>();
-		m_SRV->Init(dev, *this, format);
+		m_Srv = make_unique<SRVBuffer>();
+		m_Srv->Init(dev, *this, format);
 	}
 }

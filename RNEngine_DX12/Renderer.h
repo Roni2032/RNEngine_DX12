@@ -89,8 +89,10 @@ namespace RNEngine {
 
 		D3D12_STATIC_SAMPLER_DESC& GetDesc() { return m_SamplerDesc; }
 	};
+
+	class TextureResource;
 	class RenderTarget {
-		shared_ptr<TextureBuffer> m_RenderTargetTexture;
+		shared_ptr<TextureResource> m_RenderTargetTexture;
 		unique_ptr<RTVBuffer> m_Rtv;
 		unique_ptr<DSVBuffer> m_Dsv;
 		
@@ -109,7 +111,7 @@ namespace RNEngine {
 
 		RTVBuffer* GetRTVBuffer() { return m_Rtv.get(); }
 
-		shared_ptr<TextureBuffer> GetRenderTargetTexture() { return m_RenderTargetTexture; }
+		shared_ptr<TextureResource> GetRenderTargetTexture();
 	};
 
 	class Viewport {
@@ -145,6 +147,14 @@ namespace RNEngine {
 		D3D12_RECT& GetRect() { return m_Rect; }
 	};
 
+	struct PipelineStateSetup {
+		RasterizerState* m_RasterizerState = nullptr;
+		Shader* m_Ps = nullptr;
+		Shader* m_Vs = nullptr;
+
+		bool m_DepthEnable = true;
+		D3D12_DEPTH_WRITE_MASK m_DepthMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	};
 	class PipelineState {
 		ComPtr<ID3D12PipelineState> m_PipelineState;
 		unique_ptr<RootSignature> m_RootSignature;
@@ -160,7 +170,7 @@ namespace RNEngine {
 		void SetInputLayout(const InputLayout& layout) { m_InputLayout = layout; }
 		void SetInputLayout(const vector<D3D12_INPUT_ELEMENT_DESC>& layout) { m_InputLayout = InputLayout(layout); }
 
-		void Create(ID3D12Device* _dev, const Shader* vs, const Shader* ps, const RasterizerState* rasterizerState = nullptr);
+		void Create(ID3D12Device* _dev, const PipelineStateSetup& setup);
 
 		void SetVSShader( Shader* shader) { m_VSShader = make_shared<Shader>(*shader); }
 		void SetPSShader( Shader* shader) { m_PSShader = make_shared<Shader>(*shader); }
@@ -184,6 +194,7 @@ namespace RNEngine {
 		//今回のフレームに描画するオブジェクトをレンダーターゲットに振り分けたやつ
 		unordered_map<string, vector<shared_ptr<RendererComponent>>> m_CurrentFrameRenderObjects;
 		vector<string> m_RenderTargetOrder;//レンダーターゲットの描画順(何もしなければ登録順)
+		unique_ptr<RenderTarget> m_MainRenderTarget;
 
 		array<unique_ptr<RenderTarget>, 2> m_FrameBufferRenderTargets;
 		unique_ptr<RTVBuffer> m_RTVBuffer;	//レンダーターゲットビュー用のヒープ
@@ -200,15 +211,18 @@ namespace RNEngine {
 		unique_ptr<Barrier> m_Barrier;
 		unique_ptr<PipelineState> m_PipelineState;
 		array<float, 4> m_ClearColor;
+
+
+		void CopyToFrameBuffer(RenderTarget* renderTarget);
 	public:
 		Renderer();
 		~Renderer();
 
 		void Init(const Window* _window);
+		void WaitGPU();
+
 		void BeginRenderer();
 		void EndRenderer(GUIRenderer* guiRenderer = nullptr);
-
-		void WaitGPU();
 
 		void SetClearColor(float r, float g, float b, float a) {
 			m_ClearColor = { r,g,b,a };
@@ -216,7 +230,7 @@ namespace RNEngine {
 		array<float, 4> GetClearColor() { return m_ClearColor; }
 
 		void RegisterTextureBuffer(TextureBuffer& texBuffer);
-		void RegisterConstantBuffer(ConstBuffer& constBuffer);
+		void RegisterConstantBuffer(ConstantBuffer& constBuffer);
 
 		void RegisterRenderTarget(const string& name, shared_ptr<RenderTarget>& renderTarget) {
 			m_RenderTargets[name] = renderTarget;

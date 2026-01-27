@@ -7,6 +7,7 @@ namespace RNEngine {
 
         shared_ptr<GameObject> m_Player;
         shared_ptr<GameObject> m_Ground;
+        shared_ptr<GameObject> m_Texture;
     public:
         GameScene();
         ~GameScene();

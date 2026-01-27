@@ -9,7 +9,7 @@ namespace RNEngine{
 	public:
 		~SingletonBase(){}
 
-		static T& GetInstance() {
+		static T& Get() {
 			static T instance;
 			return instance;
 		}

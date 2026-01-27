@@ -36,4 +36,13 @@ namespace RNEngine {
 
 		return result;
 	}
+
+
+	void DxUtil::CreateMeshBuffer(ID3D12Device* _dev, Mesh& mesh) {
+		mesh.m_VertexBuffer = make_shared<VertexBuffer>();
+		mesh.m_IndexBuffer = make_shared<IndexBuffer>();
+
+		mesh.m_VertexBuffer->Create(_dev, mesh.m_Vertices);
+		mesh.m_IndexBuffer->Create(_dev, mesh.m_Indices);
+	}
 }
