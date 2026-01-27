@@ -5,6 +5,7 @@
 
 namespace RNEngine
 {
+	class DescriptorHeap;
 	class PipelineState;
 	class ConstantBuffer;
 	class Transform;

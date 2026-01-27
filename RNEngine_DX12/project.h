@@ -19,9 +19,12 @@
 #include "Buffer.h"
 #include "Shader.h"
 #include "RendererComponent.h"
+#include "ModelRenderer.h"
+#include "ImageRenderer.h"
+
 #include "RendererObject.h"
 #include "Model.h"
-#include "Image.h"
+#include "TextureResource.h"
 #include "Camera.h"
 
 #include "GameObject.h"

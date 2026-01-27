@@ -1,5 +1,13 @@
 #include "stdafx.h"
-#include "project.h"
+#include "ResourceManager.h"
+#include "RNEngine.h"
+
+#include "TextureBuffer.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+
+#include "Model.h"
+
 
 namespace RNEngine {
 	string ResourceManager::m_DefaultFilePath = "";

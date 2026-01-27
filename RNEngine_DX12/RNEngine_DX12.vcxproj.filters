@@ -73,6 +73,12 @@
     <Filter Include="Engine\Loader">
       <UniqueIdentifier>{410c8550-f282-4cdb-97ea-dff568ae777f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Device\Buffers">
+      <UniqueIdentifier>{3112678d-9d76-4abe-beb7-0bbf285171dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Renderer\Component">
+      <UniqueIdentifier>{1997f4b9-0676-478f-a41f-91d2c8e54a63}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -93,9 +99,6 @@
     <ClCompile Include="Model.cpp">
       <Filter>Engine\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Buffer.cpp">
-      <Filter>Engine\Device</Filter>
-    </ClCompile>
     <ClCompile Include="Timer.cpp">
       <Filter>Engine\Device</Filter>
     </ClCompile>
@@ -111,16 +114,13 @@
     <ClCompile Include="Input.cpp">
       <Filter>Engine\Input</Filter>
     </ClCompile>
-    <ClCompile Include="RendererComponent.cpp">
-      <Filter>Engine\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="ResourceManager.cpp">
       <Filter>Engine\Manager</Filter>
     </ClCompile>
     <ClCompile Include="PipelineState.cpp">
       <Filter>Engine\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Image.cpp">
+    <ClCompile Include="TextureResource.cpp">
       <Filter>Engine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
@@ -210,6 +210,39 @@
     <ClCompile Include="RenderingEngine.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="RTV.cpp">
+      <Filter>Engine\Device\Buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="DSV.cpp">
+      <Filter>Engine\Device\Buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="Descriptor.cpp">
+      <Filter>Engine\Device\Buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexBuffer.cpp">
+      <Filter>Engine\Device\Buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="IndexBuffer.cpp">
+      <Filter>Engine\Device\Buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureBuffer.cpp">
+      <Filter>Engine\Device\Buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="SRV.cpp">
+      <Filter>Engine\Device\Buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="ConstantBuffer.cpp">
+      <Filter>Engine\Device\Buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelRenderer.cpp">
+      <Filter>Engine\Renderer\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageRenderer.cpp">
+      <Filter>Engine\Renderer\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="RendererComponent.cpp">
+      <Filter>Engine\Renderer\Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -251,16 +284,13 @@
     <ClInclude Include="Input.h">
       <Filter>Engine\Input</Filter>
     </ClInclude>
-    <ClInclude Include="RendererComponent.h">
-      <Filter>Engine\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="PipelineState.h">
       <Filter>Engine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="ResourceManager.h">
       <Filter>Engine\Manager</Filter>
     </ClInclude>
-    <ClInclude Include="Image.h">
+    <ClInclude Include="TextureResource.h">
       <Filter>Engine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
@@ -328,6 +358,39 @@
     </ClInclude>
     <ClInclude Include="RenderingEngine.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="RTV.h">
+      <Filter>Engine\Device\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="DSV.h">
+      <Filter>Engine\Device\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Descriptor.h">
+      <Filter>Engine\Device\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexBuffer.h">
+      <Filter>Engine\Device\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="IndexBuffer.h">
+      <Filter>Engine\Device\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureBuffer.h">
+      <Filter>Engine\Device\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="SRV.h">
+      <Filter>Engine\Device\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantBuffer.h">
+      <Filter>Engine\Device\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelRenderer.h">
+      <Filter>Engine\Renderer\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageRenderer.h">
+      <Filter>Engine\Renderer\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererComponent.h">
+      <Filter>Engine\Renderer\Component</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

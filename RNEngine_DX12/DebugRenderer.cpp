@@ -1,9 +1,28 @@
 #include "stdafx.h"
 #include "DebugRenderer.h"
-#include "project.h"
-namespace RNEngine {
 
-	void Debug::DrawCubeWireFrame(const Vector3& position, const Vector3& size) {
+#include "RNEngine.h"
+#include "Renderer.h"
+#include "ResourceManager.h"
+#include "RendererHeader.h"
+
+#include "Descriptor.h"
+#include "ConstantBuffer.h"
+#include "IndexBuffer.h"
+#include "VertexBuffer.h"
+#include "TextureBuffer.h"
+
+#include "PipelineState.h"
+#include "Shader.h"
+
+#include "Scene.h"
+#include "Camera.h"
+
+namespace RNEngine {
+	DebugRenderer::DebugRenderer() {}
+	DebugRenderer::~DebugRenderer() {}
+
+	void DebugRenderer::DrawCubeWireFrame(const Vector3& position, const Vector3& size) {
 		DebugCommand command;
 		command.mesh = "DEFAULT_SQUARE_3D";
 		command.camera = "Game";
@@ -13,7 +32,7 @@ namespace RNEngine {
 
 		m_Commands.push_back(command);
 	}
-	void Debug::Initialize() {
+	void DebugRenderer::Initialize() {
 		ResourceManager::RegisterTexture("Textures/WireFrameTexture.png");
 
 		PipelineStateSetup setup = {};
@@ -31,7 +50,7 @@ namespace RNEngine {
 
 		PipelineStatePool::RegisterPipelineState(L"WireFrame", InputLayout::PUV, setup);
 	}
-	void Debug::Flush() {
+	void DebugRenderer::Flush() {
 		auto scene = Engine::GetCurrentScene();
 		auto renderer = Engine::GetRenderer();
 		auto cmdList = renderer->GetCommandList();

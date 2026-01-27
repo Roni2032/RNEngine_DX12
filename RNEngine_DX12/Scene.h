@@ -3,6 +3,8 @@
 
 namespace RNEngine {
 	class GameObject;
+	class Camera;
+
 	class Scene : public enable_shared_from_this<Scene>
 	{
 		vector<shared_ptr<GameObject>> m_GameObjects;
@@ -23,20 +25,10 @@ namespace RNEngine {
 			return ptr;
 		}
 
-		vector<shared_ptr<GameObject>> GetGameObjects() {
-			return m_GameObjects;
-		}
+		vector<shared_ptr<GameObject>> GetGameObjects();
 
-		shared_ptr<Camera> GetCamera(const string& name) {
-			auto it = m_CameraMap.find(name);
-			if (it != m_CameraMap.end()) {
-				return it->second;
-			}
-			return nullptr;
-		}
-		void RegisterCamera(const string& name, const shared_ptr<Camera>& camera) {
-			m_CameraMap[name] = camera;
-		}
+		shared_ptr<Camera> GetCamera(const string& name);
+		void RegisterCamera(const string& name, const shared_ptr<Camera>& camera);
 	};
 	class SceneManager {
 		unordered_map<string, shared_ptr<Scene>> m_SceneMap;

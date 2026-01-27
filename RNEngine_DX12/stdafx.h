@@ -67,5 +67,6 @@ using namespace std::filesystem;
 #include "Object.h"
 #include "Util.h"
 #include "Vector.h"
+#include "Reflection.h"
 
 //using namespace RNEngine;

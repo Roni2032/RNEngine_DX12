@@ -14,12 +14,15 @@ namespace RNEngine {
 		string camera;
 	};
 
-	class Debug : public SingletonBase<Debug> {
-		friend class SingletonBase<Debug>;
+	class DebugRenderer : public SingletonBase<DebugRenderer> {
+		friend class SingletonBase<DebugRenderer>;
 		vector<unique_ptr<ConstantBuffer>> m_ConstantBuffers;
 		vector<Matrix> m_Matrices;
 		vector<DebugCommand> m_Commands;
 	public:
+		DebugRenderer();
+		~DebugRenderer();
+
 		void DrawCubeWireFrame(const Vector3& position, const Vector3& size);
 		void Initialize();
 		void Flush();
