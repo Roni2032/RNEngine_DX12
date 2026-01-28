@@ -284,6 +284,9 @@ namespace RNEngine {
 		m_CommandList->ClearRenderTargetView(rtvH, m_ClearColor.data(), 0, nullptr);
 		m_CommandList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);*/
 
+		DebugRenderer::Get().DrawSphereWireFrame(Vector3(0, 0, 0), Vector3(1.0f));
+		DebugRenderer::Get().DrawLine(Vector3(-1, 2, 0), Vector3(1, 2, 0), 0.1f);
+
 		DebugRenderer::Get().Flush();
 		//‚·‚×‚Ä‚Ì•`‰æ‚ªI‚í‚Á‚½Œã‚ÉGUI‚ğ•\¦
 		if (guiRenderer != nullptr) {

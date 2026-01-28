@@ -79,6 +79,9 @@
     <Filter Include="Engine\Renderer\Component">
       <UniqueIdentifier>{1997f4b9-0676-478f-a41f-91d2c8e54a63}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Renderer\Debug">
+      <UniqueIdentifier>{d6ab1e3c-4c3f-4f4a-a57c-c3fc7d241f67}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -198,9 +201,6 @@
     <ClCompile Include="GameScene.cpp">
       <Filter>Game\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="DebugRenderer.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Loaders.cpp">
       <Filter>Engine\Loader</Filter>
     </ClCompile>
@@ -242,6 +242,9 @@
     </ClCompile>
     <ClCompile Include="RendererComponent.cpp">
       <Filter>Engine\Renderer\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugRenderer.cpp">
+      <Filter>Engine\Renderer\Debug</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -350,9 +353,6 @@
     <ClInclude Include="GameScene.h">
       <Filter>Game\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="DebugRenderer.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Loders.h">
       <Filter>Engine\Loader</Filter>
     </ClInclude>
@@ -392,6 +392,9 @@
     <ClInclude Include="RendererComponent.h">
       <Filter>Engine\Renderer\Component</Filter>
     </ClInclude>
+    <ClInclude Include="DebugRenderer.h">
+      <Filter>Engine\Renderer\Debug</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="SampleVertexShader.hlsl">
@@ -401,9 +404,6 @@
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="WireFramePixelShader.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="WireFrameVertexShader.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>

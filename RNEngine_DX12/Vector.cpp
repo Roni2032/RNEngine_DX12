@@ -154,6 +154,9 @@ namespace RNEngine {
 	void Vector3::Set(float value) {
 		this->x = this->y = this->z = value;
 	}
+	float Vector3::Length() {
+		return XMVectorGetX(XMVector3Length(*this));
+	}
 
 	void Vector3::RandomVec(float min, float max) {
 		Set(Util::Random<float>(min, max), Util::Random<float>(min, max), Util::Random<float>(min, max));
