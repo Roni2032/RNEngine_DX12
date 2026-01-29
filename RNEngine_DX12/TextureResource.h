@@ -1,7 +1,14 @@
 #pragma once
 #include "stdafx.h"
 #include "RendererHeader.h"
+
 namespace RNEngine {
+	class DescriptorHeap;
+	class TextureBuffer;
+	class ConstantBuffer;
+	class Camera;
+	class Transform;
+	class PipelineState;
 
 	class TextureResource
 	{

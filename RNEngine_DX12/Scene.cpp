@@ -30,4 +30,20 @@ namespace RNEngine {
 		//複数のレンダーターゲットを利用できるようになったら戻そうね
 		//renderer->DrawAll();
 	}
+
+
+	vector<shared_ptr<GameObject>> Scene::GetGameObjects() {
+		return m_GameObjects;
+	}
+
+	shared_ptr<Camera> Scene::GetCamera(const string& name) {
+		auto it = m_CameraMap.find(name);
+		if (it != m_CameraMap.end()) {
+			return it->second;
+		}
+		return nullptr;
+	}
+	void Scene::RegisterCamera(const string& name, const shared_ptr<Camera>& camera) {
+		m_CameraMap[name] = camera;
+	}
 }

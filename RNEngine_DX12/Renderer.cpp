@@ -1,66 +1,29 @@
 #include "stdafx.h"
-#include "project.h"
+#include "Renderer.h"
+#include "RNEngine.h"
+#include "Window.h"
+
+#include "Descriptor.h"
+#include "TextureBuffer.h"
+#include "ConstantBuffer.h"
+#include "DSV.h"
+#include "RTV.h"
+#include "SRV.h"
+
+#include "PipelineState.h"
+#include "DebugRenderer.h"
+#include "EditorGUI.h"
+
+#include "TextureResource.h"
+
+#include "RendererComponent.h"
 
 namespace RNEngine {
+	RasterizerState::RasterizerState() :m_RasterizerState{} {
+		Init();
+	}
+	RasterizerState::~RasterizerState() {}
 
-    void PipelineState::Create(ID3D12Device* _dev, const PipelineStateSetup& setup) {
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-		m_RootSignature = make_unique<RootSignature>();
-		m_RootSignature->Create(_dev);
-
-		psoDesc.pRootSignature = m_RootSignature->GetPtr();
-
-		if (setup.m_Vs == nullptr) {
-			DebugLog::Log(u8"頂点シェーダーが登録されていません。", LogData::Type::Error);
-			return;
-		}
-		if (setup.m_Ps == nullptr) {
-			DebugLog::Log(u8"ピクセルシェーダーが登録されていません。",LogData::Type::Error);
-			return;
-		}
-
-		psoDesc.VS = setup.m_Vs->GetBytecode();
-		psoDesc.PS = setup.m_Ps->GetBytecode();
-
-
-		psoDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-		if (setup.m_RasterizerState) {
-			psoDesc.RasterizerState = setup.m_RasterizerState->GetDesc();
-		}
-		else {
-			RasterizerState state = RasterizerState();
-			psoDesc.RasterizerState = state.GetDesc();
-		}
-		m_BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-		m_BlendState.RenderTarget->BlendEnable = true;
-		m_BlendState.RenderTarget->SrcBlend = D3D12_BLEND_SRC_ALPHA;
-		m_BlendState.RenderTarget->DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-		m_BlendState.RenderTarget->BlendOp = D3D12_BLEND_OP_ADD;
-		psoDesc.BlendState = m_BlendState;
-
-		psoDesc.InputLayout.pInputElementDescs = m_InputLayout.m_Layout.data();
-		psoDesc.InputLayout.NumElements = (UINT)m_InputLayout.m_Layout.size();
-		psoDesc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;//カットなし
-
-		psoDesc.DepthStencilState.DepthEnable = setup.m_DepthEnable;
-		psoDesc.DepthStencilState.DepthWriteMask = setup.m_DepthMask;
-		psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS; // 既存の深度値よりも小さかったら更新する
-		psoDesc.DepthStencilState.StencilEnable = false;
-		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-
-		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;//三角形
-
-		psoDesc.NumRenderTargets = 1;//設定するレンダーターゲットの数
-		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;//レンダーターゲットの数に対応する場所に設定する
-
-		psoDesc.SampleDesc.Count = 1;
-		psoDesc.SampleDesc.Quality = 0;
-
-		auto result = _dev->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_PipelineState));
-		assert(SUCCEEDED(result));
-
-
-    }
 	void RasterizerState::Init() {
 		ZeroMemory(&m_RasterizerState, sizeof(m_RasterizerState));
 		m_RasterizerState = {
@@ -77,6 +40,10 @@ namespace RNEngine {
 			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF
 		};
 	}
+
+	RootSignature::RootSignature() {}
+	RootSignature::~RootSignature() {}
+
 	void RootSignature::Create(ID3D12Device* _dev) {
 		D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
 
@@ -109,6 +76,9 @@ namespace RNEngine {
 		signatureBlob->Release();
 		if (errorBlob) errorBlob->Release();
 	}
+
+	DescriptorTable::DescriptorTable() {}
+	DescriptorTable::~DescriptorTable() {}
 
 	void DescriptorTable::AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE type, UINT numDescriptor) {
 		D3D12_DESCRIPTOR_RANGE range = {};
@@ -146,6 +116,9 @@ namespace RNEngine {
 		m_SamplerDesc.MinLOD = 0.0f;
 		m_SamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	}
+
+	RenderTarget::RenderTarget() :m_ClearColor{ 1,1,1,1 }, m_Width(0), m_Height(0) {}
+	RenderTarget::~RenderTarget() = default;
 
 	void RenderTarget::Create(Vector2 renderSize, DXGI_FORMAT format, array<float, 4> clearColor) {
 
@@ -268,7 +241,7 @@ namespace RNEngine {
         //灰色に初期化
 		m_ClearColor = { 0.5f,0.5f,0.5f,1.0f };
 
-		Debug::Get().Initialize();
+		DebugRenderer::Get().Initialize();
 	}
 
     void Renderer::BeginRenderer() {
@@ -311,7 +284,10 @@ namespace RNEngine {
 		m_CommandList->ClearRenderTargetView(rtvH, m_ClearColor.data(), 0, nullptr);
 		m_CommandList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);*/
 
-		Debug::Get().Flush();
+		DebugRenderer::Get().DrawSphereWireFrame(Vector3(0, 0, 0), Vector3(1.0f));
+		DebugRenderer::Get().DrawLine(Vector3(-1, 2, 0), Vector3(1, 2, 0), 0.1f);
+
+		DebugRenderer::Get().Flush();
 		//すべての描画が終わった後にGUIを表示
 		if (guiRenderer != nullptr) {
 			guiRenderer->UpdateRenderer(m_CommandList.Get(), m_SrvCbvDescriptorHeap.get());
@@ -356,27 +332,27 @@ namespace RNEngine {
 		texture->Draw(m_CommandList, m_SrvCbvDescriptorHeap.get());
 	}
 
-	void Renderer::RegisterTextureBuffer(TextureBuffer& texBuffer) {
+	void Renderer::RegisterTextureBuffer(TextureBuffer* texBuffer) {
 		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
 			m_SrvCbvDescriptorHeap->GetCPUHandle(),
 			m_SrvCbvDescriptorHeap->GetHeapCount(),
 			m_SrvCbvDescriptorHeap->GetHeapSize()
 		);
-		D3D12_SHADER_RESOURCE_VIEW_DESC desc = texBuffer.GetSRV()->GetDesc();
+		auto srv = texBuffer->GetSRV();
 		auto dev = Engine::GetID3D12Device();
-		dev->CreateShaderResourceView(texBuffer.GetBuffer(), &desc, handle);
-		texBuffer.SetSRVHandle(m_SrvCbvDescriptorHeap->GetHeapCount());
+		dev->CreateShaderResourceView(texBuffer->GetBuffer(), &srv->GetDesc(), handle);
+		texBuffer->SetSRVHandle(m_SrvCbvDescriptorHeap->GetHeapCount());
 		m_SrvCbvDescriptorHeap->AddHeapCount();
 	}
-	void Renderer::RegisterConstantBuffer(ConstantBuffer& constBuffer) {
+	void Renderer::RegisterConstantBuffer(ConstantBuffer* constBuffer) {
 		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
 			m_SrvCbvDescriptorHeap->GetHeap()->GetCPUDescriptorHandleForHeapStart(),
 			m_SrvCbvDescriptorHeap->GetHeapCount(),
 			m_SrvCbvDescriptorHeap->GetHeapSize()
 		);
 		auto dev = Engine::GetID3D12Device();
-		dev->CreateConstantBufferView(&constBuffer.GetDesc(), handle);
-		constBuffer.SetHandle(m_SrvCbvDescriptorHeap->GetHeapCount());
+		dev->CreateConstantBufferView(&constBuffer->GetDesc(), handle);
+		constBuffer->SetHandle(m_SrvCbvDescriptorHeap->GetHeapCount());
 		m_SrvCbvDescriptorHeap->AddHeapCount();
 	}
 
@@ -412,4 +388,5 @@ namespace RNEngine {
 			m_SrvCbvDescriptorHeap->GetHeapSize()
 		);
 	}
+	DescriptorHeap* Renderer::GetSrvDescriptorHeap() { return m_SrvCbvDescriptorHeap.get(); }
 }

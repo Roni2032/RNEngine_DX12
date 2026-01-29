@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "Util.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+
 namespace RNEngine {
 	wstring Util::ConvertStrToWstr(const string& str) {
 		int strSize = MultiByteToWideChar(

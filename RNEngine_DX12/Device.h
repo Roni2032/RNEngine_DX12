@@ -17,9 +17,9 @@ namespace RNEngine {
 
 		void Init(IDXGIFactory6* _factory, ID3D12CommandQueue* _queue, const Window* _window);
 	public:
-		SwapChain() {}
-		SwapChain(IDXGIFactory6* _factory, ID3D12CommandQueue* _queue, const Window* _window) { Init(_factory, _queue, _window); }
-		~SwapChain() {}
+		SwapChain();
+		SwapChain(IDXGIFactory6* _factory, ID3D12CommandQueue* _queue, const Window* _window);
+		~SwapChain();
 
 		ComPtr<IDXGISwapChain4> GetPtr() { return m_SwapChain; }
 	};
@@ -30,9 +30,9 @@ namespace RNEngine {
 
 		void Init(ID3D12Device* _dev);
 	public:
-		CommandContext() {}
-		CommandContext(ID3D12Device* _dev) { Init(_dev); }
-		~CommandContext() {}
+		CommandContext();
+		CommandContext(ID3D12Device* _dev);
+		~CommandContext();
 
 
 		ID3D12CommandAllocator* GetAllocator() { return m_CmdAllocator.Get(); }
@@ -45,9 +45,9 @@ namespace RNEngine {
 		UINT64 m_FenceVal;
 		HANDLE m_FenceEvent;
 	public:
-		Fence() :m_FenceVal(0), m_FenceEvent(0){}
-		Fence(ID3D12Device* _dev) :m_FenceVal(0) { Init(_dev); }
-		~Fence() {}
+		Fence();
+		Fence(ID3D12Device* _dev);
+		~Fence();
 
 		void Init(ID3D12Device* _dev);
 		void WaitGPU(ID3D12CommandQueue* _queue);
@@ -59,8 +59,8 @@ namespace RNEngine {
 		D3D12_RESOURCE_BARRIER m_Barrier;
 
 	public:
-		Barrier() noexcept { ZeroMemory(&m_Barrier, sizeof(m_Barrier)); }
-		~Barrier() {}
+		Barrier() noexcept;
+		~Barrier();
 
 		void Transition(ID3D12GraphicsCommandList* _list, ID3D12Resource* _backBuffer, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
 	};
@@ -79,8 +79,8 @@ namespace RNEngine {
 
 		void InitFeatureLevel();
 	public:
-		Device() : m_SwapChain(),m_CommandContext(), m_FeatureLevel(D3D_FEATURE_LEVEL_12_1){}
-		~Device() {}
+		Device();
+		~Device();
 
 		void Init(const Window* _window);
 

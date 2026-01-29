@@ -42,8 +42,12 @@ namespace RNEngine
 		static Mesh GetMeshData(const string& name);
 		//static shared_ptr<Material> RegisterMaterial(const string& name,)
 
-		static shared_ptr<ModelResource> CreateSquare2D();
-		static shared_ptr<ModelResource> CreateSquare3D();
+		static shared_ptr<ModelResource> CreateSquare();
+		static shared_ptr<ModelResource> CreateCube();
+
+		static shared_ptr<ModelResource> CreateSphere(const int sliceCount, const int stackCount);
+		static Mesh& CreateLine();
+
 	};
 }
 
