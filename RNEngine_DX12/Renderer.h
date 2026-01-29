@@ -8,7 +8,6 @@ namespace RNEngine {
 	class PipelineState;
 	class RootSignature;
 	class RenderTarget;
-	class DescriptorTable;
 	class Sampler;
 	class Fence;
 	class Barrier;
@@ -39,8 +38,8 @@ namespace RNEngine {
 
 		void Init();
 	public:
-		RasterizerState() :m_RasterizerState{} { Init(); }
-		~RasterizerState() {}
+		RasterizerState();
+		~RasterizerState();
 
 		D3D12_RASTERIZER_DESC GetDesc()const { return m_RasterizerState; }
 
@@ -51,33 +50,33 @@ namespace RNEngine {
 		void SetDepthBiasClamp(float clamp) { m_RasterizerState.DepthBiasClamp = clamp; }
 	};
 
-	class RootSignature {
-		ComPtr<ID3D12RootSignature> m_RootSignature;
-		unique_ptr<DescriptorTable> m_DescriptorTable;
-		unique_ptr<Sampler> m_Sampler;
-	public:
-		RootSignature() {}
-		~RootSignature() {}
-
-		ID3D12RootSignature* GetPtr() { return m_RootSignature.Get(); }
-
-		void Create(ID3D12Device* _dev);
-
-	};
 	class DescriptorTable {
 		vector<D3D12_ROOT_PARAMETER> m_Parameters;
 		vector<D3D12_DESCRIPTOR_RANGE> m_DescriptorRanges;
 
 		void AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE type, UINT numDescriptor);
 	public:
-		DescriptorTable() {}
-		~DescriptorTable() {}
+		DescriptorTable();
+		~DescriptorTable();
 
 		void Create(D3D12_SHADER_VISIBILITY visibility);
 
 		vector<D3D12_ROOT_PARAMETER>& GetRootParameters() { return m_Parameters; }
 		const vector<D3D12_DESCRIPTOR_RANGE>& GetDescriptorRanges() { return m_DescriptorRanges; }
 		size_t GetRangeSize()const { return m_DescriptorRanges.size(); }
+	};
+	class RootSignature {
+		ComPtr<ID3D12RootSignature> m_RootSignature;
+		unique_ptr<DescriptorTable> m_DescriptorTable;
+		unique_ptr<Sampler> m_Sampler;
+	public:
+		RootSignature();
+		~RootSignature();
+
+		ID3D12RootSignature* GetPtr() { return m_RootSignature.Get(); }
+
+		void Create(ID3D12Device* _dev);
+
 	};
 	class Sampler {
 		D3D12_STATIC_SAMPLER_DESC m_SamplerDesc{};
@@ -91,6 +90,9 @@ namespace RNEngine {
 	};
 
 	class TextureResource;
+	class RTVBuffer;
+	class DSVBuffer;
+
 	class RenderTarget {
 		shared_ptr<TextureResource> m_RenderTargetTexture;
 		unique_ptr<RTVBuffer> m_Rtv;
@@ -102,7 +104,8 @@ namespace RNEngine {
 		DXGI_FORMAT m_Format{};
 		array<float, 4> m_ClearColor;
 	public:
-		RenderTarget() :m_ClearColor{1,1,1,1}, m_Width(0),m_Height(0){}
+		RenderTarget();
+		~RenderTarget();
 		void Create(Vector2 renderSize, DXGI_FORMAT format, array<float, 4> clearColor = {1.0f,1.0f,1.0f,1.0f});
 
 		void DrawBegin(ID3D12GraphicsCommandList* cmdList);
@@ -114,6 +117,7 @@ namespace RNEngine {
 		shared_ptr<TextureResource> GetRenderTargetTexture();
 	};
 
+	class Window;
 	class Viewport {
 		D3D12_VIEWPORT m_Viewport;
 	public:
@@ -147,45 +151,14 @@ namespace RNEngine {
 		D3D12_RECT& GetRect() { return m_Rect; }
 	};
 
-	struct PipelineStateSetup {
-		RasterizerState* m_RasterizerState = nullptr;
-		Shader* m_Ps = nullptr;
-		Shader* m_Vs = nullptr;
-
-		bool m_DepthEnable = true;
-		D3D12_DEPTH_WRITE_MASK m_DepthMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	};
-	class PipelineState {
-		ComPtr<ID3D12PipelineState> m_PipelineState;
-		unique_ptr<RootSignature> m_RootSignature;
-		InputLayout m_InputLayout;
-		shared_ptr<Shader> m_PSShader;
-		shared_ptr<Shader> m_VSShader;
-		D3D12_BLEND_DESC m_BlendState;
-	public:
-		PipelineState() noexcept { ZeroMemory(&m_BlendState, sizeof(m_BlendState)); }
-		~PipelineState() {
-		}
-
-		void SetInputLayout(const InputLayout& layout) { m_InputLayout = layout; }
-		void SetInputLayout(const vector<D3D12_INPUT_ELEMENT_DESC>& layout) { m_InputLayout = InputLayout(layout); }
-
-		void Create(ID3D12Device* _dev, const PipelineStateSetup& setup);
-
-		void SetVSShader( Shader* shader) { m_VSShader = make_shared<Shader>(*shader); }
-		void SetPSShader( Shader* shader) { m_PSShader = make_shared<Shader>(*shader); }
-
-		ID3D12PipelineState* GetPtr() { return m_PipelineState.Get(); }
-		RootSignature* GetRootSignature() { return m_RootSignature.get(); }
-	};
-
-
-
-
 	enum HeapType {
 		CBV,
 		SRV
 	};
+
+	class TextureBuffer;
+	class ConstantBuffer;
+	class DescriptorHeap;
 	/// <summary>
 	/// ï`âÊèàóùÇçsÇ§ÉNÉâÉX
 	/// </summary>
@@ -229,8 +202,8 @@ namespace RNEngine {
 		}
 		array<float, 4> GetClearColor() { return m_ClearColor; }
 
-		void RegisterTextureBuffer(TextureBuffer& texBuffer);
-		void RegisterConstantBuffer(ConstantBuffer& constBuffer);
+		void RegisterTextureBuffer(TextureBuffer* texBuffer);
+		void RegisterConstantBuffer(ConstantBuffer* constBuffer);
 
 		void RegisterRenderTarget(const string& name, shared_ptr<RenderTarget>& renderTarget) {
 			m_RenderTargets[name] = renderTarget;
@@ -248,7 +221,7 @@ namespace RNEngine {
 		CD3DX12_CPU_DESCRIPTOR_HANDLE GetSRVDescriptorCPUHandle(UINT handle);
 
 		ID3D12GraphicsCommandList* GetCommandList() { return m_CommandList.Get(); }
-		DescriptorHeap* GetSrvDescriptorHeap() { return m_SrvCbvDescriptorHeap.get(); }
+		DescriptorHeap* GetSrvDescriptorHeap();
 
 		RTVBuffer* GetFrameRTVBuffer() { return m_RTVBuffer.get(); }
 	};

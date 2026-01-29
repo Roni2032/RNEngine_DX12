@@ -1,6 +1,20 @@
 #include "stdafx.h"
-#include "project.h"
+#include "TextureResource.h"
+#include "ResourceManager.h"
+#include "RendererHeader.h"
+#include "PipelineState.h"
 
+#include "Descriptor.h"
+#include "ConstantBuffer.h"
+#include "TextureBuffer.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+
+#include "RNEngine.h"
+#include "Renderer.h"
+
+#include "Component.h"
+#include "Camera.h"
 namespace RNEngine {
 
 	TextureResource::TextureResource() {

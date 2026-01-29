@@ -80,8 +80,11 @@ namespace RNEngine {
 		timer.Update();
 		DebugLog::Log(u8"エンジン初期化" + to_string(timer.GetDeltaTime()));
 
-		ResourceManager::CreateSquare2D();
-		ResourceManager::CreateSquare3D();
+		ResourceManager::CreateSquare();
+		ResourceManager::CreateCube();
+		ResourceManager::CreateSphere(20, 20);
+		ResourceManager::CreateLine();
+
 		// テスト用リソース登録
 
 		ResourceManager::RegisterTexture("Textures/ErrorTexture.png");

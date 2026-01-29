@@ -1,7 +1,26 @@
 #include "stdafx.h"
-#include "project.h"
+#include "EditorGUI.h"
+
+#include "RNEngine.h"
+#include "Renderer.h"
+#include "Window.h"
+
+#include "TextureBuffer.h"
+#include "SRV.h"
+#include "Descriptor.h"
+
+#include "TextureResource.h"
+#include "ResourceManager.h"
+
+#include "Component.h"
+#include "Scene.h"
+#include "File.h"
+
 
 namespace RNEngine {
+	GUIRenderer::GUIRenderer() {}
+	GUIRenderer::~GUIRenderer() {}
+
 	void GUIRenderer::Init(DescriptorHeap* srvHeap) {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -82,6 +101,9 @@ namespace RNEngine {
 		ImGui::DestroyContext();
 	}
 
+	GUI::GUI(const string& name) : m_WindowName(name) {}
+	GUI::~GUI() {}
+
 	void GUI::Text(const string& text, ImVec4 textColor, ImVec4 bgColor) {
 		ImVec2 currentPosition = ImGui::GetCursorPos();
 		if (bgColor.w != 0.0f) {
@@ -110,6 +132,9 @@ namespace RNEngine {
 		
 		return isClicked;
 	}
+
+	Inspector::Inspector(const string& windowName) : GUI(windowName) {}
+	Inspector::~Inspector() {}
 
 	void Inspector::DrawComponentInInspector(shared_ptr<Component>& component) {
 		auto fields = component->GetReflection();
@@ -216,6 +241,9 @@ namespace RNEngine {
 		ImGui::End();
 	}
 
+	Hierarchy::Hierarchy(const string& windowName) : GUI(windowName), m_SelectedGameObjectAddr(nullptr) {}
+	Hierarchy::~Hierarchy() {}
+
 	void Hierarchy::Draw() {
 		GUI::Draw();
 		if (auto scene = m_GameScene.lock()) {
@@ -238,6 +266,13 @@ namespace RNEngine {
 		}
 		ImGui::End();
 	}
+	Entry::Entry(Entry::Type type, const wstring& name, const wstring& path):
+		m_Type(type),m_Name(name),m_Path(path),m_IconID(0) { }
+
+	ProjectView::ProjectView(const string& windowName, float iconSize) : GUI(windowName),
+		m_IconSize(iconSize), m_FileTexID(0), m_FolderTexID(0),
+		m_SelectedFolderAddr(nullptr) {}
+	ProjectView::~ProjectView() {}
 
 	void ProjectView::Init() {
 		auto renderer = Engine::GetRenderer();
@@ -366,6 +401,10 @@ namespace RNEngine {
 
 
 	vector<LogData> DebugLog::g_LogData = {};
+
+	DebugLog::DebugLog(const string& windowName) : GUI(windowName), m_BeforeScrollY(1.0f) {}
+	DebugLog::~DebugLog() {}
+
 	void DebugLog::Log(const string& log, LogData::Type type) {
 		g_LogData.push_back({ log,type });
 	}
@@ -402,6 +441,9 @@ namespace RNEngine {
 		}
 		ImGui::End();
 	}
+
+	GameView::GameView(const string& windowName) : GUI(windowName) {}
+	GameView::~GameView() {}
 
 	void GameView::CreateSRV(const shared_ptr<RenderTarget>& renderTarget) {
 		m_RenderTarget = renderTarget;

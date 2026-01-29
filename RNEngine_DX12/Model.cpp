@@ -1,5 +1,20 @@
 #include "stdafx.h"
-#include "project.h"
+#include "Model.h"
+#include "Timer.h"
+#include "Loders.h"
+#include "RNEngine.h"
+#include "Renderer.h"
+
+#include "Descriptor.h"
+#include "ConstantBuffer.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+#include "TextureBuffer.h"
+
+#include "PipelineState.h"
+
+#include "Camera.h"
+#include "Component.h"
 
 namespace RNEngine {
 	ModelResource::ModelResource() :

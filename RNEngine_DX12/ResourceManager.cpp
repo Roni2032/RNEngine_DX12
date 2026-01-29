@@ -1,5 +1,13 @@
 #include "stdafx.h"
-#include "project.h"
+#include "ResourceManager.h"
+#include "RNEngine.h"
+
+#include "TextureBuffer.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+
+#include "Model.h"
+
 
 namespace RNEngine {
 	string ResourceManager::m_DefaultFilePath = "";
@@ -110,11 +118,7 @@ namespace RNEngine {
 
 		cout << name << ":メッシュ作成中..." << endl;
 		auto dev = Engine::GetID3D12Device();
-		mesh.m_VertexBuffer = make_shared<VertexBuffer>();
-		mesh.m_VertexBuffer->Create(dev, mesh.m_Vertices);
-
-		mesh.m_IndexBuffer = make_shared<IndexBuffer>();
-		mesh.m_IndexBuffer->Create(dev, mesh.m_Indices);
+		DxUtil::CreateMeshBuffer(dev, mesh);
 
 		auto model = make_shared<ModelResource>();
 		model->Load(mesh);
@@ -133,7 +137,7 @@ namespace RNEngine {
 	}
 	//-----------------ここから下はメッシュテンプレート作成----------------------------
 
-	shared_ptr<ModelResource> ResourceManager::CreateSquare2D() {
+	shared_ptr<ModelResource> ResourceManager::CreateSquare() {
 		vector<Vertex> vertices = {
 			{{-0.5f, 0.5f,0.0f},{0.0f,1.0f}},
 			{{ 0.5f, 0.5f,0.0f},{1.0f,1.0f}},
@@ -146,7 +150,7 @@ namespace RNEngine {
 		return RegisterMesh("DEFAULT_SQUARE_2D", vertices, indices);
 
 	}
-	shared_ptr<ModelResource> ResourceManager::CreateSquare3D() {
+	shared_ptr<ModelResource> ResourceManager::CreateCube() {
 		vector<Vertex> vertices = {
 			// 前面
 			{{-0.5f,  0.5f, 0.5f}, {0.0f, 0.0f}},
@@ -194,5 +198,49 @@ namespace RNEngine {
 		};
 		return RegisterMesh("DEFAULT_SQUARE_3D", vertices, indices);
 
+	}
+
+	shared_ptr<ModelResource> ResourceManager::CreateSphere(const int sliceCount, const int stackCount) {
+		vector<Vertex> vertices;
+		vector<uint32_t> indices;
+
+		// 頂点生成
+		for (int stack = 0; stack <= stackCount; ++stack) {
+			float phi = XM_PI * stack / stackCount;
+			for (int slice = 0; slice <= sliceCount; ++slice) {
+				float theta = XM_2PI * slice / sliceCount;
+				float x = sinf(phi) * cosf(theta);
+				float y = cosf(phi);
+				float z = sinf(phi) * sinf(theta);
+				float u = static_cast<float>(slice) / sliceCount;
+				float v = static_cast<float>(stack) / stackCount;
+				vertices.push_back({ {x * 0.5f, y * 0.5f, z * 0.5f}, {u, v} });
+			}
+		}
+		// インデックス生成
+		for (int stack = 0; stack < stackCount; ++stack) {
+			for (int slice = 0; slice < sliceCount; ++slice) {
+				int first = (stack * (sliceCount + 1)) + slice;
+				int second = first + sliceCount + 1;
+				indices.push_back(first);
+				indices.push_back(second);
+				indices.push_back(first + 1);
+				indices.push_back(second);
+				indices.push_back(second + 1);
+				indices.push_back(first + 1);
+			}
+		}
+		return RegisterMesh("DEFAULT_SPHERE", vertices, indices);
+	}
+	Mesh& ResourceManager::CreateLine() {
+		vector<Vertex> vertices = {
+			{{0.0f,0.0f,0.0f},{0.0f,0.0f}},
+			{{1.0f,1.0f,1.0f},{1.0f,1.0f}}
+		};
+		vector<uint32_t> indices{
+			0,1
+		};
+		auto mesh = RegisterMesh("DEFAULT_LINE", vertices, indices);
+		return m_MeshMap["DEFAULT_LINE"];
 	}
 }

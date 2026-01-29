@@ -73,6 +73,7 @@ namespace RNEngine {
 
 		void Set(float x, float y, float z);
 		void Set(float value);
+		float Length();
 
 		void RandomVec(float min, float max);
 

@@ -38,6 +38,6 @@ namespace RNEngine {
 
 	void CollisionCube::Draw() {
 		auto aabb = GetAABB();
-		Debug::Get().DrawCubeWireFrame(aabb.m_Center, aabb.GetSize());
+		DebugRenderer::Get().DrawCubeWireFrame(aabb.m_Center, aabb.GetSize());
 	}
 }

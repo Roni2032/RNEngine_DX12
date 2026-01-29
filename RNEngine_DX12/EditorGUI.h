@@ -13,8 +13,8 @@ namespace RNEngine {
 		unique_ptr<DescriptorHeap> m_SrvDescriptorHeap;
 		unordered_map<string, shared_ptr<GUI>> m_Items;
 	public:
-		GUIRenderer() {}
-		~GUIRenderer() {}
+		GUIRenderer();
+		~GUIRenderer();
 
 		void Init(DescriptorHeap* srvHeap);
 		void UpdateRenderer(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* srvHeap);
@@ -54,8 +54,8 @@ namespace RNEngine {
 			return ImGui::Button(name.c_str(), size);
 		}
 	public:
-		GUI(const string& windowName):m_WindowName(windowName){}
-		~GUI(){}
+		GUI(const string& windowName);
+		~GUI();
 
 		virtual void Draw() {
 			ImGui::Begin(m_WindowName.c_str());
@@ -72,8 +72,8 @@ namespace RNEngine {
 		void DrawBoolField(const string& name, bool* value, ConvertToAttribute* convert = nullptr);
 		void DrawVec3Field(const string& name, float* value, float width, ConvertToAttribute* convert = nullptr);
 	public:
-		Inspector(const string& windowName):GUI(windowName){}
-		~Inspector(){}
+		Inspector(const string& windowName);
+		~Inspector();
 
 		virtual void Draw()override;
 
@@ -88,8 +88,8 @@ namespace RNEngine {
 		weak_ptr<Scene> m_GameScene;
 		GameObject* m_SelectedGameObjectAddr;
 	public:
-		Hierarchy(const string& windowName) :GUI(windowName) {}
-		~Hierarchy() {}
+		Hierarchy(const string& windowName);
+		~Hierarchy();
 
 		virtual void Draw()override;
 
@@ -107,7 +107,7 @@ namespace RNEngine {
 		vector<shared_ptr<Entry>> m_Children;
 
 		ImTextureID m_IconID;
-		Entry(Entry::Type type, const wstring& name,const wstring& path) :m_Type(type), m_Name(name),m_Path(path), m_IconID{} {}
+		Entry(Entry::Type type, const wstring& name, const wstring& path);
 
 		void AddChild(shared_ptr<Entry> entry) {
 			if (m_Type != Type::Folder) return;
@@ -132,11 +132,8 @@ namespace RNEngine {
 		void MoveFolderChildren(shared_ptr<Entry>& entry);
 		void MoveFolderParent();
 	public:
-		ProjectView(const string& windowName, float iconSize) :
-			GUI(windowName), m_IconSize(iconSize),
-			m_FolderTexID{}, m_FileTexID{}, m_SelectedFolderAddr{} {
-		}
-		~ProjectView() {}
+		ProjectView(const string& windowName, float iconSize);
+		~ProjectView();
 
 		void Init();
 		virtual void Draw()override;
@@ -156,8 +153,8 @@ namespace RNEngine {
 		static void Log(const string& log, LogData::Type type = LogData::Type::Debug);
 		static void Clear();
 
-		DebugLog(const string& windowName) :GUI(windowName), m_BeforeScrollY(1.0f){}
-		~DebugLog() {}
+		DebugLog(const string& windowName);
+		~DebugLog();
 
 
 		virtual void Draw()override;
@@ -170,8 +167,8 @@ namespace RNEngine {
 	class GameView : public GUI {
 		shared_ptr<RenderTarget> m_RenderTarget;
 	public:
-		GameView(const string& windowName) :GUI(windowName){}
-		~GameView() {}
+		GameView(const string& windowName);
+		~GameView();
 
 		virtual void Draw()override;
 

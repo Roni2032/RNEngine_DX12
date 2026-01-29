@@ -2,9 +2,12 @@
 #include "project.h"
 
 namespace RNEngine {
+	Device::Device() {
+		InitFeatureLevel();
+	}
+	Device::~Device() = default;
 
 	void Device::Init(const Window* _window) {
-		InitFeatureLevel();
 		m_CommandContext = make_unique<CommandContext>(m_Device.Get());
 		m_SwapChain = make_unique<SwapChain>(m_Factory.Get(), m_CommandContext->GetQueue(), _window);
 	}
@@ -51,6 +54,13 @@ namespace RNEngine {
 			}
 		}
 	}
+
+	CommandContext::CommandContext() = default;
+	CommandContext::CommandContext(ID3D12Device* _dev) {
+		Init(_dev);
+	}
+	CommandContext::~CommandContext() = default;
+
 	void CommandContext::Init(ID3D12Device* _dev) {
 		auto result = _dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(m_CmdAllocator.GetAddressOf()));
 		assert(SUCCEEDED(result));
@@ -66,6 +76,13 @@ namespace RNEngine {
 
 		result = _dev->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(m_CmdQueue.GetAddressOf()));
 	}
+
+	Fence::Fence() = default;
+	Fence::Fence(ID3D12Device* _dev) {
+		Init(_dev);
+	}
+	Fence::~Fence() = default;
+
 	void Fence::Init(ID3D12Device* _dev) {
 		m_FenceVal = 0;
 		auto result = _dev->CreateFence(m_FenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_Fence.GetAddressOf()));
@@ -80,10 +97,20 @@ namespace RNEngine {
 			CloseHandle(m_FenceEvent);
 		}
 	}
+	Barrier::Barrier() noexcept = default;
+	Barrier::~Barrier() = default;
+
 	void Barrier::Transition(ID3D12GraphicsCommandList* _list,ID3D12Resource* _backBuffer, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
 		m_Barrier = CD3DX12_RESOURCE_BARRIER::Transition(_backBuffer, before, after);
 
 		_list->ResourceBarrier(1, &m_Barrier);
+	}
+
+	SwapChain::SwapChain() = default;
+	SwapChain::~SwapChain() = default;
+
+	SwapChain::SwapChain(IDXGIFactory6* _factory, ID3D12CommandQueue* _queue, const Window* _window) {
+		Init(_factory, _queue, _window);
 	}
 	void SwapChain::Init(IDXGIFactory6* _factory, ID3D12CommandQueue* _queue, const Window* _window) {
 		m_SwapChain.Reset();

@@ -1,9 +1,28 @@
 #include "stdafx.h"
 #include "DebugRenderer.h"
-#include "project.h"
-namespace RNEngine {
 
-	void Debug::DrawCubeWireFrame(const Vector3& position, const Vector3& size) {
+#include "RNEngine.h"
+#include "Renderer.h"
+#include "ResourceManager.h"
+#include "RendererHeader.h"
+
+#include "Descriptor.h"
+#include "ConstantBuffer.h"
+#include "IndexBuffer.h"
+#include "VertexBuffer.h"
+#include "TextureBuffer.h"
+
+#include "PipelineState.h"
+#include "Shader.h"
+
+#include "Scene.h"
+#include "Camera.h"
+
+namespace RNEngine {
+	DebugRenderer::DebugRenderer() {}
+	DebugRenderer::~DebugRenderer() {}
+
+	void DebugRenderer::DrawCubeWireFrame(const Vector3& position, const Vector3& size) {
 		DebugCommand command;
 		command.mesh = "DEFAULT_SQUARE_3D";
 		command.camera = "Game";
@@ -13,25 +32,51 @@ namespace RNEngine {
 
 		m_Commands.push_back(command);
 	}
-	void Debug::Initialize() {
+	void DebugRenderer::DrawSphereWireFrame(const Vector3& position, const Vector3& size) {
+		DebugCommand command;
+		command.mesh = "DEFAULT_SPHERE";
+		command.camera = "Game";
+		command.position = position;
+		command.scale = size * 1.001f;
+		command.rotation = Vector3();
+
+		m_Commands.push_back(command);
+	}
+	void DebugRenderer::DrawLine(const Vector3& start, const Vector3& end, const float& scale) {
+		DebugCommand command;
+		command.mesh = "DEFAULT_LINE";
+		command.camera = "Game";
+		command.position = start;
+		Vector3 dist = end - start;
+		command.scale = Vector3(dist.Length(), scale, scale);
+		command.rotation = Vector3();
+		command.topology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+
+		m_Commands.push_back(command);
+	}
+	void DebugRenderer::DrawMeshWireFrame(const string& meshName, const Vector3& position, const Vector3& scale, const Vector3& rotation) {
+
+	}
+	void DebugRenderer::Initialize() {
 		ResourceManager::RegisterTexture("Textures/WireFrameTexture.png");
 
 		PipelineStateSetup setup = {};
 		setup.m_Vs = new Shader();
 		setup.m_Vs->LoadVS(L"SampleVertexShader.hlsl", "VSMain");
 		setup.m_Ps = new Shader();
-		setup.m_Ps->LoadPS(L"SamplePixelShader.hlsl", "PSMain");
+		setup.m_Ps->LoadPS(L"WireFramePixelShader.hlsl", "PSMain");
 
 		setup.m_RasterizerState = new RasterizerState();
-		setup.m_RasterizerState->SetFillMode(FillMode::WIREFRAME);
-		setup.m_RasterizerState->SetCullMode(CullMode::NONE);
-
-		setup.m_DepthEnable = false;
-		//setup.m_DepthMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+		setup.m_RasterizerState->SetFillMode(FillMode::WIREFRAME);//ワイヤーフレーム描画
+		setup.m_RasterizerState->SetCullMode(CullMode::NONE);//両面表示
+		setup.m_RasterizerState->SetDepthBias(-1);//少し手前に表示
+		setup.m_RasterizerState->SetSlopeScaledDepthBias(-1.0f);//少し手前に表示
+		//setup.m_DepthEnable = false;
+		setup.m_DepthMask = D3D12_DEPTH_WRITE_MASK_ZERO;//深度書き込みしない
 
 		PipelineStatePool::RegisterPipelineState(L"WireFrame", InputLayout::PUV, setup);
 	}
-	void Debug::Flush() {
+	void DebugRenderer::Flush() {
 		auto scene = Engine::GetCurrentScene();
 		auto renderer = Engine::GetRenderer();
 		auto cmdList = renderer->GetCommandList();
@@ -41,8 +86,6 @@ namespace RNEngine {
 		cmdList->SetPipelineState(pipelineState->GetPtr());
 		cmdList->SetGraphicsRootSignature(pipelineState->GetRootSignature()->GetPtr());
 
-
-		string textureName = "Textures/ErrorTexture.png";
 		for (int i = 0; i < m_Commands.size(); ++i) {
 			auto& command = m_Commands[i];
 			if (m_Matrices.size() <= i) {
@@ -74,16 +117,11 @@ namespace RNEngine {
 
 			auto mesh = ResourceManager::GetMeshData(command.mesh);
 
-			auto texture = ResourceManager::GetTextureBuffer(textureName);
-			if (texture) {
-				auto handle = renderer->GetSRVDescriptorGPUHandle(texture->GetSRVHandle());
-				cmdList->SetGraphicsRootDescriptorTable(HeapType::SRV, handle);
-			}
-
-			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			cmdList->IASetPrimitiveTopology(command.topology);
 
 			cmdList->IASetVertexBuffers(0, 1, &mesh.m_VertexBuffer->GetBufferView());
-			cmdList->IASetIndexBuffer(&mesh.m_IndexBuffer->GetBufferView());
+			if (command.topology != D3D_PRIMITIVE_TOPOLOGY_LINELIST)
+				cmdList->IASetIndexBuffer(&mesh.m_IndexBuffer->GetBufferView());
 
 			cmdList->DrawIndexedInstanced((UINT)mesh.m_IndexBuffer->GetIndexCount(), 1, 0, 0, 0);
 		}

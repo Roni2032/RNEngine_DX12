@@ -1,11 +1,6 @@
-cbuffer CB : register(b0)
-{
-    matrix world;
-    matrix viewProj;
-    float4 color;
-}
+#include "Header.hlsli"
 
-float4 main() : SV_TARGET
+float4 PSMain(OutputPUV In) : SV_TARGET
 {
-    return color;
+    return float4(1.0f, 1.0f, 1.0f, 1.0f);
 }
