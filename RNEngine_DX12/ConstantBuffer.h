@@ -11,7 +11,7 @@ namespace RNEngine {
 		ConstantBuffer();
 		~ConstantBuffer();
 
-		void Create(ID3D12Device* _dev, void* matrix);
+		void Create(ID3D12Device* _dev, void* data);
 
 		void SetHandle(UINT handle) { m_Handle = handle; }
 		UINT GetHandle()const { return m_Handle; }

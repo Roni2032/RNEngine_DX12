@@ -11,7 +11,7 @@ namespace RNEngine {
 	void PipelineState::Create(ID3D12Device* _dev, const PipelineStateSetup& setup) {
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 		m_RootSignature = make_unique<RootSignature>();
-		m_RootSignature->Create(_dev);
+		m_RootSignature->Create(_dev, setup.m_SrvTextureCount, setup.m_CbvCount);
 
 		psoDesc.pRootSignature = m_RootSignature->GetPtr();
 
@@ -53,7 +53,7 @@ namespace RNEngine {
 		psoDesc.DepthStencilState.StencilEnable = false;
 		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 
-		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;//三角形
+		psoDesc.PrimitiveTopologyType = setup.m_TopologyType;
 
 		psoDesc.NumRenderTargets = 1;//設定するレンダーターゲットの数
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;//レンダーターゲットの数に対応する場所に設定する

@@ -10,9 +10,13 @@ namespace RNEngine {
 		RasterizerState* m_RasterizerState = nullptr;
 		Shader* m_Ps = nullptr;
 		Shader* m_Vs = nullptr;
+		int m_SrvTextureCount = 1;
+		int m_CbvCount = 1;
 
 		bool m_DepthEnable = true;
 		D3D12_DEPTH_WRITE_MASK m_DepthMask = D3D12_DEPTH_WRITE_MASK_ALL;
+
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE m_TopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	};
 	class PipelineState {
 		ComPtr<ID3D12PipelineState> m_PipelineState;
