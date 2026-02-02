@@ -44,13 +44,13 @@ namespace RNEngine {
 	RootSignature::RootSignature() {}
 	RootSignature::~RootSignature() {}
 
-	void RootSignature::Create(ID3D12Device* _dev) {
+	void RootSignature::Create(ID3D12Device* _dev,const UINT srvCount,const UINT cbvCount) {
 		D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
 
 		rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 		m_DescriptorTable = make_unique<DescriptorTable>();
-		m_DescriptorTable->Create(D3D12_SHADER_VISIBILITY_ALL);
+		m_DescriptorTable->Create(D3D12_SHADER_VISIBILITY_ALL, 1, 1);
 		rootSignatureDesc.pParameters = m_DescriptorTable->GetRootParameters().data();
 		rootSignatureDesc.NumParameters = (UINT)m_DescriptorTable->GetRootParameters().size();
 
@@ -80,20 +80,26 @@ namespace RNEngine {
 	DescriptorTable::DescriptorTable() {}
 	DescriptorTable::~DescriptorTable() {}
 
-	void DescriptorTable::AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE type, UINT numDescriptor) {
+	void DescriptorTable::AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE type, const UINT numDescriptor, const UINT startRegisterIndex){
 		D3D12_DESCRIPTOR_RANGE range = {};
 		range.NumDescriptors = numDescriptor;
 		range.RangeType = type;
-		range.BaseShaderRegister = 0;
+		range.BaseShaderRegister = startRegisterIndex;
 		range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 		m_DescriptorRanges.push_back(range);
 	}
-	void DescriptorTable::Create(D3D12_SHADER_VISIBILITY visibility) {
-		AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1);
-		AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1);
+	void DescriptorTable::Create(D3D12_SHADER_VISIBILITY visibility,const UINT srvCount, const UINT cbvCount) {
+		//個数分のSRV用レンジを作成
+		for (UINT i = 0; i < srvCount; i++) {
+			AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, i);
+		}
+		//個数分のCBV用レンジを作成
+		for (UINT i = 0; i < cbvCount; i++) {
+			AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, i);
+		}
 
-		for (int i = 0; i < m_DescriptorRanges.size(); i++) {
+		for (UINT i = 0; i < m_DescriptorRanges.size(); i++) {
 			D3D12_ROOT_PARAMETER parameter = {};
 			parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 			parameter.ShaderVisibility = visibility;
@@ -142,6 +148,8 @@ namespace RNEngine {
 	
 		m_RenderTargetTexture = make_shared<TextureResource>();
 		m_RenderTargetTexture->SetTexture(textureBuffer);
+		m_RenderTargetTexture->UpdateWorldMatrix({ 0.0f,0.0f,0.0f }, { m_Width,m_Height,1.0f }, { 0.0f,0.0f,0.0f });
+
 		auto res = textureBuffer->GetBuffer();
 		if (!res) { printf("ERROR: resource null\n"); }
 
@@ -285,9 +293,9 @@ namespace RNEngine {
 		m_CommandList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);*/
 
 		DebugRenderer::Get().DrawSphereWireFrame(Vector3(0, 0, 0), Vector3(1.0f));
-		DebugRenderer::Get().DrawLine(Vector3(-1, 2, 0), Vector3(1, 2, 0), 0.1f);
-
-		DebugRenderer::Get().Flush();
+		//DebugRenderer::Get().DrawLine(Vector3(-1, 0, 2), Vector3(1, 0, 2), 0.1f);
+		//DebugRenderer::Get().DrawWorldGridFrame(Vector3(-10.0f, -10.0f, -10.0f), Vector3(10.0f, 10.0f, 10.0f), 1.0f);
+		DebugRenderer::Get().FlushWireFrames();
 		//すべての描画が終わった後にGUIを表示
 		if (guiRenderer != nullptr) {
 			guiRenderer->UpdateRenderer(m_CommandList.Get(), m_SrvCbvDescriptorHeap.get());
