@@ -25,10 +25,10 @@ namespace RNEngine
 	class Transform : public Component {
 		Vector3 m_Position;
 		Vector3 m_Scale;
-		Vector3 m_Rotation;
+		Quaternion m_Quaternion;
 	public:
-		Transform(const shared_ptr<GameObject>& ptr) :Component(ptr), m_Position{}, m_Scale{1,1,1}, m_Rotation{} {}
-		virtual ~Transform(){}
+		Transform(const shared_ptr<GameObject>& ptr);
+		virtual ~Transform();
 
 		void SetPosition(Vector3 position) {
 			m_Position = position;
@@ -43,33 +43,48 @@ namespace RNEngine
 			return m_Scale;
 		}
 		void SetRotation(Vector3 rotation) {
-			m_Rotation = rotation;
+			m_Quaternion = Quaternion(rotation).Normalize();
 		}
 		Vector3 GetRotation() {
-			return m_Rotation;
+			return m_Quaternion.ConvertToRollPitchYaw();
+		}
+		Quaternion GetQuaternion() {
+			return m_Quaternion;
+		}
+		void SetQuaternion(Quaternion quaternion) {
+			m_Quaternion = quaternion;
 		}
 
 		INSPECTOR_COMPONENT(Transform)
 		REGISTER_NAME(Transform)
 		BEGIN_REFLECT()
-			REGISTER_REFLECT(m_Position.x, FieldInfo::Type::Vec3, HeaderAttribute("position"))
-			REGISTER_REFLECT(m_Rotation.x, FieldInfo::Type::Vec3, HeaderAttribute("rotation"),
+			REGISTER_REFLECT(m_Position.x, FieldInfo::Type::Vec3, HeaderAttribute("Position"))
+			REGISTER_REFLECT(m_Quaternion.x, FieldInfo::Type::Vec3, HeaderAttribute("Rotation"),
 				ConvertToAttribute(
 					[](void* internalPtr, void* displayPtr) {
 						float* displayF = reinterpret_cast<float*>(displayPtr);
 						float* internalF = reinterpret_cast<float*>(internalPtr);
-						displayF[0] = XMConvertToDegrees(internalF[0]);
-						displayF[1] = XMConvertToDegrees(internalF[1]);
-						displayF[2] = XMConvertToDegrees(internalF[2]);
+						Vector3 rot = Quaternion(internalF[0],internalF[1],internalF[2],internalF[3]).ConvertToRollPitchYaw();
+
+						displayF[0] = XMConvertToDegrees(rot.x);
+						displayF[1] = XMConvertToDegrees(rot.y);
+						displayF[2] = XMConvertToDegrees(rot.z);
 					},
-					[](void* displayPtr, void* internalPtr){
+					[](void* displayPtr, void* internalPtr) {
 						float* displayF = reinterpret_cast<float*>(displayPtr);
 						float* internalF = reinterpret_cast<float*>(internalPtr);
-						internalF[0] = XMConvertToRadians(displayF[0]);
-						internalF[1] = XMConvertToRadians(displayF[1]);
-						internalF[2] = XMConvertToRadians(displayF[2]);
+						Quaternion quat = Quaternion(Vector3(
+							XMConvertToRadians(displayF[0]),
+							XMConvertToRadians(displayF[1]),
+							XMConvertToRadians(displayF[2])));
+						quat.Normalize();
+
+						internalF[0] = quat.x;
+						internalF[1] = quat.y;
+						internalF[2] = quat.z;
+						internalF[3] = quat.w;
 					}))
-			REGISTER_REFLECT(m_Scale.x, FieldInfo::Type::Vec3, HeaderAttribute("scale   "))
+			REGISTER_REFLECT(m_Scale.x, FieldInfo::Type::Vec3, HeaderAttribute("Scale   "))
 		END_REFLECT()
 	};
 }

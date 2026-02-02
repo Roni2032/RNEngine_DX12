@@ -104,15 +104,16 @@ namespace RNEngine {
 	}
 
 	void ModelResource::UpdateWorldMatrix(const shared_ptr<Transform>& transform) {
-		UpdateWorldMatrix(transform->GetPosition(), transform->GetScale(), transform->GetRotation());
+		UpdateWorldMatrix(transform->GetPosition(), transform->GetScale(), transform->GetQuaternion());
 	}
-	void ModelResource::UpdateWorldMatrix(const Vector3& position, const Vector3& scale, const Vector3& rotation) {
+	void ModelResource::UpdateWorldMatrix(const Vector3& position, const Vector3& scale, const Quaternion& rotation) {
 		XMMATRIX defaultMatrix = XMMatrixScaling(m_DefaultTransform.m_Scale, m_DefaultTransform.m_Scale, m_DefaultTransform.m_Scale);
-		defaultMatrix *= XMMatrixRotationRollPitchYaw(m_DefaultTransform.m_Rotation.x, m_DefaultTransform.m_Rotation.y, m_DefaultTransform.m_Rotation.z);
+		defaultMatrix *= XMMatrixRotationQuaternion(Quaternion(m_DefaultTransform.m_Rotation).Normalize());
 		defaultMatrix *= XMMatrixTranslation(m_DefaultTransform.m_Position.x, m_DefaultTransform.m_Position.y, m_DefaultTransform.m_Position.z);
 
+		Quaternion normalizedQuat = rotation.Normalized();
 		m_Matrix.m_World = XMMatrixScaling(scale.x, scale.y, scale.z); 
-		m_Matrix.m_World *= XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z); 
+		m_Matrix.m_World *= XMMatrixRotationQuaternion(normalizedQuat);
 		m_Matrix.m_World *= XMMatrixTranslation(position.x, position.y, position.z); 
 
 		m_Matrix.m_World = defaultMatrix * m_Matrix.m_World;

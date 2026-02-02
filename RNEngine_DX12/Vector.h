@@ -35,6 +35,9 @@ namespace RNEngine {
 		
 		 void Set(float x, float y);
 		 void Set(float value);
+		 float Length();
+		 Vector2 Normalize();
+		 Vector2 Normalized()const;
 
 		 void RandomVec(float min, float max);
 	};
@@ -71,6 +74,10 @@ namespace RNEngine {
 		 void Set(float x, float y, float z);
 		 void Set(float value);
 		 float Length();
+		 Vector3 Normalize();
+		 Vector3 Normalized()const;
+
+		 Vector3 Cross(const Vector3& other)const;
 
 		 void RandomVec(float min, float max);
 
@@ -114,6 +121,9 @@ namespace RNEngine {
 		 void Set(float x, float y, float z, float w);
 		 void Set(float value);
 
+		 Vector4 Normalize();
+		 Vector4 Normalized()const;
+
 		 void RandomVec(float min, float max);
 
 		 Vector2 XX();
@@ -140,6 +150,7 @@ namespace RNEngine {
 	};
 
 	struct Quaternion : public XMFLOAT4{
+		const static Quaternion Identity;
 		Quaternion();
 		Quaternion(float x, float y, float z, float w);
 		Quaternion(const Quaternion& other);
@@ -154,6 +165,15 @@ namespace RNEngine {
 		bool operator!=(const Quaternion& other);
 
 		void Set(float x, float y, float z, float w);
+
+		Quaternion Normalize();
+		Quaternion Normalized()const;
+
+		void RotateX(float angle);
+		void RotateY(float angle);
+		void RotateZ(float angle);
+
+		Quaternion RotateToVector(const Vector3& direction)const;
 
 		Vector3 ConvertToRollPitchYaw();
 	};

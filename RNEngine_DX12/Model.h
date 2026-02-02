@@ -50,7 +50,7 @@ namespace RNEngine
 
 		void SetCamera(const shared_ptr<Camera>& camera);
 		void UpdateWorldMatrix(const shared_ptr<Transform>& transform);
-		void UpdateWorldMatrix(const Vector3& position, const Vector3& scale, const Vector3& rotation);
+		void UpdateWorldMatrix(const Vector3& position, const Vector3& scale, const Quaternion& rotation);
 		void RegisterConstantBuffer(void* data, size_t size);
 		void CopyToGPU(shared_ptr<ConstantBuffer>& buffer, ConstantBufferData& data);
 

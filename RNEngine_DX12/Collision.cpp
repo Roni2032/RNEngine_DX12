@@ -25,13 +25,13 @@ namespace RNEngine {
 
 	AABB CollisionCube::GetAABB() {
 		auto owner = GetOwner();
-		Vector3 position = owner->GetComponent<Transform>()->GetPosition();
+		Vector3 position = owner->GetTransform()->GetPosition();
 		Vector3 offset = GetOffset();
+		position += offset;
+
 
 		Vector3 max = position + m_Scale / 2.0f;
-		max += offset;
 		Vector3 min = position - m_Scale / 2.0f;
-		min += offset;
 
 		return AABB(max, min);
 	}
