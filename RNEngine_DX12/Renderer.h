@@ -54,12 +54,12 @@ namespace RNEngine {
 		vector<D3D12_ROOT_PARAMETER> m_Parameters;
 		vector<D3D12_DESCRIPTOR_RANGE> m_DescriptorRanges;
 
-		void AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE type, UINT numDescriptor);
+		void AddDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE type, const UINT numDescriptor,const UINT startRegisterIndex);
 	public:
 		DescriptorTable();
 		~DescriptorTable();
 
-		void Create(D3D12_SHADER_VISIBILITY visibility);
+		void Create(D3D12_SHADER_VISIBILITY visibility,const UINT srvCount,const UINT cbvCount);
 
 		vector<D3D12_ROOT_PARAMETER>& GetRootParameters() { return m_Parameters; }
 		const vector<D3D12_DESCRIPTOR_RANGE>& GetDescriptorRanges() { return m_DescriptorRanges; }
@@ -75,7 +75,7 @@ namespace RNEngine {
 
 		ID3D12RootSignature* GetPtr() { return m_RootSignature.Get(); }
 
-		void Create(ID3D12Device* _dev);
+		void Create(ID3D12Device* _dev, const UINT srvCount, const UINT cbvCount);
 
 	};
 	class Sampler {
