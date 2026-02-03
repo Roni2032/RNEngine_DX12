@@ -6,7 +6,7 @@ namespace RNEngine {
 
 	void MoveComponent::Update() {
 		auto owner = GetOwner();
-		auto transform = owner->GetComponent<Transform>();
+		auto transform = owner->GetTransform();
 		float delta = Engine::GetFrameTimer()->GetDeltaTime();
 		auto position = transform->GetPosition();
 

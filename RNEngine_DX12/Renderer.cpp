@@ -148,7 +148,7 @@ namespace RNEngine {
 	
 		m_RenderTargetTexture = make_shared<TextureResource>();
 		m_RenderTargetTexture->SetTexture(textureBuffer);
-		m_RenderTargetTexture->UpdateWorldMatrix({ 0.0f,0.0f,0.0f }, { m_Width,m_Height,1.0f }, { 0.0f,0.0f,0.0f });
+		m_RenderTargetTexture->UpdateWorldMatrix(Vector3::Zero, Vector3(m_Width, m_Height, 1.0f), Quaternion::Identity);
 
 		auto res = textureBuffer->GetBuffer();
 		if (!res) { printf("ERROR: resource null\n"); }

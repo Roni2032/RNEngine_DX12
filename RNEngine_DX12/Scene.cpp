@@ -12,7 +12,6 @@ namespace RNEngine {
 		}
 		for (auto& object : m_GameObjects) {
 			object->Update();
-			object->ComponentUpdate();
 		}
 	}
 	void Scene::Draw() {
@@ -22,10 +21,8 @@ namespace RNEngine {
 			for (auto& rendererComponent : rendererComponents) {
 				renderer->Draw(rendererComponent);
 			}
-			auto components = object->GetComponents();
-			for(auto& component : components) {
-				component->Draw();
-			}
+
+			object->Draw();
 		}
 		//複数のレンダーターゲットを利用できるようになったら戻そうね
 		//renderer->DrawAll();

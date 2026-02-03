@@ -23,7 +23,7 @@ namespace RNEngine {
 
 		auto gameObject = GetOwner();
 		if (gameObject) {
-			auto transform = gameObject->GetComponent<Transform>();
+			auto transform = gameObject->GetTransform();
 			m_Model->UpdateWorldMatrix(transform);
 		}
 	}
