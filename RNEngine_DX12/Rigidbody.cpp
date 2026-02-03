@@ -6,7 +6,7 @@ namespace RNEngine {
 
 		auto owner = GetOwner();
 		m_Velocity = m_Velocity + m_Gravity * delta;
-		auto transform = owner->GetComponent<Transform>();
+		auto transform = owner->GetTransform();
 		if (!transform)return;
 
 		Vector3 position = transform->GetPosition();

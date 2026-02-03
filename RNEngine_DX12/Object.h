@@ -12,6 +12,8 @@ namespace RNEngine {
 
 	class Object : public enable_shared_from_this<Object>
 	{
+		bool m_IsActive = true;
+
 	public:
 		Object(){}
 		virtual ~Object() {}
@@ -29,7 +31,7 @@ namespace RNEngine {
 		/// <summary>
 		/// ‚·‚×‚Ä‚ÌUpdate()‚ªI‚í‚Á‚½Œã‚ÉŒÄ‚Î‚ê‚é
 		/// </summary>
-		virtual void LateUpdate() {}
+		virtual void LastUpdate() {}
 
 		/// <summary>
 		/// •`‰æˆ—‚ÌÛ‚ÉŒÄ‚Î‚ê‚é

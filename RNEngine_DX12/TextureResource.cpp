@@ -42,11 +42,11 @@ namespace RNEngine {
 	}
 
 	void TextureResource::UpdateWorldMatrix(const shared_ptr<Transform>& transform) {
-		UpdateWorldMatrix(transform->GetPosition(), transform->GetScale(), transform->GetRotation());
+		UpdateWorldMatrix(transform->GetPosition(), transform->GetScale(), transform->GetQuaternion());
 	}
-	void TextureResource::UpdateWorldMatrix(const Vector3& position, const Vector3& scale, const Vector3& rotation) {
+	void TextureResource::UpdateWorldMatrix(const Vector3& position, const Vector3& scale, const Quaternion& quaternion) {
 		m_Matrix.m_World = XMMatrixScaling(scale.x, scale.y, scale.z);
-		m_Matrix.m_World *= XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
+		m_Matrix.m_World *= XMMatrixRotationQuaternion(quaternion);
 		m_Matrix.m_World *= XMMatrixTranslation(position.x, position.y, position.z);
 	}
 

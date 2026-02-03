@@ -28,7 +28,7 @@ namespace RNEngine {
 		command.camera = "Game";
 		command.position = position;
 		command.scale = size * 1.001f;
-		command.rotation = Vector3();
+		command.rotation = Quaternion::Identity;
 		command.color = color;
 
 		m_Commands.push_back(command);
@@ -39,25 +39,27 @@ namespace RNEngine {
 		command.camera = "Game";
 		command.position = position;
 		command.scale = size * 1.001f;
-		command.rotation = Vector3();
+		command.rotation = Quaternion::Identity;
 		command.color = color;
 
 		m_Commands.push_back(command);
 	}
-	void DebugRenderer::DrawLine(const Vector3& start, const Vector3& end, const float& scale, const Color& color) {
+	void DebugRenderer::DrawLine(const Vector3& start, const Vector3& end, const float& scale, const Color& color,const bool isDepth) {
 		DebugCommand command;
 		command.mesh = "DEFAULT_LINE";
 		command.camera = "Game";
 		command.position = start;
 		Vector3 dist = end - start;
-		command.scale = Vector3(dist.Length(), scale, scale);
+		command.scale = Vector3(0.0f, 0.0f, dist.Length());
 
-		auto look = XMMatrixLookAtLH(start, end, Vector3(0, 1, 0));
-		auto quat = XMQuaternionRotationMatrix(look);
-
-		command.rotation = Vector3();
+		Quaternion rot = Quaternion::Identity;
+		rot = rot.RotateToVector(dist);
+		command.rotation = rot;
 		command.topology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
 		command.color = color;
+
+		if(isDepth) command.pipelineState = "WireLine";
+		else command.pipelineState = "WireLineNoDepth";
 
 		m_Commands.push_back(command);
 	}
@@ -95,6 +97,11 @@ namespace RNEngine {
 
 
 	}
+	void DebugRenderer::DrawTransformGizmo(const Vector3& position, const float size) {
+		DrawLine(position, position + Vector3(size, 0.0f, 0.0f), 0.1f, Color::Red,false);
+		DrawLine(position, position + Vector3(0.0f, size, 0.0f), 0.1f, Color::Green,false);
+		DrawLine(position, position + Vector3(0.0f, 0.0f, size), 0.1f, Color::Blue, false);
+	}
 
 	void DebugRenderer::Initialize() {
 		ResourceManager::RegisterTexture("Textures/WireFrameTexture.png");
@@ -119,6 +126,9 @@ namespace RNEngine {
 		setup.m_TopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
 		PipelineStatePool::RegisterPipelineState(L"WireLine", InputLayout::PUV, setup);
 
+		setup.m_DepthEnable = false;
+		PipelineStatePool::RegisterPipelineState(L"WireLineNoDepth", InputLayout::PUV, setup);
+
 	}
 	void DebugRenderer::FlushWireFrames() {
 		auto scene = Engine::GetCurrentScene();
@@ -131,12 +141,12 @@ namespace RNEngine {
 		for (int i = 0; i < m_Commands.size(); ++i) {
 			auto& command = m_Commands[i];
 
-			if (command.topology != D3D_PRIMITIVE_TOPOLOGY_LINELIST) {
+			pipelineState = PipelineStatePool::GetPipelineState(Util::ConvertStrToWstr(command.pipelineState));
+			if (pipelineState) {
+				//指定のパイプラインステートがなければとりあえずワイヤーフレーム表示
 				pipelineState = PipelineStatePool::GetPipelineState(L"WireFrame");
 			}
-			else {
-				pipelineState = PipelineStatePool::GetPipelineState(L"WireLine");
-			}
+
 			cmdList->SetPipelineState(pipelineState->GetPtr());
 			cmdList->SetGraphicsRootSignature(pipelineState->GetRootSignature()->GetPtr());
 
@@ -156,7 +166,7 @@ namespace RNEngine {
 			auto& matrix = m_Matrices[i];
 
 			matrix.m_Matrix.m_World = XMMatrixScaling(command.scale.x, command.scale.y, command.scale.z);
-			matrix.m_Matrix.m_World *= XMMatrixRotationRollPitchYaw(command.rotation.x, command.rotation.y, command.rotation.z);
+			matrix.m_Matrix.m_World *= XMMatrixRotationQuaternion(command.rotation);
 			matrix.m_Matrix.m_World *= XMMatrixTranslation(command.position.x, command.position.y, command.position.z);
 
 			matrix.m_Matrix.m_ViewProjection = camera->GetViewProjectionMatrix();

@@ -5,16 +5,22 @@ namespace RNEngine {
 	class Component;
 	class Scene;
 	class RendererComponent;
+	class Transform;
 
 	class GameObject : public Object {
 		string m_Name;
 		weak_ptr<Scene> m_OwnerScene;
+		shared_ptr<Transform> m_Transform;
+
 		vector<shared_ptr<Component>> m_Components;
 	public:
 		GameObject(const shared_ptr<Scene>& ptr) :m_OwnerScene(ptr),m_Name("GameObject"), Object() {}
 		virtual ~GameObject() {}
 
-		virtual void Start();
+		virtual void Start()override;
+		virtual void Update()override;
+		virtual void LastUpdate()override;
+		virtual void Draw()override;
 
 		void SetName(const string& name) {
 			m_Name = name;
@@ -22,6 +28,9 @@ namespace RNEngine {
 		string GetName() {
 			return m_Name;
 		}
+
+		shared_ptr<Scene> GetOwnerScene();
+		shared_ptr<Transform> GetTransform();
 
 		template<class T,class... Param>
 		shared_ptr<T> AddComponent(Param&&... params) {
@@ -56,6 +65,5 @@ namespace RNEngine {
 		}
 
 		vector<shared_ptr<RendererComponent>> GetRendererComponent();
-		void ComponentUpdate();
 	};
 }

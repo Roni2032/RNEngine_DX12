@@ -18,11 +18,11 @@ namespace RNEngine {
 
 		auto gameObject = GetOwner();
 		if (gameObject) {
-			auto transform = gameObject->GetComponent<Transform>();
+			auto transform = gameObject->GetTransform();
 			Vector3 scale = transform->GetScale();
 			Vector3 position = transform->GetPosition() + Vector3(-m_Pivot) * scale;
-			Vector3 rotation = transform->GetRotation();
-			m_Texture->UpdateWorldMatrix(position,scale,rotation);
+			Quaternion quaternion = transform->GetQuaternion();
+			m_Texture->UpdateWorldMatrix(position, scale, quaternion);
 		}
 	}
 	void ImageRenderer::Draw(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* heap) {

@@ -235,7 +235,7 @@ namespace RNEngine {
 	Mesh& ResourceManager::CreateLine() {
 		vector<Vertex> vertices = {
 			{{0.0f,0.0f,0.0f},{0.0f,0.0f}},
-			{{1.0f,0.0f,0.0f},{1.0f,1.0f}}
+			{{0.0f,0.0f,1.0f},{1.0f,1.0f}}
 		};
 		vector<uint32_t> indices{
 			0,1

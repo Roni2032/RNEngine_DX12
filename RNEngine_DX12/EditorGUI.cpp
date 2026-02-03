@@ -136,7 +136,7 @@ namespace RNEngine {
 	Inspector::Inspector(const string& windowName) : GUI(windowName) {}
 	Inspector::~Inspector() {}
 
-	void Inspector::DrawComponentInInspector(shared_ptr<Component>& component) {
+	void Inspector::DrawComponentInInspector(const shared_ptr<Component>& component) {
 		auto fields = component->GetReflection();
 		if (ImGui::CollapsingHeader(component->GetComponentName().c_str())) return;
 		char* base = reinterpret_cast<char*>(component.get());
@@ -234,6 +234,7 @@ namespace RNEngine {
 		GUI::Draw();
 		if (auto gameObject = m_GameObject.lock()) {
 			auto components = gameObject->GetComponents();
+			DrawComponentInInspector(gameObject->GetTransform());
 			for (auto& component : components) {
 				DrawComponentInInspector(component);
 			}

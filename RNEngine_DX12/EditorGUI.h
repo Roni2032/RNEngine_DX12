@@ -65,7 +65,7 @@ namespace RNEngine {
 	class Inspector : public GUI {
 		weak_ptr<GameObject> m_GameObject;
 
-		void DrawComponentInInspector(shared_ptr<Component>& component);
+		void DrawComponentInInspector(const shared_ptr<Component>& component);
 
 		void DrawIntField(const string& name, int* value,float width,ConvertToAttribute* convert = nullptr);
 		void DrawFloatField(const string& name, float* value, float width, ConvertToAttribute* convert = nullptr);
