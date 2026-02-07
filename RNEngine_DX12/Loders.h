@@ -8,6 +8,9 @@
 
 namespace RNEngine {
 	class AssimpLoader {
+		//いつか普通の変数にしましょう
+		static Assimp::Importer g_Importer;
+
 		/// <summary>
 		/// メッシュ読み込み
 		/// </summary>
@@ -21,7 +24,7 @@ namespace RNEngine {
 		/// </summary>
 		/// <param name="output">読み込み対象</param>
 		/// <param name="scene">Assimpデータ</param>
-		static void ImportMaterial(Model& output, const aiScene* scene);
+		static void ImportMaterial(Model& output, const aiScene* scene,const string& filePath);
 
 		/// <summary>
 		///	Assimpデータの初期化
@@ -73,6 +76,7 @@ namespace RNEngine {
 	class MeshLoader {
 		static void InitModel(ID3D12Device* _dev,Model& model);
 	public:
+		static void AdjustModelSizeMatrix(Model& model, const Vector3& size);
 		static void LoadMeshFile(ID3D12Device* _dev,Model& model, const wstring& meshPath);
 
 	};

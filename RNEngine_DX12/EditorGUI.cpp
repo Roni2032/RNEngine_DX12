@@ -15,7 +15,7 @@
 #include "Component.h"
 #include "Scene.h"
 #include "File.h"
-
+#include "Camera.h"
 
 namespace RNEngine {
 	GUIRenderer::GUIRenderer() {}
@@ -255,7 +255,11 @@ namespace RNEngine {
 				if (m_SelectedGameObjectAddr == gameObject.get()) {
 					bgColor = ImVec4(0.5f, 0.5f, 0.5f, 0.5f);
 				}
-				if(SelectText(gameObject->GetName(), ImVec4(1,1,1,1), bgColor)) {
+				string showName = gameObject->GetName();
+				if (gameObject->GetComponent<Camera>()) {
+					showName = "Camera [ " + showName + " ]";
+				}
+				if(SelectText(showName, ImVec4(1,1,1,1), bgColor)) {
 					m_SelectedGameObjectAddr = gameObject.get();
 					auto renderer = Engine::GetGUIRenderer();
 					auto inspector = renderer->GetGui<Inspector>("inspector");

@@ -13,6 +13,7 @@ namespace RNEngine {
 		shared_ptr<Transform> m_Transform;
 
 		vector<shared_ptr<Component>> m_Components;
+		vector<string> m_Tags;
 	public:
 		GameObject(const shared_ptr<Scene>& ptr) :m_OwnerScene(ptr),m_Name("GameObject"), Object() {}
 		virtual ~GameObject() {}
@@ -28,9 +29,21 @@ namespace RNEngine {
 		string GetName() {
 			return m_Name;
 		}
+		void AddTag(const string& tag) {
+			m_Tags.push_back(tag);
+		}
+		bool HasTag(const string& tag) {
+			return find(m_Tags.begin(), m_Tags.end(), tag) != m_Tags.end();
+		}
+		bool HasTags(const vector<string>& tags) {
+			for (auto& tag : tags) {
+				if (HasTag(tag)) return true;
+			}
+			return false;
+		}
 
-		shared_ptr<Scene> GetOwnerScene();
-		shared_ptr<Transform> GetTransform();
+		shared_ptr<Scene> GetOwnerScene()const;
+		shared_ptr<Transform> GetTransform()const;
 
 		template<class T,class... Param>
 		shared_ptr<T> AddComponent(Param&&... params) {

@@ -15,7 +15,10 @@ namespace RNEngine {
 
 		virtual void Start();
 		virtual void Update();
+		virtual void LastUpdate();
 		virtual void Draw();
+
+		shared_ptr<Camera> CreateCameraObject(const string& key);
 
 		template<class T,class... Params>
 		shared_ptr<T> AddGameObject(Params&&... params) {

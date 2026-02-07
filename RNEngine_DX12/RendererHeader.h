@@ -70,6 +70,8 @@ namespace RNEngine{
 	struct Model {
 		vector<Mesh> m_Meshes;
 		vector<Material> m_Materials;
+
+		XMMATRIX m_AdjustMatrix;
 	};
 
 	//モデル初期行列データ

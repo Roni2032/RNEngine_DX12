@@ -24,7 +24,7 @@ namespace RNEngine
 		ValueType m_Type;
 		union {
 			bool m_Bool;
-			XMFLOAT2 m_Float2;
+			Vector2 m_Float2;
 		};
 
 	};
@@ -64,6 +64,7 @@ namespace RNEngine
 		static void RegisterInput(const string& actionName, int key, InputMode mode);
 
 		static void BindAction(const string& actionName, function<void(InputActionContext&)> action);
+
 		template<class T>
 		static void BindAction(const string& actionName, void(T::* method)(InputActionContext&), T* instance) {
 			function<void(InputActionContext&)> func = [=](InputActionContext& context) { (instance->*method)(context); };
@@ -78,13 +79,13 @@ namespace RNEngine
 		static bool IsPressed(const string& actionName);
 		static bool IsHeld(const string& actionName);
 
-		static XMFLOAT2 GetMouseOffset() {
+		static Vector2 GetMouseOffset() {
 			return { (float)m_OffsetMousePoint.x,(float)m_OffsetMousePoint.y };
 		}
-		static XMFLOAT2 GetMousePosition() {
+		static Vector2 GetMousePosition() {
 			return { (float)m_CurrentMousePoint.x,(float)m_CurrentMousePoint.y };
 		}
-		static XMFLOAT2 GetBeforeMousePosition() {
+		static Vector2 GetBeforeMousePosition() {
 			return { (float)m_BeforeMousePoint.x,(float)m_BeforeMousePoint.y };
 		}
 	};

@@ -246,6 +246,9 @@
     <ClCompile Include="DebugRenderer.cpp">
       <Filter>Engine\Renderer\Debug</Filter>
     </ClCompile>
+    <ClCompile Include="DebugCameraMove.cpp">
+      <Filter>Game\Camera</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -394,6 +397,9 @@
     </ClInclude>
     <ClInclude Include="DebugRenderer.h">
       <Filter>Engine\Renderer\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugCameraMove.h">
+      <Filter>Game\Camera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
