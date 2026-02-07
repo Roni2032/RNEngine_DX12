@@ -123,8 +123,15 @@ namespace RNEngine {
 		Input::RegisterInput("left", 'A', InputMode::Keyboard);
 		Input::RegisterInput("right", 'D', InputMode::Keyboard);
 
+		Input::RegisterInput("cameraUp", VK_UP, InputMode::Keyboard);
+		Input::RegisterInput("cameraDown", VK_DOWN, InputMode::Keyboard);
+		Input::RegisterInput("cameraLeft", VK_LEFT, InputMode::Keyboard);
+		Input::RegisterInput("cameraRight", VK_RIGHT, InputMode::Keyboard);
+		Input::RegisterInput("Space", VK_SPACE, InputMode::Keyboard);
+		Input::RegisterInput("lShift", VK_LSHIFT, InputMode::Keyboard);
+
 		//テスト入力設定
-		Input::BindAction("right", [&](InputActionContext context) { });//ラムダ式での設定
+		Input::BindAction("right", [&](InputActionContext& context) { });//ラムダ式での設定
 		Input::BindAction("left", &Engine::OnMove, this);//メンバ関数での設定(shared_ptrでも可能。uniqueとかは黙ってget()してくれ)
 		
 		timer.Update();
@@ -137,6 +144,7 @@ namespace RNEngine {
 			m_FrameTimer->WaitFrame(1000.0f / m_FrameRate);
 			//更新と描画
 			m_CurrentScene->Update();
+			m_CurrentScene->LastUpdate();
 			m_CurrentScene->Draw();
 			//デバッグGUIの切り替え
 #if _DEBUG

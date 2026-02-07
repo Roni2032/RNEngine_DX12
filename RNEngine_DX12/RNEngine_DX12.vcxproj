@@ -140,6 +140,7 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentRegistry.cpp" />
     <ClCompile Include="ConstantBuffer.cpp" />
+    <ClCompile Include="DebugCameraMove.cpp" />
     <ClCompile Include="DebugRenderer.cpp" />
     <ClCompile Include="Descriptor.cpp" />
     <ClCompile Include="Device.cpp" />
@@ -221,6 +222,7 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentRegistry.h" />
     <ClInclude Include="ConstantBuffer.h" />
+    <ClInclude Include="DebugCameraMove.h" />
     <ClInclude Include="DebugRenderer.h" />
     <ClInclude Include="Descriptor.h" />
     <ClInclude Include="Device.h" />

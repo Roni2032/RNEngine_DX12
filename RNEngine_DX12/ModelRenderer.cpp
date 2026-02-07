@@ -18,9 +18,6 @@ namespace RNEngine {
 	}
 
 	void ModelRenderer::Update() {
-		//基本情報を更新
-		m_Model->SetCamera(m_TargetCamera.lock());
-
 		auto gameObject = GetOwner();
 		if (gameObject) {
 			auto transform = gameObject->GetTransform();
@@ -28,6 +25,9 @@ namespace RNEngine {
 		}
 	}
 	void ModelRenderer::Draw(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* heap) {
+		//基本情報を更新
+		m_Model->SetCamera(m_TargetCamera.lock());
+
 		//描画
 		m_Model->Draw(cmdList, heap);
 	}

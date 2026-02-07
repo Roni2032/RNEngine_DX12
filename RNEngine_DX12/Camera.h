@@ -1,66 +1,63 @@
 #pragma once
+#include "Component.h"
+
 namespace RNEngine {
-	class Camera
-	{
-		Vector3 m_Eye;
+	class Camera : public Component {
+		//Vector3 m_Eye;
 		Vector3 m_Target;
 		Vector3 m_Up;
 
 		XMMATRIX m_ViewMatrix;
 		XMMATRIX m_ProjectionMatrix;
 
-		//m_IsOrthographicがtrueのときのみ使用(それ以外は上の行列を使用)
-		float m_WindowWidth;
-		float m_WindowHeight;
+		float m_Width;
+		float m_Height;
 
 		bool m_IsOrthographic;
-		bool m_IsDirty;//View行列更新フラグ
-	public:
-		Camera();
-		~Camera(){}
 
-		void Update();
+		vector<string> m_RenderingTag;
 
-		void SetEye(Vector3 eye) {
-			m_Eye = eye;
-			if (m_IsOrthographic) m_Eye.z = -1.0f;
-			m_IsDirty = true;
-		}
-		void SetTarget(Vector3 target) {
-			m_Target = target;
-			if (m_IsOrthographic) m_Target.z = 0.0f;
-			m_IsDirty = true;
-		}
-		void SetUp(Vector3 up) {
-			m_Up = up;
-			m_IsDirty = true;
-		}
-
-		Vector3 GetEye() const { return m_Eye; }
-		Vector3 GetTarget() const { return m_Target; }
-		Vector3 GetUp() const { return m_Up; }
-
-		void SetViewMatrix(Vector3 eye, Vector3 target, Vector3 up);
 		void UpdateViewMatrix();
+	public:
+		Camera(const shared_ptr<GameObject>& ptr);
+		virtual ~Camera();
+
+		virtual void LastUpdate()override;
+
+		void SetTarget(const Vector3& target);
+		void SetEye(const Vector3& eye);
+		void SetUp(const Vector3& up);
+
+		Vector3 GetTarget()const;
+		Vector3 GetEye()const;
+		Vector3 GetUp()const;
+
+		void SetViewMatrix(const Vector3& eye, const Vector3& target, const Vector3& up);
 		void SetProjectionMatrix(float fovY, float aspectRatio, float nearZ, float farZ);
 
-		XMMATRIX GetViewMatrix() const { return m_ViewMatrix; }
-		XMMATRIX GetProjectionMatrix() const { return m_ProjectionMatrix; }
+		XMMATRIX GetViewMatrix();
+		XMMATRIX GetProjectionMatrix()const;
+		XMMATRIX GetViewProjectionMatrix();
 
-		XMMATRIX GetViewProjectionMatrix()const;
-		void SetWindowWidth(float width) { m_WindowWidth = width; }
-		void SetWindowHeight(float height) { m_WindowHeight = height; }
+		void SetOrthographic(bool flag);
+		bool IsOrthographic()const;
 
-		float GetWindowWidth() const { return m_WindowWidth; }
-		float GetWindowHeight() const { return m_WindowHeight; }
+		void SetWidth(float width);
+		void SetHeight(float height);
 
-		void SetOrthographic(bool isOrtho) { m_IsOrthographic = isOrtho; }
-		bool IsOrthographic() const { return m_IsOrthographic; }
+		float GetWidth()const;
+		float GetHeight()const;
 
-		void LookDirection(Vector3 direction) {
-			Vector3 target = m_Eye + direction;
-			SetTarget(target);
-		}
+		void LookAtDirection(const Vector3& direction);
+
+		void AddRenderingTag(const string& tag);
+		vector<string> GetRenderingTags()const;
+
+		INSPECTOR_COMPONENT(Camera)
+			REGISTER_NAME(Camera)
+			BEGIN_REFLECT()
+			
+			END_REFLECT()
 	};
 
 }

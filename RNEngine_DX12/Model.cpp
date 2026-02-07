@@ -19,7 +19,10 @@
 namespace RNEngine {
 	ModelResource::ModelResource() :
 		m_Filename(L""),m_Matrix({}),
-		m_DefaultTransform({}) { }
+		m_DefaultTransform({}) { 
+
+		m_ModelData.m_AdjustMatrix = XMMatrixIdentity();
+	}
 
 	void ModelResource::Load(ID3D12Device* _dev, const string& filename) {
 		Timer modelTimer = Timer();
@@ -116,7 +119,8 @@ namespace RNEngine {
 		m_Matrix.m_World *= XMMatrixRotationQuaternion(normalizedQuat);
 		m_Matrix.m_World *= XMMatrixTranslation(position.x, position.y, position.z); 
 
-		m_Matrix.m_World = defaultMatrix * m_Matrix.m_World;
+		m_Matrix.m_World = m_ModelData.m_AdjustMatrix * m_Matrix.m_World;
+		//m_Matrix.m_World = defaultMatrix * m_Matrix.m_World;
 	}
 
 	void ModelResource::RegisterConstantBuffer(void* data, size_t size) {

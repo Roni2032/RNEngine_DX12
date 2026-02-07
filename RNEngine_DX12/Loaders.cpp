@@ -1,6 +1,7 @@
 #include "Loders.h"
-
+#include "EditorGUI.h"
 namespace RNEngine {
+	Assimp::Importer AssimpLoader::g_Importer = {};
 
 	string AssimpLoader::GetTextureName(aiMaterial* material) {
 		aiString path;
@@ -10,12 +11,11 @@ namespace RNEngine {
 		return textureName;
 	}
 	const aiScene* AssimpLoader::InitializeScene(const string& filePath) {
-		Assimp::Importer importer;
 		unsigned int readFlags = 0;
 		readFlags |= aiProcess_FlipUVs; // UVを反転させる
 		readFlags |= aiProcess_MakeLeftHanded; // 左手座標系に変換する
 		readFlags |= aiProcess_Triangulate; // 三角化（読込が遅くなる）
-		auto scene = importer.ReadFile(filePath, readFlags);
+		auto scene = g_Importer.ReadFile(filePath, readFlags);
 		assert(scene);
 
 		return scene;
@@ -23,7 +23,7 @@ namespace RNEngine {
 
 	void AssimpLoader::ImportMesh(ID3D12Device* _dev, Model& output,const aiScene* scene) {
 		const UINT meshSize = scene->mNumMeshes;
-
+		
 		vector<Mesh> meshes;
 		meshes.reserve(meshSize);
 		for (UINT i = 0; i < meshSize; i++) {
@@ -66,8 +66,9 @@ namespace RNEngine {
 			meshes.push_back(newMesh);
 		}
 		output.m_Meshes = meshes;
+
 	}
-	void AssimpLoader::ImportMaterial(Model& output, const aiScene* scene) {
+	void AssimpLoader::ImportMaterial(Model& output, const aiScene* scene, const string& filePath) {
 		auto numMaterials = scene->mNumMaterials;
 
 		vector<Material> materials;
@@ -83,9 +84,9 @@ namespace RNEngine {
 				return;
 			}
 
-			if (textureName[0] == '*') {
+			if (textureName[0] != '*') {
 				string registryKey = "";
-				registryKey = File::SplitFilePath(textureName);
+				registryKey = File::SplitFilePath(filePath);
 				registryKey += textureName;
 
 				ResourceManager::RegisterTexture(registryKey);
@@ -113,8 +114,10 @@ namespace RNEngine {
 			//meshファイルが存在しない時はAssimpからデータ抽出
 			auto scene = InitializeScene(Util::ConvertWstrToStr(filePath));
 
+
 			ImportMesh(_dev, output, scene);
-			ImportMaterial(output, scene);
+			ImportMaterial(output, scene, Util::ConvertWstrToStr(filePath));
+			MeshLoader::AdjustModelSizeMatrix(output, Vector3(1.0f, 1.0f, 1.0f));
 
 			MeshWriter::SaveMeshFile(output, MeshIO::GetMeshFileName(filePath));
 		}
@@ -181,9 +184,11 @@ namespace RNEngine {
 
 			for (uint32_t i = 0; i < header.m_MaterialCount; i++) {
 				auto& material = materials[i];
+				string textureName = materials[i].m_TextureName;
+				DeleteDefaultFilePath(textureName);
 				File::SaveBinary(ofs, &material.m_TextureType);
 				File::SaveBinary(ofs, &materialTextureNameLength[i]);
-				File::SaveBinary(ofs, material.m_TextureName.data(), materialTextureNameLength[i], false);
+				File::SaveBinary(ofs, textureName.data(), materialTextureNameLength[i], false);
 
 				if (material.m_TextureType == TextureDataType::Embedded) {
 					uint32_t formatLength = (uint32_t)material.m_EmbeddedTexture.m_Format.size();
@@ -194,6 +199,34 @@ namespace RNEngine {
 				}
 			}
 		}
+	}
+
+	void MeshLoader::AdjustModelSizeMatrix(Model& model, const Vector3& size) {
+		AABB aabb = AABB(Vector3(-10000000), Vector3(10000000));
+		for (auto& mesh : model.m_Meshes) {
+			for (auto& vertex : mesh.m_Vertices) {
+				Vector3 position = vertex.m_Position;
+
+				aabb.m_Max.x = max(aabb.m_Max.x, position.x);
+				aabb.m_Max.y = max(aabb.m_Max.y, position.y);
+				aabb.m_Max.z = max(aabb.m_Max.z, position.z);
+
+				aabb.m_Min.x = min(aabb.m_Min.x, position.x);
+				aabb.m_Min.y = min(aabb.m_Min.y, position.y);
+				aabb.m_Min.z = min(aabb.m_Min.z, position.z);
+			}
+		}
+
+		Vector3 aabbSize = aabb.GetSize();
+		Vector3 adjustSize = size / aabbSize;
+
+		Vector3 aabbCenter = aabb.GetCenter();
+
+		Vector3 bottom = Vector3(aabbCenter.x, aabb.m_Min.y, aabbCenter.z);
+		bottom = Vector3();
+		model.m_AdjustMatrix = XMMatrixScaling(adjustSize.x, adjustSize.y, adjustSize.z);
+		model.m_AdjustMatrix *= XMMatrixRotationQuaternion(Quaternion::Identity);
+		model.m_AdjustMatrix *= XMMatrixTranslation(-bottom.x, -bottom.y, -bottom.z);
 	}
 
 	void MeshLoader::InitModel(ID3D12Device* _dev,Model& model) {
@@ -213,6 +246,7 @@ namespace RNEngine {
 					reinterpret_cast<const uint8_t*>(embeddedTexture.m_Data.data()), embeddedTexture.m_Size);
 			}
 		}
+		AdjustModelSizeMatrix(model, Vector3(1.0f, 1.0f, 1.0f));
 	}
 	void MeshLoader::LoadMeshFile(ID3D12Device* _dev,Model& model, const wstring& meshPath) {
 		//モデル全体の情報ヘッダー

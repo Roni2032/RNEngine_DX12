@@ -70,6 +70,7 @@ namespace RNEngine {
 		 bool operator!=(const Vector3& other);
 
 		 Vector3 Cross(const Vector3& other);
+		 float Dot(const Vector3& other);
 
 		 void Set(float x, float y, float z);
 		 void Set(float value);
@@ -172,10 +173,11 @@ namespace RNEngine {
 		void RotateX(float angle);
 		void RotateY(float angle);
 		void RotateZ(float angle);
+		void Rotate(const Vector3& axis, float angle);
 
 		Quaternion RotateToVector(const Vector3& direction)const;
 
-		Vector3 ConvertToRollPitchYaw();
+		Vector3 ConvertToRollPitchYaw()const;
 	};
 
 	struct Color : public XMFLOAT4 {
@@ -207,6 +209,26 @@ namespace RNEngine {
 		 void Set(float value);
 
 		 void RandomVec(float min, float max);
+	};
+
+
+
+	struct AABB {
+		Vector3 m_Max;
+		Vector3 m_Min;
+		Vector3 m_Center;
+
+		AABB() :AABB(Vector3(), Vector3()) {}
+		AABB(Vector3 max, Vector3 min) :m_Max(max), m_Min(min) {
+			m_Center = (max + min) / 2.0f;
+		}
+
+		Vector3 GetSize() {
+			return m_Max - m_Min;
+		}
+		Vector3 GetCenter() {
+			return (m_Max + m_Min) / 2.0f;
+		}
 	};
 }
 

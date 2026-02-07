@@ -34,4 +34,4 @@
 #include "MoveComponent.h"
 #include "Rigidbody.h"
 #include "Collision.h"
-
+#include "DebugCameraMove.h"
