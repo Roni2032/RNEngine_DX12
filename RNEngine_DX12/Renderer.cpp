@@ -281,28 +281,14 @@ namespace RNEngine {
     }
     void Renderer::EndRenderer(GUIRenderer* guiRenderer) {
 		auto idx = m_SwapChain->GetCurrentBackBufferIndex();
-		//m_FrameBufferRenderTargets[idx]->DrawBegin(m_CommandList.Get());
-		/*auto rtvH = m_RTVBuffer->GetDescriptorHeap()->GetCPUHandle();
-		rtvH.ptr += idx * m_RTVBuffer->GetDescriptorHeap()->GetHeapSize();
-
-		auto dsvH = m_DSVBuffer->GetDescriptorHeap()->GetCPUHandle();
-
-		m_CommandList->OMSetRenderTargets(1, &rtvH, true, &dsvH);
-
-		m_CommandList->ClearRenderTargetView(rtvH, m_ClearColor.data(), 0, nullptr);
-		m_CommandList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);*/
 
 		DebugRenderer::Get().DrawSphereWireFrame(Vector3(0, 0, 0), Vector3(1.0f));
-		//DebugRenderer::Get().DrawLine(Vector3(-1, 0, 2), Vector3(1, 0, 2), 0.1f);
-		//DebugRenderer::Get().DrawWorldGridFrame(Vector3(-10.0f, -10.0f, -10.0f), Vector3(10.0f, 10.0f, 10.0f), 1.0f);
+
 		DebugRenderer::Get().FlushWireFrames();
 		//‚·‚×‚Ä‚Ì•`‰æ‚ªI‚í‚Á‚½Œã‚ÉGUI‚ð•\Ž¦
 		if (guiRenderer != nullptr) {
 			guiRenderer->UpdateRenderer(m_CommandList.Get(), m_SrvCbvDescriptorHeap.get());
 		}
-		//DebugRenderer::DrawCubeWireFrame(Vector3(), Vector3(1.0f));
-
-		//m_FrameBufferRenderTargets[idx]->DrawEnd(m_CommandList.Get());
 
 		m_Barrier->Transition(m_CommandList.Get(), m_RTVBuffer->GetBackBuffer(idx), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 		m_RTVBuffer->SetBufferState(idx, D3D12_RESOURCE_STATE_PRESENT);

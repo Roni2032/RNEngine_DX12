@@ -3,31 +3,51 @@
 
 namespace RNEngine {
 	void Scene::Start() {
-
+		CreateCameraObject("Debug");
 	}
 	void Scene::Update() {
-		for (auto& cameraMap : m_CameraMap) {
-			auto& camera = cameraMap.second;
-			camera->Update();
-		}
 		for (auto& object : m_GameObjects) {
 			object->Update();
+		}
+	}
+	void Scene::LastUpdate() {
+		for (auto& object : m_GameObjects) {
+			object->LastUpdate();
 		}
 	}
 	void Scene::Draw() {
 		auto renderer = Engine::GetRenderer();
 		for (auto& object : m_GameObjects) {
-			auto rendererComponents = object->GetRendererComponent();
-			for (auto& rendererComponent : rendererComponents) {
-				renderer->Draw(rendererComponent);
-			}
+			//どのカメラから見たものを描画するか
+			for (auto& camera : m_CameraMap) {
+				auto renderingTags = camera.second->GetRenderingTags();
+				//タグが指定していなければ全部描画する
+				//タグが見つかれば描画する
+				if (renderingTags.size() > 0 && !object->HasTags(renderingTags)) continue;
 
-			object->Draw();
+				//後々、Unityみたいにカメラが持つレンダーターゲットに書き込む...とかにしたいなあ...
+				auto rendererComponents = object->GetRendererComponent();
+				for (auto& rendererComponent : rendererComponents) {
+					//カメラ指定(初期化で設定しないでほしい)
+					rendererComponent->Init(camera.second);
+					renderer->Draw(rendererComponent);
+				}
+				object->Draw();
+			}
+			
 		}
 		//複数のレンダーターゲットを利用できるようになったら戻そうね
 		//renderer->DrawAll();
 	}
 
+	shared_ptr<Camera> Scene::CreateCameraObject(const string& key) {
+		auto object = AddGameObject<GameObject>();
+		object->SetName(key);
+		auto camera = object->AddComponent<Camera>();
+		RegisterCamera(key, camera);
+
+		return camera;
+	}
 
 	vector<shared_ptr<GameObject>> Scene::GetGameObjects() {
 		return m_GameObjects;

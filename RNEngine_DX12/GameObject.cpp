@@ -39,10 +39,10 @@ namespace RNEngine {
 		return renderers;
 	}
 
-	shared_ptr<Scene> GameObject::GetOwnerScene() {
+	shared_ptr<Scene> GameObject::GetOwnerScene()const {
 		return m_OwnerScene.lock();
 	}
-	shared_ptr<Transform> GameObject::GetTransform() {
+	shared_ptr<Transform> GameObject::GetTransform() const{
 		return m_Transform;
 	}
 }

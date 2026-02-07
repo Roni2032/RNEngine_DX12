@@ -2,20 +2,6 @@
 #include "stdafx.h"
 #include "Component.h"
 namespace RNEngine {
-	struct AABB {
-		Vector3 m_Max;
-		Vector3 m_Min;
-		Vector3 m_Center;
-
-		AABB() :AABB(Vector3(), Vector3()){}
-		AABB(Vector3 max, Vector3 min):m_Max(max),m_Min(min) {
-			m_Center = (max + min) / 2.0f;
-		}
-
-		Vector3 GetSize() {
-			return m_Max - m_Min;
-		}
-	};
 
 	class Collision : public Component{
 		Vector3 m_Offset;

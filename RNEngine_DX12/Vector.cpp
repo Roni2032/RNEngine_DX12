@@ -169,6 +169,9 @@ namespace RNEngine {
 	Vector3 Vector3::Cross(const Vector3& other) {
 		return (Vector3)XMVector3Cross(*this, other);
 	}
+	float Vector3::Dot(const Vector3& other) {
+		return XMVectorGetX(XMVector3Dot(*this, other));
+	}
 
 	void Vector3::Set(float x, float y, float z) {
 		this->x = x;
@@ -365,6 +368,11 @@ namespace RNEngine {
 		*this = XMQuaternionMultiply(rot, *this);
 		Normalize();
 	}
+	void Quaternion::Rotate(const Vector3& axis, float angle) {
+		XMVECTOR rot = XMQuaternionRotationAxis(axis, angle);
+		*this = XMQuaternionMultiply(rot, *this);
+		Normalize();
+	}
 	Quaternion Quaternion::RotateToVector(const Vector3& direction)const {
 		Vector3 normalizedDirection = direction.Normalized();
 
@@ -376,7 +384,7 @@ namespace RNEngine {
 		Vector3 up = Vector3(0, 1, 0);
 
 		// 真上・真下対策（デバッグラインでよく踏む）
-		if (fabsf(XMVectorGetX(XMVector3Dot(normalizedDirection, up))) > 0.999f)
+		if (fabsf(normalizedDirection.Dot(up)) > 0.999f)
 			up = Vector3(0, 0, 1);
 
 		// 直交基底作成
@@ -391,7 +399,7 @@ namespace RNEngine {
 		
 	}
 
-	Vector3 Quaternion::ConvertToRollPitchYaw() {
+	Vector3 Quaternion::ConvertToRollPitchYaw() const{
 		XMVECTOR v = *this;
 		//各要素を抽出
 		float x = XMVectorGetX(v);

@@ -12,7 +12,7 @@ namespace RNEngine
 		Component(const shared_ptr<GameObject>& ptr) :m_Owner(ptr), Object(){}
 		virtual ~Component() {}
 
-		shared_ptr<GameObject> GetOwner();
+		shared_ptr<GameObject> GetOwner()const;
 
 		virtual void OnCollisionEnter(const shared_ptr<GameObject>& object){}
 		virtual void OnCollisionExecute(const shared_ptr<GameObject>& object){}
@@ -33,19 +33,19 @@ namespace RNEngine
 		void SetPosition(Vector3 position) {
 			m_Position = position;
 		}
-		Vector3 GetPosition() {
+		Vector3 GetPosition() const{
 			return m_Position;
 		}
 		void SetScale(Vector3 scale) {
 			m_Scale = scale;
 		}
-		Vector3 GetScale() {
+		Vector3 GetScale() const{
 			return m_Scale;
 		}
 		void SetRotation(Vector3 rotation) {
 			m_Quaternion = Quaternion(rotation).Normalize();
 		}
-		Vector3 GetRotation() {
+		Vector3 GetRotation() const{
 			return m_Quaternion.ConvertToRollPitchYaw();
 		}
 		Quaternion GetQuaternion() {
@@ -54,6 +54,10 @@ namespace RNEngine
 		void SetQuaternion(Quaternion quaternion) {
 			m_Quaternion = quaternion;
 		}
+
+		Vector3 GetForward();
+
+		void LookAt(const Vector3& target);
 
 		INSPECTOR_COMPONENT(Transform)
 		REGISTER_NAME(Transform)
