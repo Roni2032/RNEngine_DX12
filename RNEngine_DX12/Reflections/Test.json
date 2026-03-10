@@ -1,0 +1,10 @@
+{
+    "name":"Test",
+    "variable":[
+        {
+            "name":"test",
+            "type":"int",
+            "attribute":[]
+        }
+    ]
+}

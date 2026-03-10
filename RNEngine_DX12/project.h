@@ -1,5 +1,7 @@
 #pragma once
 
+#include "EditorGUI.h"
+
 #include "ResourceManager.h"
 #include "RendererHeader.h"
 #include "ComponentRegistry.h"
@@ -8,16 +10,9 @@
 #include "Window.h"
 #include "File.h"
 #include "RNEngine.h"
-#include "Vector.h"
-#include "Device.h"
-#include "Renderer.h"
 #include "DebugRenderer.h"
-#include "EditorGUI.h"
-#include "PipelineState.h"
 #include "Input.h"
 #include "Singleton.h"
-#include "Buffer.h"
-#include "Shader.h"
 #include "RendererComponent.h"
 #include "ModelRenderer.h"
 #include "ImageRenderer.h"

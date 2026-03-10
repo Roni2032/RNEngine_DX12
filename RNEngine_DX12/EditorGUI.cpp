@@ -16,6 +16,7 @@
 #include "Scene.h"
 #include "File.h"
 #include "Camera.h"
+#include "RenderTarget.h"
 
 namespace RNEngine {
 	GUIRenderer::GUIRenderer() {}
@@ -246,18 +247,24 @@ namespace RNEngine {
 	Hierarchy::~Hierarchy() {}
 
 	void Hierarchy::Draw() {
+		bool isShowCameraWindow = false;
 		GUI::Draw();
 		if (auto scene = m_GameScene.lock()) {
 			auto gameObjects = scene->GetGameObjects();
 			for (auto& gameObject : gameObjects) {
 				ImGui::PushID(gameObject.get());
 				ImVec4 bgColor = ImVec4(0, 0, 0, 0);
+				//選択されているオブジェクトなら背景色を変える
 				if (m_SelectedGameObjectAddr == gameObject.get()) {
 					bgColor = ImVec4(0.5f, 0.5f, 0.5f, 0.5f);
 				}
 				string showName = gameObject->GetName();
 				if (gameObject->GetComponent<Camera>()) {
 					showName = "Camera [ " + showName + " ]";
+					//選択されているカメラならカメラウィンドウも表示する
+					if(m_SelectedGameObjectAddr == gameObject.get()) {
+						isShowCameraWindow = true;
+					}
 				}
 				if(SelectText(showName, ImVec4(1,1,1,1), bgColor)) {
 					m_SelectedGameObjectAddr = gameObject.get();
@@ -269,6 +276,24 @@ namespace RNEngine {
 				ImGui::PopID();
 			}
 		}
+		ImGui::End();
+
+		if (!isShowCameraWindow) return;
+
+		ShowCameraPreview();
+	}
+	void Hierarchy::ShowCameraPreview() {
+		auto scene = m_GameScene.lock();
+		auto camera = m_SelectedGameObjectAddr->GetComponent<Camera>();
+		//カメラがもしなければ抜ける
+		if (!camera) return;
+
+		auto renderTarget = camera->GetRenderTarget();
+		auto textureBuffer = renderTarget->GetRenderTargetTexture()->GetTexture();
+		ImTextureID id = (ImTextureID)Engine::GetRenderer()->GetSRVDescriptorGPUHandle(textureBuffer->GetSRVHandle()).ptr;
+
+		ImGui::Begin("Camera Preview");
+		ImGui::Image(id, ImGui::GetContentRegionAvail());
 		ImGui::End();
 	}
 	Entry::Entry(Entry::Type type, const wstring& name, const wstring& path):

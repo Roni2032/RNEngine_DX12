@@ -1,6 +1,10 @@
 #include "stdafx.h"
 #include "project.h"
 namespace RNEngine {
+	GameObject::GameObject(const shared_ptr<Scene>& ptr) :GameObject(ptr, "GameObject") {}
+	GameObject::GameObject(const shared_ptr<Scene>& ptr, const string& name) :m_OwnerScene(ptr), m_Name(name), Object() {}
+	GameObject::~GameObject() {}
+
 	void GameObject::Start() {
 		m_Transform = make_shared<Transform>(GetThis<GameObject>());
 	}
@@ -37,6 +41,13 @@ namespace RNEngine {
 			}
 		}
 		return renderers;
+	}
+
+	void GameObject::SetLayer(const string& layerName) {
+		auto scene = m_OwnerScene.lock();
+		if (scene) {
+			m_Layer = scene->GetLayer(layerName);
+		}
 	}
 
 	shared_ptr<Scene> GameObject::GetOwnerScene()const {

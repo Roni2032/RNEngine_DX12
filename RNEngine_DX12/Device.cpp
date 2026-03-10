@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "project.h"
+#include "Device.h"
 
 namespace RNEngine {
 	Device::Device() {

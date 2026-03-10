@@ -87,6 +87,8 @@ namespace RNEngine {
 	class Hierarchy : public GUI {
 		weak_ptr<Scene> m_GameScene;
 		GameObject* m_SelectedGameObjectAddr;
+
+		void ShowCameraPreview();
 	public:
 		Hierarchy(const string& windowName);
 		~Hierarchy();

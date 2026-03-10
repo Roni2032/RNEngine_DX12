@@ -6,8 +6,9 @@ namespace RNEngine
 {
 	class DescriptorHeap;
 	class TextureResource;
+	class TextureBuffer;
 	class GameObject;
-
+	
 	enum class Anchor {
 		   TopLeft,    Top,    TopRight,
 		      Left, Center,       Right,
@@ -20,6 +21,9 @@ namespace RNEngine
 		ImageRenderer(const shared_ptr<GameObject>& ptr);
 		~ImageRenderer();
 		void SetTexture(const wstring& filename);
+		void SetTexture(const shared_ptr<TextureBuffer>& texture);
+
+		TextureResource* GetTexture()const;
 		virtual void Update()override;
 		virtual void Draw(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* heap)override;
 
