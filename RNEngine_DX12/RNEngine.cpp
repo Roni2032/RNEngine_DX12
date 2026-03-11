@@ -1,5 +1,9 @@
 #include "stdafx.h"
 #include "project.h"
+#include "Device.h"
+#include "Renderer.h"
+#include "Window.h"
+#include "ResourceManager.h"
 
 namespace RNEngine {
 
@@ -47,11 +51,11 @@ namespace RNEngine {
 		SetFrameRate(120.0f);
 
 		//レンダーターゲット作成
-		auto gameViewTarget = make_shared<RenderTarget>();
+		/*auto gameViewTarget = make_shared<RenderTarget>();
 		gameViewTarget->Create(
 			{ (float)m_Window->GetWidth(),(float)m_Window->GetHeight() },
 			DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, m_Renderer->GetClearColor());
-		m_Renderer->RegisterRenderTarget("GameView", gameViewTarget);
+		m_Renderer->RegisterRenderTarget("GameView", gameViewTarget);*/
 
 #if _DEBUG
 		ResourceManager::RegisterTexture("Editor/Texture/folder_icon.png");

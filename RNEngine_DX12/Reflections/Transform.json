@@ -1,0 +1,27 @@
+{
+    "name":"Transform",
+    "variable":[
+        {
+            "name":"m_Position",
+            "type":"vec3",
+            "attribute":[
+                {"type":"header","name":"position"}
+                ]
+            },
+        {
+            "name":"m_Scale",
+            "type":"vec3",
+            "attribute":[
+                {"type":"header","name":"scale"}
+                ]
+            },
+        {
+            "name":"m_Quaternion",
+            "type":"quaternion",
+            "attribute":[
+                {"type":"header","name":"rotation"},
+                {"type":"convert","functions":["ConvertToDegree","ConvertToQuaternion"]}
+                ]
+            }
+    ]
+}

@@ -1,5 +1,8 @@
 #include "stdafx.h"
-#include "Camera.h"
+#include "project.h"
+
+#include "RenderTarget.h"
+#include "Renderer.h"
 
 namespace RNEngine {
 	INSPECTOR_COMPONENT_CPP(Camera)
@@ -14,6 +17,16 @@ namespace RNEngine {
 	}
 	Camera::~Camera(){}
 
+	void Camera::Start() {
+		m_RendererObjects.clear();
+
+		auto window = Engine::GetWindow();
+		auto renderer = Engine::GetRenderer();
+		m_RenderTarget = make_shared<RenderTarget>();
+		m_RenderTarget->Create(
+			{ (float)window->GetWidth(),(float)window->GetHeight() },
+			DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
+	}
 	void Camera::LastUpdate() {
 		auto transform = GetOwner()->GetTransform();
 		Vector3 forward = transform->GetForward();
@@ -21,7 +34,14 @@ namespace RNEngine {
 
 		SetTarget(eye + forward);
 	}
-
+	void Camera::DrawRenderTarget() {
+		for (auto& renderer : m_RendererObjects) {
+			renderer->Init(GetThis<Camera>());
+		}
+		m_RenderTarget->Draw(m_RendererObjects);
+		//•`‰æŒãAƒNƒŠƒA
+		m_RendererObjects.clear();
+	}
 	void Camera::UpdateViewMatrix() {
 		Vector3 eye = GetOwner()->GetTransform()->GetPosition();
 		if (m_IsOrthographic) {
@@ -105,10 +125,20 @@ namespace RNEngine {
 		SetTarget(eye + direction.Normalized());
 	}
 
-	void Camera::AddRenderingTag(const string& tag) {
-		m_RenderingTag.push_back(tag);
+	void Camera::AddRenderingLayer(const string& layer) {
+		auto ownerScene = GetOwner()->GetOwnerScene();
+		int num = ownerScene->GetLayer(layer);
+		m_RenderingLayers.push_back(num);
 	}
-	vector<string> Camera::GetRenderingTags()const {
-		return m_RenderingTag;
+	void Camera::AddRenderingLayer(const int layer) {
+		m_RenderingLayers.push_back(layer);
 	}
+	vector<int> Camera::GetRenderingLayers()const {
+		return m_RenderingLayers;
+	}
+
+	void Camera::AddRenderObject(const shared_ptr<RendererComponent>& renderer) {
+		m_RendererObjects.push_back(renderer);
+	}
+	RenderTarget* Camera::GetRenderTarget() { return m_RenderTarget.get(); }
 }

@@ -1,9 +1,14 @@
 #include "stdafx.h"
 #include "project.h"
+#include "Renderer.h"
 
 namespace RNEngine {
 	void Scene::Start() {
-		CreateCameraObject("Debug");
+		//CreateCameraObject("Debug");
+
+		RegisterLayer("Default", 0);
+		RegisterLayer("Object", 1);
+		RegisterLayer("UI", 2);
 	}
 	void Scene::Update() {
 		for (auto& object : m_GameObjects) {
@@ -20,33 +25,41 @@ namespace RNEngine {
 		for (auto& object : m_GameObjects) {
 			//どのカメラから見たものを描画するか
 			for (auto& camera : m_CameraMap) {
-				auto renderingTags = camera.second->GetRenderingTags();
-				//タグが指定していなければ全部描画する
-				//タグが見つかれば描画する
-				if (renderingTags.size() > 0 && !object->HasTags(renderingTags)) continue;
+				auto renderingLayers = camera.second->GetRenderingLayers();
+
+				if (renderingLayers.size() < 0 || !object->CompareLayer(renderingLayers)) continue;
 
 				//後々、Unityみたいにカメラが持つレンダーターゲットに書き込む...とかにしたいなあ...
 				auto rendererComponents = object->GetRendererComponent();
 				for (auto& rendererComponent : rendererComponents) {
 					//カメラ指定(初期化で設定しないでほしい)
-					rendererComponent->Init(camera.second);
-					renderer->Draw(rendererComponent);
+					camera.second->AddRenderObject(rendererComponent);
 				}
 				object->Draw();
 			}
 			
 		}
+		for (auto& camera : m_CameraMap) {
+			camera.second->DrawRenderTarget();
+		}
+		//とりあえずメインカメラだけ描画
+		//GetCamera("Game")->DrawRenderTarget();
+
 		//複数のレンダーターゲットを利用できるようになったら戻そうね
 		//renderer->DrawAll();
 	}
 
 	shared_ptr<Camera> Scene::CreateCameraObject(const string& key) {
-		auto object = AddGameObject<GameObject>();
+		auto object = AddGameObject();
 		object->SetName(key);
 		auto camera = object->AddComponent<Camera>();
 		RegisterCamera(key, camera);
 
 		return camera;
+	}
+	void Scene::RegisterMainCamera(const string& key) {
+		auto renderer = Engine::GetRenderer();
+		renderer->RegisterMainCamera(GetCamera(key));
 	}
 
 	vector<shared_ptr<GameObject>> Scene::GetGameObjects() {

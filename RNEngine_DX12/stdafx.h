@@ -41,6 +41,8 @@
 #include "include/imgui/backends/imgui_impl_dx12.h"
 #include "include/imgui/imgui.h"
 
+#include "include/json-develop/include/nlohmann/json.hpp"
+
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "DirectXTex.lib")
@@ -62,7 +64,7 @@ using namespace Microsoft::WRL;
 using namespace DirectX;
 using namespace std::chrono;
 using namespace std::filesystem;
-
+using Json = nlohmann::json;
 //ゲーム内で使用する基本的なファイル
 #include "Object.h"
 #include "Util.h"

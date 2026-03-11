@@ -9,17 +9,22 @@ namespace RNEngine {
 		auto window = Engine::GetWindow();
 		//メインカメラ設定
 		shared_ptr<Camera> gameCamera = CreateCameraObject("Game");
-		gameCamera->AddRenderingTag("Model");
+		gameCamera->AddRenderingLayer("Object");
 		gameCamera->SetEye({ 0, 2, -2 });
 		gameCamera->SetTarget({ 0,0,0 });
 		//UIカメラ設定
 		shared_ptr<Camera> uiCamera = CreateCameraObject("UI");
-		uiCamera->AddRenderingTag("Texture");
+		uiCamera->AddRenderingLayer("UI");
 		uiCamera->SetOrthographic(true);
 		uiCamera->SetWidth((float)window->GetWidth());
 		uiCamera->SetHeight((float)window->GetHeight());
+
+		RegisterMainCamera("Game");
+		
 	}
 	void GameScene::Start() {
+		Scene::Start();
+
 		CreateCamera();
 
 		DefaultModelTransform defaultTransform{ 1.0f,{ 0.0f,XM_PI,0.0f } ,{0.0f,0.0f,0.0f} };
@@ -33,22 +38,23 @@ namespace RNEngine {
 		ResourceManager::RegisterModel("Models/toribi/toribi.fbx", "toribi", defaultTransformScale);
 		ResourceManager::RegisterModel("Models/Blastjump/Player.fbx", "player", defaultTransformScale);
 
-		m_Player = AddGameObject<GameObject>();
-		m_Player->AddTag("Model");
+		m_Player = AddGameObject();
 		m_Player->SetName(u8"花譜");
+		m_Player->SetLayer("Object");
 		auto renderer = m_Player->AddComponent<ModelRenderer>();
 		renderer->Init(GetCamera("Game"));
-		renderer->SetModel("raiden");
+		renderer->SetModel("kaf");
 		renderer->AddRenderTargetTag("GameView");
 		auto collision = m_Player->AddComponent<CollisionCube>();
 		collision->SetScale(Vector3(1.0f, 1.8f, 1.0f));
 
-		m_Ground = AddGameObject<GameObject>();
-		m_Ground->AddTag("Model");
+		m_Ground = AddGameObject();
+		m_Ground->SetName(u8"地面");
+		m_Ground->SetLayer("Object");
+
 		renderer = m_Ground->AddComponent<ModelRenderer>();
 		renderer->Init(GetCamera("Game"));
 		renderer->SetModel("DEFAULT_SQUARE_3D");
-		m_Ground->SetName(u8"地面");
 		renderer->AddRenderTargetTag("GameView");
 		auto transform = m_Ground->GetTransform();
 		transform->SetPosition({ 5,-0.75f,0 });
@@ -56,8 +62,8 @@ namespace RNEngine {
 		collision = m_Ground->AddComponent<CollisionCube>();
 		collision->SetScale(Vector3(1.0f, 10.0f, 10.0f));
 
-		m_Texture = AddGameObject<GameObject>();
-		m_Texture->AddTag("Texture");
+		m_Texture = AddGameObject();
+		m_Texture->SetLayer("UI");
 		auto texRenderer = m_Texture->AddComponent<ImageRenderer>();
 		texRenderer->Init(GetCamera("UI"));
 		texRenderer->SetTexture(L"Textures/test.jpg");

@@ -17,6 +17,10 @@
 #include "TextureResource.h"
 
 #include "RendererComponent.h"
+#include "ImageRenderer.h"
+#include "Scene.h"
+#include "Camera.h"
+#include "RenderTarget.h"
 
 namespace RNEngine {
 	RasterizerState::RasterizerState() :m_RasterizerState{} {
@@ -123,78 +127,6 @@ namespace RNEngine {
 		m_SamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	}
 
-	RenderTarget::RenderTarget() :m_ClearColor{ 1,1,1,1 }, m_Width(0), m_Height(0) {}
-	RenderTarget::~RenderTarget() = default;
-
-	void RenderTarget::Create(Vector2 renderSize, DXGI_FORMAT format, array<float, 4> clearColor) {
-
-		m_Width = renderSize.x;
-		m_Height = renderSize.y;
-		m_ClearColor = clearColor;
-
-		auto dev = Engine::GetID3D12Device();
-		m_Rtv = make_unique<RTVBuffer>();
-		m_Rtv->Init(dev);
-
-		m_Dsv = make_unique<DSVBuffer>();
-		auto window = Engine::GetWindow();
-		m_Dsv->Init(dev, window);
-
-		shared_ptr<TextureResource> tex;
-		auto textureBuffer = make_shared<TextureBuffer>();
-		textureBuffer->Create(dev,(UINT)renderSize.x, (UINT)renderSize.y, format, clearColor);
-		
-		dev->CreateRenderTargetView(textureBuffer->GetBuffer(), &m_Rtv->m_RTVDesc, m_Rtv->GetDescriptorHeap()->GetCPUHandle());
-	
-		m_RenderTargetTexture = make_shared<TextureResource>();
-		m_RenderTargetTexture->SetTexture(textureBuffer);
-		m_RenderTargetTexture->UpdateWorldMatrix(Vector3::Zero, Vector3(m_Width, m_Height, 1.0f), Quaternion::Identity);
-
-		auto res = textureBuffer->GetBuffer();
-		if (!res) { printf("ERROR: resource null\n"); }
-
-		auto desc = res->GetDesc();
-		printf("RESOURCE: Format=%u Flags=%u Width=%u Height=%u Sample=%u Mip=%u\n",
-			(unsigned)desc.Format, (unsigned)desc.Flags, (unsigned)desc.Width, (unsigned)desc.Height,
-			(unsigned)desc.SampleDesc.Count, (unsigned)desc.MipLevels);
-
-		D3D12_RENDER_TARGET_VIEW_DESC rtv = m_Rtv->m_RTVDesc; // or log fields individually
-		printf("RTVDesc: Format=%u ViewDim=%u\n", (unsigned)rtv.Format, (unsigned)rtv.ViewDimension);
-
-		auto heap = m_Rtv->GetDescriptorHeap();
-		printf("Heap: type? (not accessible here) Count or pointer: %p  CPU.ptr=%llu\n",
-			heap, (unsigned long long)heap->GetCPUHandle().ptr);
-	}
-
-	void RenderTarget::DrawBegin(ID3D12GraphicsCommandList* cmdList) {
-		auto textureBuffer = m_RenderTargetTexture->GetTexture();
-		auto barrier = Barrier();
-
-		barrier.Transition(cmdList, textureBuffer->GetBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		//m_Rtv->SetBufferState(0, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		auto rtvH = m_Rtv->GetDescriptorHeap()->GetCPUHandle();
-		auto dsvH = m_Dsv->GetDescriptorHeap()->GetCPUHandle();
-		cmdList->OMSetRenderTargets(1, &rtvH, true, &dsvH);
-
-		cmdList->ClearRenderTargetView(rtvH, m_ClearColor.data(), 0, nullptr);
-		cmdList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-	}
-	void RenderTarget::DrawEnd(ID3D12GraphicsCommandList* cmdList) {
-		auto textureBuffer = m_RenderTargetTexture->GetTexture();
-		auto barrier = Barrier();
-		barrier.Transition(cmdList, textureBuffer->GetBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-		//m_Rtv->SetBufferState(0, D3D12_RESOURCE_STATE_PRESENT);
-	}
-	void RenderTarget::Draw(ID3D12GraphicsCommandList* cmdList, vector<shared_ptr<RendererComponent>>& renderers) {
-		DrawBegin(cmdList);
-		auto renderer = Engine::GetRenderer();
-		auto srvHeap = renderer->GetSrvDescriptorHeap();
-		for (auto& renderer : renderers) {
-			renderer->Draw(cmdList, srvHeap);
-		}
-		DrawEnd(cmdList);
-	}
-	shared_ptr<TextureResource> RenderTarget::GetRenderTargetTexture() { return m_RenderTargetTexture; }
 	void Viewport::Create(const Window* _window) {
 		Create(_window->GetWidth(), _window->GetHeight(), 0, 0);
 	}
@@ -228,10 +160,6 @@ namespace RNEngine {
 		m_SrvCbvDescriptorHeap = make_unique<DescriptorHeap>();
 		m_SrvCbvDescriptorHeap->Init(d3d12Device, 2048, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
-		/*m_FrameBufferRenderTargets = {make_unique<RenderTarget>() ,make_unique<RenderTarget>()};
-		m_FrameBufferRenderTargets[0]->Create({ (float)_window->GetWidth(),(float)_window->GetHeight() }, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, m_ClearColor);
-		m_FrameBufferRenderTargets[1]->Create({ (float)_window->GetWidth(),(float)_window->GetHeight() }, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, m_ClearColor);
-		*/
 		m_Fence = make_unique<Fence>(d3d12Device);
 		m_Barrier = make_unique<Barrier>();
 
@@ -274,17 +202,21 @@ namespace RNEngine {
 
 		m_CommandList->RSSetViewports(1, &m_ViewPort->GetViewport());
 		m_CommandList->RSSetScissorRects(1, &m_Sicssor->GetRect());
-
-		for (auto& rendererObject : m_CurrentFrameRenderObjects) {
-			rendererObject.second.clear();
-		}
     }
     void Renderer::EndRenderer(GUIRenderer* guiRenderer) {
+		BeginRenderer();
+
+		auto mainCamera = GetMainCamera();
+		if (mainCamera) {
+			CopyToFrameBuffer(mainCamera->GetRenderTarget());
+		}
 		auto idx = m_SwapChain->GetCurrentBackBufferIndex();
 
 		DebugRenderer::Get().DrawSphereWireFrame(Vector3(0, 0, 0), Vector3(1.0f));
 
 		DebugRenderer::Get().FlushWireFrames();
+
+		
 		//すべての描画が終わった後にGUIを表示
 		if (guiRenderer != nullptr) {
 			guiRenderer->UpdateRenderer(m_CommandList.Get(), m_SrvCbvDescriptorHeap.get());
@@ -312,18 +244,41 @@ namespace RNEngine {
 
 	void Renderer::CopyToFrameBuffer(RenderTarget* renderTarget) {
 		auto idx = m_SwapChain->GetCurrentBackBufferIndex();
-		
+
 		auto rtvH = m_RTVBuffer->GetDescriptorHeap()->GetCPUHandle();
 		rtvH.ptr += idx * m_RTVBuffer->GetDescriptorHeap()->GetHeapSize();
 
 		auto dsvH = m_DSVBuffer->GetDescriptorHeap()->GetCPUHandle();
+
+		m_CommandList->ClearRenderTargetView(rtvH, m_ClearColor.data(), 0, nullptr);
+		m_CommandList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+		auto barrier = Barrier();
+
+		auto textureRes = renderTarget->GetRenderTargetTexture()->GetTexture()->GetBuffer();
+
+		barrier.Transition(m_CommandList.Get(), m_RTVBuffer->GetBackBuffer(idx), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST);
+		barrier.Transition(m_CommandList.Get(), textureRes, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_SOURCE);
+		m_RTVBuffer->SetBufferState(idx, D3D12_RESOURCE_STATE_COPY_DEST);
+
 		m_CommandList->OMSetRenderTargets(1, &rtvH, true, &dsvH);
 
 		m_CommandList->RSSetViewports(1, &m_ViewPort->GetViewport());
 		m_CommandList->RSSetScissorRects(1, &m_Sicssor->GetRect());
 
-		auto texture = renderTarget->GetRenderTargetTexture();
-		texture->Draw(m_CommandList, m_SrvCbvDescriptorHeap.get());
+		m_CommandList->CopyResource(m_RTVBuffer->GetBackBuffer(idx), textureRes);
+
+		barrier.Transition(m_CommandList.Get(), m_RTVBuffer->GetBackBuffer(idx), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		barrier.Transition(m_CommandList.Get(), textureRes, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		m_RTVBuffer->SetBufferState(idx, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	}
+	void Renderer::RegisterMainCamera(const shared_ptr<Camera>& camera) {
+		auto renderTarget = camera->GetRenderTarget();
+		renderTarget->SetClearColor(Color(m_ClearColor));
+		m_MainCamera = camera;
+	}
+	Camera* Renderer::GetMainCamera()const {
+		return m_MainCamera.lock().get();
 	}
 
 	void Renderer::RegisterTextureBuffer(TextureBuffer* texBuffer) {
@@ -349,24 +304,6 @@ namespace RNEngine {
 		constBuffer->SetHandle(m_SrvCbvDescriptorHeap->GetHeapCount());
 		m_SrvCbvDescriptorHeap->AddHeapCount();
 	}
-
-	void Renderer::Draw(shared_ptr<RendererComponent>& renderer) {
-		//複数のレンダーターゲットを利用できるようになったら消そうね
-		renderer->Draw(m_CommandList.Get(), m_SrvCbvDescriptorHeap.get());
-		
-		for (auto tag : renderer->GetRenderTargetTag()) {
-			if (m_RenderTargets.find(tag) != m_RenderTargets.end()) {
-				m_CurrentFrameRenderObjects[tag].push_back(renderer);
-			}
-		}
-	}
-	void Renderer::DrawAll() {
-		for (auto& rendererMap : m_CurrentFrameRenderObjects) {
-			auto renderTarget = m_RenderTargets[rendererMap.first];
-			renderTarget->Draw(m_CommandList.Get(), rendererMap.second);
-		}
-	}
-
 
 	CD3DX12_GPU_DESCRIPTOR_HANDLE Renderer::GetSRVDescriptorGPUHandle(UINT handle) {
 		return CD3DX12_GPU_DESCRIPTOR_HANDLE(

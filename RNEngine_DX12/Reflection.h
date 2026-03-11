@@ -93,6 +93,10 @@ virtual vector<FieldInfo> GetReflection()override{ \
 
 		virtual vector<FieldInfo> GetReflection() = 0;
 		virtual string GetComponentName() = 0;
+
+		string GetName() {
+			return ComponentRegistry;
+		}
 	};
 
 	class SampleReflect : public ReflectInterface {
