@@ -1,6 +1,5 @@
 #include "stdafx.h"
-#include "project.h"
-
+#include "Shader.h"
 namespace RNEngine {
 	void Shader::Load(const wstring& filename, const string& entryPoint, const string& target) {
 		auto result = D3DCompileFromFile(

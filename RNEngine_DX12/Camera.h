@@ -2,27 +2,42 @@
 #include "Component.h"
 
 namespace RNEngine {
+	class RendererComponent;
+	class RenderTarget;
+
 	class Camera : public Component {
-		//Vector3 m_Eye;
+		//カメラの注視点
 		Vector3 m_Target;
+		//カメラの上方向
 		Vector3 m_Up;
 
+		//ビュー行列と射影行列
 		XMMATRIX m_ViewMatrix;
 		XMMATRIX m_ProjectionMatrix;
 
+		//画角
 		float m_Width;
 		float m_Height;
 
+		//正射影かどうか
 		bool m_IsOrthographic;
 
-		vector<string> m_RenderingTag;
+		//カメラに移すレイヤー名
+		vector<int> m_RenderingLayers;
+		//カメラに映すレンダラーコンポーネント
+		vector<shared_ptr<RendererComponent>> m_RendererObjects;
+		//レンダリングターゲット
+		shared_ptr<RenderTarget> m_RenderTarget;
 
 		void UpdateViewMatrix();
 	public:
 		Camera(const shared_ptr<GameObject>& ptr);
 		virtual ~Camera();
 
+		virtual void Start()override;
 		virtual void LastUpdate()override;
+
+		void DrawRenderTarget();
 
 		void SetTarget(const Vector3& target);
 		void SetEye(const Vector3& eye);
@@ -50,8 +65,13 @@ namespace RNEngine {
 
 		void LookAtDirection(const Vector3& direction);
 
-		void AddRenderingTag(const string& tag);
-		vector<string> GetRenderingTags()const;
+		void AddRenderingLayer(const string& layer);
+		void AddRenderingLayer(const int layer);
+		vector<int> GetRenderingLayers()const;
+
+
+		void AddRenderObject(const shared_ptr<RendererComponent>& renderer);
+		RenderTarget* GetRenderTarget();
 
 		INSPECTOR_COMPONENT(Camera)
 			REGISTER_NAME(Camera)

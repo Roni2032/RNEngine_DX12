@@ -89,34 +89,6 @@ namespace RNEngine {
 		D3D12_STATIC_SAMPLER_DESC& GetDesc() { return m_SamplerDesc; }
 	};
 
-	class TextureResource;
-	class RTVBuffer;
-	class DSVBuffer;
-
-	class RenderTarget {
-		shared_ptr<TextureResource> m_RenderTargetTexture;
-		unique_ptr<RTVBuffer> m_Rtv;
-		unique_ptr<DSVBuffer> m_Dsv;
-		
-		float m_Width;
-		float m_Height;
-
-		DXGI_FORMAT m_Format{};
-		array<float, 4> m_ClearColor;
-	public:
-		RenderTarget();
-		~RenderTarget();
-		void Create(Vector2 renderSize, DXGI_FORMAT format, array<float, 4> clearColor = {1.0f,1.0f,1.0f,1.0f});
-
-		void DrawBegin(ID3D12GraphicsCommandList* cmdList);
-		void DrawEnd(ID3D12GraphicsCommandList* cmdList);
-		void Draw(ID3D12GraphicsCommandList* cmdList, vector<shared_ptr<RendererComponent>>& renderers);
-
-		RTVBuffer* GetRTVBuffer() { return m_Rtv.get(); }
-
-		shared_ptr<TextureResource> GetRenderTargetTexture();
-	};
-
 	class Window;
 	class Viewport {
 		D3D12_VIEWPORT m_Viewport;
@@ -159,15 +131,17 @@ namespace RNEngine {
 	class TextureBuffer;
 	class ConstantBuffer;
 	class DescriptorHeap;
+	class RTVBuffer;
+	class DSVBuffer;
+	class Camera;
+
+	//グラフィックスエンジンを作りましょう
+
 	/// <summary>
 	/// 描画処理を行うクラス
 	/// </summary>
 	class Renderer {
-		unordered_map<string, shared_ptr<RenderTarget>> m_RenderTargets;//登録されたレンダーターゲット
-		//今回のフレームに描画するオブジェクトをレンダーターゲットに振り分けたやつ
-		unordered_map<string, vector<shared_ptr<RendererComponent>>> m_CurrentFrameRenderObjects;
-		vector<string> m_RenderTargetOrder;//レンダーターゲットの描画順(何もしなければ登録順)
-		unique_ptr<RenderTarget> m_MainRenderTarget;
+		weak_ptr<Camera> m_MainCamera;
 
 		array<unique_ptr<RenderTarget>, 2> m_FrameBufferRenderTargets;
 		unique_ptr<RTVBuffer> m_RTVBuffer;	//レンダーターゲットビュー用のヒープ
@@ -202,20 +176,11 @@ namespace RNEngine {
 		}
 		array<float, 4> GetClearColor() { return m_ClearColor; }
 
+		void RegisterMainCamera(const shared_ptr<Camera>& camera);
+		Camera* GetMainCamera()const;
+
 		void RegisterTextureBuffer(TextureBuffer* texBuffer);
 		void RegisterConstantBuffer(ConstantBuffer* constBuffer);
-
-		void RegisterRenderTarget(const string& name, shared_ptr<RenderTarget>& renderTarget) {
-			m_RenderTargets[name] = renderTarget;
-			m_CurrentFrameRenderObjects[name] = {};
-			m_RenderTargetOrder.push_back(name);
-		}
-		shared_ptr<RenderTarget> GetRenderTarget(const string& name) {
-			return m_RenderTargets[name];
-		}
-
-		void Draw(shared_ptr<RendererComponent>& renderer);
-		void DrawAll();
 
 		CD3DX12_GPU_DESCRIPTOR_HANDLE GetSRVDescriptorGPUHandle(UINT handle);
 		CD3DX12_CPU_DESCRIPTOR_HANDLE GetSRVDescriptorCPUHandle(UINT handle);

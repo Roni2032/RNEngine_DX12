@@ -12,9 +12,13 @@ namespace RNEngine {
 	void ImageRenderer::SetTexture(const wstring& filename){
 		m_Texture->SetTexture(filename);
 	}
+	void ImageRenderer::SetTexture(const shared_ptr<TextureBuffer>& texture) {
+		m_Texture->SetTexture(texture);
+	}
+	TextureResource* ImageRenderer::GetTexture()const {
+		return m_Texture.get();
+	}
 	void ImageRenderer::Update() {
-		//基本情報を更新
-		m_Texture->SetCamera(m_TargetCamera.lock());
 
 		auto gameObject = GetOwner();
 		if (gameObject) {
@@ -26,6 +30,9 @@ namespace RNEngine {
 		}
 	}
 	void ImageRenderer::Draw(ID3D12GraphicsCommandList* cmdList, DescriptorHeap* heap) {
+		//基本情報を更新
+		m_Texture->SetCamera(m_TargetCamera.lock());
+
 		m_Texture->Draw(cmdList, heap);
 	}
 

@@ -441,6 +441,7 @@ namespace RNEngine {
 	Color::Color(float value) : XMFLOAT4(value, value, value, value) {}
 	Color::Color(float x, float y, float z, float w) : XMFLOAT4(x, y, z, w) {}
 	Color::Color(const Color& other) : XMFLOAT4(other.x, other.y, other.z, other.w) {}
+	Color::Color(const array<float, 4>& other):XMFLOAT4(other[0], other[1], other[2], other[3]) {}
 
 	Color::Color(const XMVECTOR& other) : XMFLOAT4() {
 		XMVECTOR temp = other;

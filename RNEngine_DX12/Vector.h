@@ -191,6 +191,7 @@ namespace RNEngine {
 		 Color(float value);
 		 Color(float x, float y, float z, float w);
 		 Color(const Color& other);
+		 Color(const array<float, 4>& other);
 
 		 Color(const XMVECTOR& other);
 		 operator XMVECTOR() const;

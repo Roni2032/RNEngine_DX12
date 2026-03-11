@@ -14,9 +14,11 @@ namespace RNEngine {
 
 		vector<shared_ptr<Component>> m_Components;
 		vector<string> m_Tags;
+		int m_Layer;
 	public:
-		GameObject(const shared_ptr<Scene>& ptr) :m_OwnerScene(ptr),m_Name("GameObject"), Object() {}
-		virtual ~GameObject() {}
+		GameObject(const shared_ptr<Scene>& ptr);
+		GameObject(const shared_ptr<Scene>& ptr, const string& name);
+		virtual ~GameObject();
 
 		virtual void Start()override;
 		virtual void Update()override;
@@ -38,6 +40,29 @@ namespace RNEngine {
 		bool HasTags(const vector<string>& tags) {
 			for (auto& tag : tags) {
 				if (HasTag(tag)) return true;
+			}
+			return false;
+		}
+		void RemoveTag(const string& tag) {
+			auto it = find(m_Tags.begin(), m_Tags.end(), tag);
+			if (it != m_Tags.end()) {
+				m_Tags.erase(it);
+			}
+		}
+		void SetLayer(int layer) {
+			m_Layer = layer;
+		}
+		void SetLayer(const string& layerName);
+
+		int GetLayer()const {
+			return m_Layer;
+		}
+		bool CompareLayer(int layer)const {
+			return m_Layer == layer;
+		}
+		bool CompareLayer(const vector<int>& layers) {
+			for (auto& layer : layers) {
+				if (CompareLayer(layer)) return true;
 			}
 			return false;
 		}
