@@ -89,5 +89,18 @@ namespace RNEngine {
 		if (playerCollision->IsSimpleHit(groundCollision)) {
 			DebugLog::Log("Hit!!");
 		}
+
+		auto modelData = m_Player->GetComponent<ModelRenderer>()->GetModel()->GetModelData();
+		auto boundingBox = modelData.m_LocalBoundingBox * m_Player->GetTransform()->GetScale() + m_Player->GetTransform()->GetPosition();
+		DebugRenderer::Get().DrawCubeWireFrame(boundingBox.GetCenter(), boundingBox.GetSize());
+
+		auto camera = GetCamera("Game");
+		auto cameraDirection = camera->GetDirection();
+		DebugRenderer::Get().DrawLine(camera->GetEye(), cameraDirection, 10.0f);
+		Ray ray = Ray(camera->GetEye(), cameraDirection, 10.0f);
+
+		if (RayCast::Hit(ray)) {
+			DebugLog::Log("Ray Hit!!");
+		}
 	}
 }

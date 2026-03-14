@@ -38,6 +38,8 @@ namespace RNEngine
 		void SetDefaultScale(float scale) { m_DefaultTransform.m_Position = scale; }
 		void SetDefaultRotation(const Vector3& rotation) { m_DefaultTransform.m_Position = rotation; }
 
+		Model& GetModelData() { return m_ModelData; }
+
 		DefaultModelTransform& GetDefaultTransform() { return m_DefaultTransform; }
 		Vector3 GetDefaultPosition() { return m_DefaultTransform.m_Position; }
 		float GetDefaultScale() { return m_DefaultTransform.m_Scale; }

@@ -1,7 +1,15 @@
 #pragma once
 #include "stdafx.h"
 #include "Component.h"
+#include "RayCast.h"
+
 namespace RNEngine {
+
+	class HitTest {
+	public:
+		static bool RayAABB(const Ray& ray, const AABB& aabb);
+		static bool RayMesh(const Ray& ray, const shared_ptr<GameObject>& object);
+	};
 
 	class Collision : public Component{
 		Vector3 m_Offset;

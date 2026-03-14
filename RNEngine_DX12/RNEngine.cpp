@@ -50,37 +50,6 @@ namespace RNEngine {
 		// フレームレート設定
 		SetFrameRate(120.0f);
 
-		//レンダーターゲット作成
-		/*auto gameViewTarget = make_shared<RenderTarget>();
-		gameViewTarget->Create(
-			{ (float)m_Window->GetWidth(),(float)m_Window->GetHeight() },
-			DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, m_Renderer->GetClearColor());
-		m_Renderer->RegisterRenderTarget("GameView", gameViewTarget);*/
-
-#if _DEBUG
-		ResourceManager::RegisterTexture("Editor/Texture/folder_icon.png");
-		ResourceManager::RegisterTexture("Editor/Texture/file_icon.png");
-
-		//GUI初期設定
-		m_GuiRenderer->AddGui("inspector", make_shared<Inspector>("Inspector"));
-		m_GuiRenderer->AddGui("hierarchy", make_shared<Hierarchy>("hierarchy"));
-		m_GuiRenderer->AddGui("debugLog", make_shared<DebugLog>("debugLog"));
-		//auto projectView = make_shared<ProjectView>("project", 64.0f);
-		//projectView->Init();
-		//m_GuiRenderer->AddGui("project", projectView);
-		//m_GuiRenderer->AddGui("debugLog", make_shared<DebugLog>("debugLog"));
-		//auto viewGui = m_GuiRenderer->AddGui("scene", make_shared<GameView>("scene"));
-		////GUI用レンダーターゲット作成
-		//auto editorRenderTarget = make_shared<RenderTarget>();
-		//editorRenderTarget->Create(
-		//	{ (float)m_Window->GetWidth(),(float)m_Window->GetHeight() },
-		//	DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, m_Renderer->GetClearColor());
-		//m_Renderer->RegisterRenderTarget("Editor", editorRenderTarget);
-
-		//auto gameView = dynamic_pointer_cast<GameView>(viewGui);
-		//gameView->CreateSRV(gameViewTarget);
-
-#endif
 		timer.Update();
 		DebugLog::Log(u8"エンジン初期化" + to_string(timer.GetDeltaTime()));
 
@@ -99,28 +68,41 @@ namespace RNEngine {
 		timer.Update();
 		DebugLog::Log(u8"シーン読み込み" + to_string(timer.GetDeltaTime()));
 
-		m_Window->Show();
-	}
-	void Engine::Destroy() {
-		m_GuiRenderer->Destroy();
-		m_Renderer->WaitGPU();
-		m_Window->Destroy();
-	}
 
-	void Engine::Update() {
+#if _DEBUG
+		ResourceManager::RegisterTexture("Editor/Texture/folder_icon.png");
+		ResourceManager::RegisterTexture("Editor/Texture/file_icon.png");
+
+		//GUI初期設定
+		auto inspector = dynamic_pointer_cast<Inspector>(m_GuiRenderer->AddGui("inspector", make_shared<Inspector>("Inspector")));
+		auto hierarchy = dynamic_pointer_cast<Hierarchy>(m_GuiRenderer->AddGui("hierarchy", make_shared<Hierarchy>("hierarchy")));
+		auto log = dynamic_pointer_cast<DebugLog>(m_GuiRenderer->AddGui("debugLog", make_shared<DebugLog>("debugLog")));
+
+		inspector->SetGameObject(nullptr);
+		hierarchy->SetScene(m_CurrentScene);
+
+
+		//auto projectView = make_shared<ProjectView>("project", 64.0f);
+		//projectView->Init();
+		//m_GuiRenderer->AddGui("project", projectView);
+		//m_GuiRenderer->AddGui("debugLog", make_shared<DebugLog>("debugLog"));
+		//auto viewGui = m_GuiRenderer->AddGui("scene", make_shared<GameView>("scene"));
+		////GUI用レンダーターゲット作成
+		//auto editorRenderTarget = make_shared<RenderTarget>();
+		//editorRenderTarget->Create(
+		//	{ (float)m_Window->GetWidth(),(float)m_Window->GetHeight() },
+		//	DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, m_Renderer->GetClearColor());
+		//m_Renderer->RegisterRenderTarget("Editor", editorRenderTarget);
+
+		//auto gameView = dynamic_pointer_cast<GameView>(viewGui);
+		//gameView->CreateSRV(gameViewTarget);
+
+#endif
+		m_Window->Show();
+
 		// フレームタイマー初期化
 		m_FrameTimer->Init();
-		Timer timer = Timer();
-		timer.Init();
-		
-#if _DEBUG
-		//GUI設定
-		auto inspector = m_GuiRenderer->GetGui<Inspector>("inspector");
-		inspector->SetGameObject(nullptr);
-		auto hierarchy = m_GuiRenderer->GetGui<Hierarchy>("hierarchy");
-		hierarchy->SetScene(m_CurrentScene);
-		//auto gameView = m_GuiRenderer->GetGui<GameView>("scene");
-#endif
+
 		//入力のテスト設定
 		Input::RegisterInput("up", 'W', InputMode::Keyboard);
 		Input::RegisterInput("down", 'S', InputMode::Keyboard);
@@ -135,11 +117,16 @@ namespace RNEngine {
 		Input::RegisterInput("lShift", VK_LSHIFT, InputMode::Keyboard);
 
 		//テスト入力設定
-		Input::BindAction("right", [&](InputActionContext& context) { });//ラムダ式での設定
+		Input::BindAction("right", [&](InputActionContext& context) {});//ラムダ式での設定
 		Input::BindAction("left", &Engine::OnMove, this);//メンバ関数での設定(shared_ptrでも可能。uniqueとかは黙ってget()してくれ)
-		
-		timer.Update();
-		DebugLog::Log(u8"ゲームループ開始" + to_string(timer.GetDeltaTime()));
+	}
+	void Engine::Destroy() {
+		m_GuiRenderer->Destroy();
+		m_Renderer->WaitGPU();
+		m_Window->Destroy();
+	}
+
+	void Engine::Update() {
 		// メインループ
 		while (m_Window->ProcessMessage()) {
 			m_Renderer->BeginRenderer();

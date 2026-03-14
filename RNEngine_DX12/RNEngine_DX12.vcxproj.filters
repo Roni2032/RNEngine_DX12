@@ -82,15 +82,21 @@
     <Filter Include="Engine\Renderer\Debug">
       <UniqueIdentifier>{d6ab1e3c-4c3f-4f4a-a57c-c3fc7d241f67}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Math\Header">
+      <UniqueIdentifier>{8b9c0ff8-d6b6-4337-85e3-2ed10003a7fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Core">
+      <UniqueIdentifier>{fd4a2a19-5cfa-462c-8758-c7bf7bd08693}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Renderer\Header">
+      <UniqueIdentifier>{4b953cd6-4d72-4853-9156-03ce02238caf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>include</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="RNEngine.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="Shader.cpp">
@@ -110,9 +116,6 @@
     </ClCompile>
     <ClCompile Include="Window.cpp">
       <Filter>Engine\Window</Filter>
-    </ClCompile>
-    <ClCompile Include="Vector.cpp">
-      <Filter>Engine\Math</Filter>
     </ClCompile>
     <ClCompile Include="Input.cpp">
       <Filter>Engine\Input</Filter>
@@ -204,9 +207,6 @@
     <ClCompile Include="Loaders.cpp">
       <Filter>Engine\Loader</Filter>
     </ClCompile>
-    <ClCompile Include="RendererHeader.cpp">
-      <Filter>Engine\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="RenderingEngine.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -255,6 +255,36 @@
     <ClCompile Include="ReflectionGenerater.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Reflections/ref/*.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="RayCast.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector4.cpp">
+      <Filter>Engine\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector2.cpp">
+      <Filter>Engine\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector3.cpp">
+      <Filter>Engine\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Quaternion.cpp">
+      <Filter>Engine\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Color.cpp">
+      <Filter>Engine\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="RNEngine.cpp">
+      <Filter>Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="BVH.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="RendererHeader.cpp">
+      <Filter>Engine\Renderer\Header</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -262,9 +292,6 @@
     </ClInclude>
     <ClInclude Include="project.h">
       <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="RNEngine.h">
-      <Filter>Engine</Filter>
     </ClInclude>
     <ClInclude Include="Buffer.h">
       <Filter>Engine\Device</Filter>
@@ -287,9 +314,6 @@
     <ClInclude Include="Shader.h">
       <Filter>Engine\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Vector.h">
-      <Filter>Engine\Math</Filter>
-    </ClInclude>
     <ClInclude Include="Singleton.h">
       <Filter>Engine\Singleton</Filter>
     </ClInclude>
@@ -307,9 +331,6 @@
     </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Game\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="RendererHeader.h">
-      <Filter>Engine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="EditorGUI.h">
       <Filter>Engine\GUI\Editor</Filter>
@@ -412,6 +433,36 @@
     </ClInclude>
     <ClInclude Include="ReflectionGenerater.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="RayCast.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector4.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector2.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Color.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Quaternion.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="MathHeader.h">
+      <Filter>Engine\Math\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="RNEngine.h">
+      <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="BVH.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererHeader.h">
+      <Filter>Engine\Renderer\Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

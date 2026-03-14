@@ -4,15 +4,53 @@
 namespace RNEngine {
 
 	template<class T>
-	void ReflectionGenerater::Generate(const string& className) {
-		//static const string REGISTER_MACRO_
-		ComponentRegistry
+	ReflectionField& ReflectionGenerater::Generate(const string& className) {
+		string refFileName = className + ".ref.cpp";
+		string jsonFileName = className + ".json";
+
+		ifstream jsonFile(jsonFileName);
+		if(!jsonFile.is_open()) {
+			//ここでjsonを自動生成できたらいいな...
+			cerr << "JSONファイルを開くのに失敗しました: " << jsonFileName << endl;
+			return;
+		}
+		if(!Json::accept(jsonFile)){
+			//jsonの形式が不正
+			cerr << "JSONのフォーマットが間違っています: " << jsonFileName << endl;
+			return;
+		}
+		//acceptで進んだ位置を先頭にリセット
+		jsonFile.seekg(0, std::ios::beg);
+
+		Json json = Json::parse(jsonFile);
+		ReflectionField reflectionField = json.get<ReflectionField>();
+
+		CreateRefFile(refFileName, reflectionField);
+
+		return reflectionField;
+	}
+	void ReflectionGenerater::CreateRefFile(const string& filename, const ReflectionField& field) {
+		ofstream refFile(filename);
+		if (refFile.is_open()) {
+			cerr << "refファイルを開くのに失敗しました: " << filename << endl;
+			return;
+		}
+		string structName = field.name + "Reflect";
+
+		refFile << "#include \"../../" << field.filename << "\"" << endl;
+		refFile << "#include \"../../ReflectionGenerater.h\"" << endl;
+		refFile << endl;
+		refFile << "namespace RNEngine {" << endl;
+		refFile << "	struct " << structName << " {" << endl;
+		refFile << "		" << structName << "() { " << endl;
+		refFile << "			ReflectionTable::Register(" << "typeid(" << field.name << "), {" << endl;
+
 	}
 
 
-
 	void from_json(const Json& j, ReflectionField& field) {
-		field.name = j.at("name").get<string>();
+		field.name = j.at("class").get<string>();
+		field.filename = j.at("file").get<string>();
 		field.variables = j.at("variables").get<vector<VariableField>>();
 	}
 	void from_json(const Json& j, VariableField& field) {

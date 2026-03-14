@@ -1,6 +1,6 @@
 #pragma once
 #include "stdafx.h"
-
+#include "Reflection.h"
 namespace RNEngine
 {
 	struct AttributeField {
@@ -21,6 +21,7 @@ namespace RNEngine
 	};
 	struct ReflectionField {
 		string name;
+		string filename;
 		vector<VariableField> variables;
 	};
 	
@@ -34,25 +35,30 @@ namespace RNEngine
 		~ReflectionGenerater(){}
 
 		template<class T>
-		void Generate(const string& className);
+		ReflectionField& Generate(const string& className);
+
+		void CreateRefFile(const string& filename, const ReflectionField& field);
 
 	};
 
 	class ReflectionTable {
 		static auto& GetMap() {
-			static unordered_map<type_info, vector<ReflectionField>> reflectionMap = {};
+			static unordered_map<std::type_index, vector<FieldInfo>> reflectionMap = {};
 			return reflectionMap;
 		}
 	public:
-		static void Register(const type_info& type, const vector<ReflectionField>& fields) {
-			GetMap()[type] = fields;
+		static void Register(const type_index& type, vector<FieldInfo>& fields) {
+			GetMap()[type] = move(fields);
 		}
-		static vector<ReflectionField> GetFields(const type_info& type) {
-			auto it = GetMap().find(type);
-			if (it != GetMap().end()) {
+		static vector<FieldInfo>& GetFields(const type_index& type) {
+			auto& map = GetMap();
+			auto it = map.find(type);
+			if (it != map.end()) {
 				return (*it).second;
 			}
-			return {};
+
+			vector<FieldInfo> empty;
+			return empty;
 		}
 	};
 
