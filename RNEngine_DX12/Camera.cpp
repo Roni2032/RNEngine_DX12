@@ -71,6 +71,10 @@ namespace RNEngine {
 	Vector3 Camera::GetUp()const {
 		return m_Up;
 	}
+	Vector3 Camera::GetDirection()const {
+		Vector3 direction = m_Target - GetEye();
+		return direction.Normalized();
+	}
 
 	void Camera::SetViewMatrix(const Vector3& eye, const Vector3& target, const Vector3& up) {
 		SetEye(eye);

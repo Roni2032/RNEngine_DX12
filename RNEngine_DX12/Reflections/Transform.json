@@ -1,5 +1,6 @@
 {
-    "name":"Transform",
+    "class":"Transform",
+    "file":"Component",
     "variable":[
         {
             "name":"m_Position",

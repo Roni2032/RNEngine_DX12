@@ -93,8 +93,7 @@ namespace RNEngine {
 		auto model = make_shared<ModelResource>();
 		model->Load(dev, filePath);
 		model->SetDefaultTransform(defaultTransform);
-		//model->SetDefaultScale(defaultTransform.m_Scale);
-		//model->SetDefaultRotation(defaultTransform.m_Rotation);
+		model->GetModelData().CalcLocalBoundingBox();
 		m_ModelMap[registryKey] = model;
 
 		return m_ModelMap[registryKey];
@@ -122,6 +121,8 @@ namespace RNEngine {
 
 		auto model = make_shared<ModelResource>();
 		model->Load(mesh);
+		model->GetModelData().CalcLocalBoundingBox();
+		
 		m_ModelMap[registryKey] = model;
 		m_MeshMap[registryKey] = mesh;
 		return m_ModelMap[registryKey];

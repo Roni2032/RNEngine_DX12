@@ -46,6 +46,7 @@ namespace RNEngine {
 		Vector3 GetTarget()const;
 		Vector3 GetEye()const;
 		Vector3 GetUp()const;
+		Vector3 GetDirection()const;
 
 		void SetViewMatrix(const Vector3& eye, const Vector3& target, const Vector3& up);
 		void SetProjectionMatrix(float fovY, float aspectRatio, float nearZ, float farZ);

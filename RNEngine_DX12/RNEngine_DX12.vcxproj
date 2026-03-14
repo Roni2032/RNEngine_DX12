@@ -134,6 +134,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BVH.cpp" />
+    <ClCompile Include="Color.cpp" />
+    <ClCompile Include="Quaternion.cpp" />
+    <ClCompile Include="RayCast.cpp" />
     <ClCompile Include="ReflectionGenerater.cpp" />
     <ClCompile Include="Reflections/ref/*.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -213,15 +217,19 @@
     <ClCompile Include="TextureBuffer.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Util.cpp" />
-    <ClCompile Include="Vector.cpp" />
+    <ClCompile Include="Vector2.cpp" />
+    <ClCompile Include="Vector3.cpp" />
+    <ClCompile Include="Vector4.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Buffer.h" />
+    <ClInclude Include="BVH.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="CollisionManager.h" />
+    <ClInclude Include="Color.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentRegistry.h" />
     <ClInclude Include="ConstantBuffer.h" />
@@ -236,6 +244,8 @@
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="ImageRenderer.h" />
     <ClInclude Include="ModelRenderer.h" />
+    <ClInclude Include="Quaternion.h" />
+    <ClInclude Include="RayCast.h" />
     <ClInclude Include="ReflectionGenerater.h" />
     <ClInclude Include="RenderTarget.h" />
     <ClInclude Include="TextureResource.h" />
@@ -267,7 +277,10 @@
     <ClInclude Include="TextureBuffer.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Util.h" />
-    <ClInclude Include="Vector.h" />
+    <ClInclude Include="MathHeader.h" />
+    <ClInclude Include="Vector2.h" />
+    <ClInclude Include="Vector3.h" />
+    <ClInclude Include="Vector4.h" />
     <ClInclude Include="VertexBuffer.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>

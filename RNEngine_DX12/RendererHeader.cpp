@@ -6,4 +6,18 @@ namespace RNEngine {
 	DefaultModelTransform::DefaultModelTransform(float scale, Vector3 rotation, Vector3 position)
 		:m_Scale(scale), m_Position(position), m_Rotation(rotation) {
 	}
+
+	void Model::CalcLocalBoundingBox() {
+		Vector3 min = Vector3(FLT_MAX, FLT_MAX, FLT_MAX);
+		Vector3 max = Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+		for (auto& mesh : m_Meshes) {
+			for(auto& vertex : mesh.m_Vertices){
+				min = min.Min(vertex.m_Position);
+				max = max.Max(vertex.m_Position);
+			}
+		}
+
+		m_LocalBoundingBox = AABB(max, min);
+	}
 }
