@@ -36,6 +36,8 @@ virtual vector<FieldInfo> GetReflection()override{ \
 	return fields;\
 }
 
+#define OFFSET(type,name) offsetof(type,name)
+
 	struct Attribute {
 		virtual ~Attribute() = default;
 	};
@@ -44,20 +46,20 @@ virtual vector<FieldInfo> GetReflection()override{ \
 	/// </summary>
 	struct HeaderAttribute : public Attribute {
 		string m_Header;
-		HeaderAttribute(const string& header):m_Header(header){}
+		HeaderAttribute(const string& header) :m_Header(header) {}
 	};
 	/// <summary>
 	/// インスペクターに隠しながらシリアライズの対象にする
 	/// </summary>
 	struct HideAttribute : public Attribute {
-		HideAttribute(){}
+		HideAttribute() {}
 	};
 
 	/// <summary>
 	/// インスペクターに表示・代入する値を変換する
 	/// </summary>
 	struct ConvertToAttribute : public Attribute {
-		function<void(void* internalPtr,void* displayPtr)> m_ConvertToDisplay;
+		function<void(void* internalPtr, void* displayPtr)> m_ConvertToDisplay;
 		function<void(void* displayPtr, void* internalPtr)> m_ConvertToInternal;
 
 		/// <summary>
@@ -67,15 +69,16 @@ virtual vector<FieldInfo> GetReflection()override{ \
 		/// <param name="convertToInternal">表示値から値への変換</param>
 		ConvertToAttribute(
 			const function<void(void* internalPtr, void* displayPtr)>& convertToDisplay,
-			const function<void(void* displayPtr,  void* internalPtr)>& convertToInternal):
-			m_ConvertToDisplay(convertToDisplay),m_ConvertToInternal(convertToInternal) {}
+			const function<void(void* displayPtr, void* internalPtr)>& convertToInternal) :
+			m_ConvertToDisplay(convertToDisplay), m_ConvertToInternal(convertToInternal) {
+		}
 	};
 
 	struct FieldInfo {
 		string m_Name;
 		size_t m_Offset;
 		enum class Type {
-			Int, Float, Bool,Vec3
+			Int, Float, Bool, Vec3
 		}m_Type;
 		vector<unique_ptr<Attribute>> m_Attribute;
 	};
@@ -85,7 +88,7 @@ virtual vector<FieldInfo> GetReflection()override{ \
 		(f.m_Attribute.push_back(make_unique<Param>(params)), ...);
 	}
 
-	
+
 	class ReflectInterface
 	{
 	public:
@@ -95,7 +98,14 @@ virtual vector<FieldInfo> GetReflection()override{ \
 		virtual string GetComponentName() = 0;
 
 		string GetName() {
-			return ComponentRegistry;
+			return "";
+		}
+		vector<FieldInfo> GetFields() {
+			return {};
+		}
+
+		static size_t GetVariableOffset(const string& name) {
+			return 0;
 		}
 	};
 
@@ -105,10 +115,10 @@ virtual vector<FieldInfo> GetReflection()override{ \
 		int z;
 	public:
 		REGISTER_NAME(SampleReflect)
-		BEGIN_REFLECT()
-			REGISTER_REFLECT(x,FieldInfo::Type::Int)
-			REGISTER_REFLECT(y,FieldInfo::Type::Int,HeaderAttribute(u8"テスト用のY入力"))
-			REGISTER_REFLECT(z,FieldInfo::Type::Int)
-		END_REFLECT()
+			BEGIN_REFLECT()
+			REGISTER_REFLECT(x, FieldInfo::Type::Int)
+			REGISTER_REFLECT(y, FieldInfo::Type::Int, HeaderAttribute(u8"テスト用のY入力"))
+			REGISTER_REFLECT(z, FieldInfo::Type::Int)
+			END_REFLECT()
 	};
 }

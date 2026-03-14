@@ -3,7 +3,7 @@
 ///   描画に必要なデータまとめ
 /// -------------------------------------------------
 
-#include "Vector.h"
+#include "MathHeader.h"
 namespace RNEngine{
 	//GPU用頂点データ
 	struct Vertex {
@@ -27,7 +27,7 @@ namespace RNEngine{
 		shared_ptr<IndexBuffer> m_IndexBuffer;
 		uint32_t m_MaterialIndex = 0;
 	};
-
+	// テクスチャデータの種類
 	enum class TextureDataType {
 		None,//未使用
 		File,//ファイルパス
@@ -49,6 +49,8 @@ namespace RNEngine{
 			::CopyMemory(m_Data.data(), texture->pcData, texture->mWidth);
 		}
 	};
+
+	// マテリアルデータ
 	struct Material {
 		TextureDataType m_TextureType;
 
@@ -67,11 +69,16 @@ namespace RNEngine{
 		Material(EmbeddedTexture& texture) :Material(TextureDataType::Embedded, texture.m_Name, texture) {}
 	};
 
+	// モデルデータ
 	struct Model {
 		vector<Mesh> m_Meshes;
 		vector<Material> m_Materials;
 
 		XMMATRIX m_AdjustMatrix;
+		// モデル全体のAABB
+		AABB m_LocalBoundingBox;
+
+		void CalcLocalBoundingBox();
 	};
 
 	//モデル初期行列データ
@@ -83,6 +90,7 @@ namespace RNEngine{
 		DefaultModelTransform(float scale, Vector3 rotation, Vector3 position);
 	};
 
+	// 定数バッファ用データ
 	struct ConstantBufferData {
 		void* m_Data;
 		size_t m_DataSize;

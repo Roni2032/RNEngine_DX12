@@ -17,6 +17,7 @@
 #include <thread>
 #include <codecvt>
 #include <type_traits>
+#include <typeindex>
 #include <filesystem>
 #include <random>
 
@@ -68,7 +69,7 @@ using Json = nlohmann::json;
 //ゲーム内で使用する基本的なファイル
 #include "Object.h"
 #include "Util.h"
-#include "Vector.h"
+#include "MathHeader.h"
 #include "Reflection.h"
 
 //using namespace RNEngine;
