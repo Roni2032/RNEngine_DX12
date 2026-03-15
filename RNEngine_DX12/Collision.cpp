@@ -5,6 +5,8 @@ namespace RNEngine {
 		auto& aabbMax = aabb.m_Max;
 		auto& aabbMin = aabb.m_Min;
 
+		float entryDist = -FLT_MAX;
+		float exitDist = FLT_MAX;
 
 		//x,y,z軸それぞれに対して判定
 		for(int i = 0;i < 3;i++) {
@@ -14,27 +16,27 @@ namespace RNEngine {
 			const float& max = aabbMax[i];
 			const float& min = aabbMin[i];
 
+			//レイの向きが0のときは、レイの原点がAABBの範囲内にあるかどうかで判定
 			if (direction == 0) {
-				//レイの原点がAABBの範囲内にあるか判定
-				if (originPos < min || originPos > max) {
-					return false;
-				}
+				if (originPos < min || originPos > max)return false;
 				continue;
 			}
+			float odd = 1.0f / direction;
+			float nearDist = (min - originPos) * odd;
+			float farDist = (max - originPos) * odd;
 
-			float nearDist = (min - originPos) / direction;
-			float farDist = (max - originPos) / direction;
+			if (nearDist < 0 && farDist < 0) return false;
 
-			if (abs(nearDist) > abs(farDist)) {
-				swap(nearDist, farDist);
+			if (nearDist > farDist) {
+				std::swap(nearDist, farDist);
 			}
+			entryDist = max(entryDist, nearDist);
+			exitDist = std::min(exitDist, farDist);
 
-			//レイが届かないまたは、レイの反対側にAABBがある場合は当たらない
-			if (nearDist > ray.m_Length || (nearDist < 0 && farDist < 0)) {
-				return false;
-			}
+			if (entryDist >= exitDist) return false;
 		}
-		return true;
+
+		return entryDist <= ray.m_Length;
 	}
 	bool HitTest::RayMesh(const Ray& ray, const shared_ptr<GameObject>& object) {
 		//ここにレイとメッシュの当たり判定

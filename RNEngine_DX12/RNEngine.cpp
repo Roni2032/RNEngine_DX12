@@ -93,10 +93,6 @@ namespace RNEngine {
 		//	{ (float)m_Window->GetWidth(),(float)m_Window->GetHeight() },
 		//	DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, m_Renderer->GetClearColor());
 		//m_Renderer->RegisterRenderTarget("Editor", editorRenderTarget);
-
-		//auto gameView = dynamic_pointer_cast<GameView>(viewGui);
-		//gameView->CreateSRV(gameViewTarget);
-
 #endif
 		m_Window->Show();
 

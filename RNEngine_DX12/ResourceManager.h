@@ -48,6 +48,9 @@ namespace RNEngine
 		static shared_ptr<ModelResource> CreateSphere(const int sliceCount, const int stackCount);
 		static Mesh& CreateLine();
 
+		static shared_ptr<ModelResource> CreateCylinder(const int sliceCount);
+		static shared_ptr<ModelResource> CreateCone(const int slineCount);
+
 	};
 }
 
