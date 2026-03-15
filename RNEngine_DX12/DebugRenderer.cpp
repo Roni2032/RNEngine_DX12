@@ -50,7 +50,7 @@ namespace RNEngine {
 		command.camera = "Game";
 		command.position = start;
 		Vector3 dist = end - start;
-		command.scale = Vector3(0.0f, 0.0f, dist.Length());
+		command.scale = Vector3(0.0f, 0.0f, scale);
 
 		Quaternion rot = Quaternion::Identity;
 		rot = rot.RotateToVector(dist);

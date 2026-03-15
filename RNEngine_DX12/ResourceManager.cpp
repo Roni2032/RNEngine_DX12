@@ -244,4 +244,27 @@ namespace RNEngine {
 		auto mesh = RegisterMesh("DEFAULT_LINE", vertices, indices);
 		return m_MeshMap["DEFAULT_LINE"];
 	}
+
+	shared_ptr<ModelResource> ResourceManager::CreateCylinder(const int sliceCount) {
+		vector<Vertex> vertices;
+		vector<uint32_t> indices;
+
+		return nullptr;
+	}
+	shared_ptr<ModelResource> ResourceManager::CreateCone(const int sliceCount) {
+		vector<Vertex> vertices;
+		vector<uint32_t> indices;
+
+		float sliceAngle = XM_2PI / sliceCount;
+
+		for (float angle = 0; angle <= XM_2PI; angle += sliceAngle) {
+			Vector3 position = Vector3(cos(angle), 0.0f, sin(angle));
+
+			//‰º
+			//vertices.push_back()
+			//ã
+		}
+
+		return nullptr;
+	}
 }

@@ -62,6 +62,9 @@ namespace RNEngine {
 		collision = m_Ground->AddComponent<CollisionCube>();
 		collision->SetScale(Vector3(1.0f, 10.0f, 10.0f));
 
+		m_Ray = AddGameObject();
+		m_Ray->SetName(u8"Ray");
+
 		m_Texture = AddGameObject();
 		m_Texture->SetLayer("UI");
 		auto texRenderer = m_Texture->AddComponent<ImageRenderer>();
@@ -80,6 +83,7 @@ namespace RNEngine {
 		moveComp->SetMoveKeys("up", "down", "right", "left");
 		cameraObject->AddComponent<DebugCameraMove>();
 
+
 	}
 	void GameScene::Update() {
 		Scene::Update();
@@ -92,12 +96,12 @@ namespace RNEngine {
 
 		auto modelData = m_Player->GetComponent<ModelRenderer>()->GetModel()->GetModelData();
 		auto boundingBox = modelData.m_LocalBoundingBox * m_Player->GetTransform()->GetScale() + m_Player->GetTransform()->GetPosition();
-		DebugRenderer::Get().DrawCubeWireFrame(boundingBox.GetCenter(), boundingBox.GetSize());
+		DebugRenderer::Get().DrawCubeWireFrame(boundingBox.GetCenter(), boundingBox.GetSize(),Color::Green);
 
-		auto camera = GetCamera("Game");
-		auto cameraDirection = camera->GetDirection();
-		DebugRenderer::Get().DrawLine(camera->GetEye(), cameraDirection, 10.0f);
-		Ray ray = Ray(camera->GetEye(), cameraDirection, 10.0f);
+		auto rayTransform = m_Ray->GetTransform();
+		Vector3 rayDirection = rayTransform->GetForward();
+		Ray ray = Ray(rayTransform->GetPosition(), rayDirection, rayTransform->GetScale().x);
+		DebugRenderer::Get().DrawLine(ray.m_Origin, ray.m_Origin + ray.m_Direction, ray.m_Length, Color::Red);
 
 		if (RayCast::Hit(ray)) {
 			DebugLog::Log("Ray Hit!!");

@@ -31,7 +31,7 @@ namespace RNEngine {
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 		ImGui::StyleColorsDark();
-		io.Fonts->AddFontFromFileTTF("../Assets/Font/851H-kktt_004.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
+		io.Fonts->AddFontFromFileTTF("../Assets/Font/BIZUDGothic-Regular.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
 
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.FramePadding = ImVec2(0,0);

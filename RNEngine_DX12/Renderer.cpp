@@ -212,8 +212,9 @@ namespace RNEngine {
 		}
 		auto idx = m_SwapChain->GetCurrentBackBufferIndex();
 
-		DebugRenderer::Get().DrawSphereWireFrame(Vector3(0, 0, 0), Vector3(1.0f));
-
+		//DebugRenderer::Get().DrawSphereWireFrame(Vector3(0, 0, 0), Vector3(1.0f));
+		
+		//デバッグ描画のコマンドをすべて実行
 		DebugRenderer::Get().FlushWireFrames();
 
 		
