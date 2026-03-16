@@ -17,7 +17,9 @@ namespace RNEngine{
 			//モデルのローカル空間のAABBをワールド空間に変換
 			auto boundingBox = modelData.m_LocalBoundingBox * scale + position;
 
-			if (HitTest::RayAABB(ray, boundingBox)) {
+			//RayAABB : 簡易テスト
+			//RayMesh : メッシュとのちゃんとした当たり判定(未実装)
+			if (HitTest::RayAABB(ray, boundingBox) && HitTest::RayMesh(ray,object)) {
 				return true;
 			}
 		}
