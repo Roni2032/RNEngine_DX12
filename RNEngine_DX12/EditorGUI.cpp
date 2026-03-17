@@ -17,6 +17,7 @@
 #include "File.h"
 #include "Camera.h"
 #include "RenderTarget.h"
+#include "RayCast.h"
 
 namespace RNEngine {
 	GUIRenderer::GUIRenderer() {}
@@ -85,6 +86,10 @@ namespace RNEngine {
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
+		//XV
+		for (auto& gui : m_Items) {
+			gui.second->Update();
+		}
 		// •`‰æ
 		for (auto& gui : m_Items) {
 			gui.second->Draw();
@@ -243,7 +248,9 @@ namespace RNEngine {
 		ImGui::End();
 	}
 
-	Hierarchy::Hierarchy(const string& windowName) : GUI(windowName), m_SelectedGameObjectAddr(nullptr) {}
+	Hierarchy::Hierarchy(const string& windowName) : GUI(windowName), m_SelectedGameObjectAddr(nullptr) {
+		Input::RegisterInput("SelectObject", VK_LBUTTON, InputMode::Keyboard);
+	}
 	Hierarchy::~Hierarchy() {}
 
 	void Hierarchy::Draw() {
@@ -282,6 +289,27 @@ namespace RNEngine {
 
 		ShowCameraPreview();
 	}
+	void Hierarchy::Update() {
+		if (!Input::IsPressed("SelectObject")) return;
+
+		auto mainCamera = Engine::GetRenderer()->GetMainCamera();
+		if (mainCamera) {
+			Vector3 forward = mainCamera->GetDirection();
+			Vector3 position = mainCamera->GetEye();
+			Ray ray = Ray(position, forward, 100.0f);
+			HitInfo info;
+			if (RayCast::Hit(ray, &info)) {
+				if(auto obj = info.m_Object.lock()){
+					m_SelectedGameObjectAddr = obj.get();
+					auto renderer = Engine::GetGUIRenderer();
+					auto inspector = renderer->GetGui<Inspector>("inspector");
+					inspector->SetGameObject(obj);
+				}
+				
+			}
+		}
+	}
+
 	void Hierarchy::ShowCameraPreview() {
 		auto scene = m_GameScene.lock();
 		auto camera = m_SelectedGameObjectAddr->GetComponent<Camera>();

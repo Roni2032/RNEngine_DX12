@@ -202,18 +202,13 @@ namespace RNEngine {
 	}
 
 	void MeshLoader::AdjustModelSizeMatrix(Model& model, const Vector3& size) {
-		AABB aabb = AABB(Vector3(-10000000), Vector3(10000000));
+		AABB aabb = AABB(Vector3(-FLT_MAX), Vector3(FLT_MAX));
 		for (auto& mesh : model.m_Meshes) {
 			for (auto& vertex : mesh.m_Vertices) {
 				Vector3 position = vertex.m_Position;
 
-				aabb.m_Max.x = max(aabb.m_Max.x, position.x);
-				aabb.m_Max.y = max(aabb.m_Max.y, position.y);
-				aabb.m_Max.z = max(aabb.m_Max.z, position.z);
-
-				aabb.m_Min.x = min(aabb.m_Min.x, position.x);
-				aabb.m_Min.y = min(aabb.m_Min.y, position.y);
-				aabb.m_Min.z = min(aabb.m_Min.z, position.z);
+				aabb.m_Max = aabb.m_Max.Max(position);
+				aabb.m_Min = aabb.m_Min.Min(position);
 			}
 		}
 
