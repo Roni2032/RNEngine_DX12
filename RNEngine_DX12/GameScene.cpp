@@ -58,9 +58,11 @@ namespace RNEngine {
 		renderer->AddRenderTargetTag("GameView");
 		auto transform = m_Ground->GetTransform();
 		transform->SetPosition({ 5,-0.75f,0 });
-		transform->SetScale({ 1.0f,10.0f,10.0f });
+		Vector3 groundScale = { 1.0f,10.0f,10.0f };
+		transform->SetScale(groundScale);
 		collision = m_Ground->AddComponent<CollisionCube>();
 		collision->SetScale(Vector3(1.0f, 10.0f, 10.0f));
+		collision->SetOffset({ 0.0f,-groundScale.y / 2.0f, 0.0f });
 
 		m_Ray = AddGameObject();
 		m_Ray->SetName(u8"Ray");
@@ -92,19 +94,6 @@ namespace RNEngine {
 		auto groundCollision = m_Ground->GetComponent<CollisionCube>();
 		if (playerCollision->IsSimpleHit(groundCollision)) {
 			DebugLog::Log("Hit!!");
-		}
-
-		auto modelData = m_Player->GetComponent<ModelRenderer>()->GetModel()->GetModelData();
-		auto boundingBox = modelData.m_LocalBoundingBox * m_Player->GetTransform()->GetScale() + m_Player->GetTransform()->GetPosition();
-		DebugRenderer::Get().DrawCubeWireFrame(boundingBox.GetCenter(), boundingBox.GetSize(),Color::Green);
-
-		auto rayTransform = m_Ray->GetTransform();
-		Vector3 rayDirection = rayTransform->GetForward();
-		Ray ray = Ray(rayTransform->GetPosition(), rayDirection, rayTransform->GetScale().x);
-		DebugRenderer::Get().DrawLine(ray.m_Origin, ray.m_Origin + ray.m_Direction, ray.m_Length, Color::Red);
-
-		if (RayCast::Hit(ray)) {
-			DebugLog::Log("Ray Hit!!");
 		}
 	}
 }

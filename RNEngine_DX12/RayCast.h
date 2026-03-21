@@ -14,9 +14,13 @@ namespace RNEngine {
 			m_Direction = direction.Normalized();
 		}
 	};
+	struct HitInfo {
+		weak_ptr<GameObject> m_Object;
+		Vector3 m_HitPosition;
+	};
 	class RayCast{
 		public:
-			static bool Hit(const Ray& ray);
+			static bool Hit(const Ray& ray,HitInfo* info = nullptr);
 	};
 }
 

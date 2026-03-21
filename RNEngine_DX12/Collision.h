@@ -7,7 +7,7 @@ namespace RNEngine {
 
 	class HitTest {
 	public:
-		static bool RayAABB(const Ray& ray, const AABB& aabb);
+		static bool RayAABB(const Ray& ray, const AABB& aabb, HitInfo* info);
 		static bool RayMesh(const Ray& ray, const shared_ptr<GameObject>& object);
 	};
 
