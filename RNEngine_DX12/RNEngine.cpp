@@ -11,6 +11,9 @@ namespace RNEngine {
 	Engine::Engine() : m_Window(), m_FrameRate(120.0f) { g_pInstance = this; }
 	Engine::~Engine() = default;
 
+	/// <summary>
+	/// 
+	/// </summary>
 	void Engine::EnableDebugLayer() {
 		ID3D12Debug* debugLayer = nullptr;
 		auto result = D3D12GetDebugInterface(IID_PPV_ARGS(&debugLayer));
@@ -59,7 +62,6 @@ namespace RNEngine {
 		ResourceManager::CreateLine();
 
 		// テスト用リソース登録
-
 		ResourceManager::RegisterTexture("Textures/ErrorTexture.png");
 
 		timer.Init();
@@ -75,8 +77,8 @@ namespace RNEngine {
 
 		//GUI初期設定
 		auto inspector = dynamic_pointer_cast<Inspector>(m_GuiRenderer->AddGui("inspector", make_shared<Inspector>("Inspector")));
-		auto hierarchy = dynamic_pointer_cast<Hierarchy>(m_GuiRenderer->AddGui("hierarchy", make_shared<Hierarchy>("hierarchy")));
-		auto log = dynamic_pointer_cast<DebugLog>(m_GuiRenderer->AddGui("debugLog", make_shared<DebugLog>("debugLog")));
+		auto hierarchy = dynamic_pointer_cast<Hierarchy>(m_GuiRenderer->AddGui("hierarchy", make_shared<Hierarchy>("Hierarchy")));
+		auto log = dynamic_pointer_cast<DebugLog>(m_GuiRenderer->AddGui("debugLog", make_shared<DebugLog>("DebugLog")));
 
 		inspector->SetGameObject(nullptr);
 		hierarchy->SetScene(m_CurrentScene);

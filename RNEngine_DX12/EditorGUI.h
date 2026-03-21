@@ -60,6 +60,7 @@ namespace RNEngine {
 		virtual void Draw() {
 			ImGui::Begin(m_WindowName.c_str());
 		}
+		virtual void Update(){}
 	};
 
 	class Inspector : public GUI {
@@ -94,6 +95,7 @@ namespace RNEngine {
 		~Hierarchy();
 
 		virtual void Draw()override;
+		virtual void Update()override;
 
 		void SetScene(const shared_ptr<Scene>& scene) {
 			m_GameScene = scene;

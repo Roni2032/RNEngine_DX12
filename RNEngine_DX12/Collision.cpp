@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "project.h"
 namespace RNEngine {
-	bool HitTest::RayAABB(const Ray& ray, const AABB& aabb){
+	bool HitTest::RayAABB(const Ray& ray, const AABB& aabb, HitInfo* info){
 		auto& aabbMax = aabb.m_Max;
 		auto& aabbMin = aabb.m_Min;
 
@@ -25,6 +25,7 @@ namespace RNEngine {
 			float nearDist = (min - originPos) * odd;
 			float farDist = (max - originPos) * odd;
 
+			//レイの向きの反対側にある場合は当たらない
 			if (nearDist < 0 && farDist < 0) return false;
 
 			if (nearDist > farDist) {
@@ -36,11 +37,15 @@ namespace RNEngine {
 			if (entryDist >= exitDist) return false;
 		}
 
-		return entryDist <= ray.m_Length;
+		if (entryDist > ray.m_Length) return false;
+		if (info) {
+			info->m_HitPosition = ray.m_Origin + ray.m_Direction * entryDist;
+		}
+		return true;
 	}
 	bool HitTest::RayMesh(const Ray& ray, const shared_ptr<GameObject>& object) {
 		//ここにレイとメッシュの当たり判定
-		return false;
+		return true;
 	}
 
 	Collision::Collision(const shared_ptr<GameObject>& ptr):Component(ptr){}
@@ -72,8 +77,8 @@ namespace RNEngine {
 		position += offset;
 
 
-		Vector3 max = position + m_Scale / 2.0f;
-		Vector3 min = position - m_Scale / 2.0f;
+		Vector3 max = position + Vector3(m_Scale.x / 2.0f, m_Scale.y, m_Scale.z / 2.0f);
+		Vector3 min = position - Vector3(m_Scale.x / 2.0f, 0.0f, m_Scale.z / 2.0f);
 
 		return AABB(max, min);
 	}
