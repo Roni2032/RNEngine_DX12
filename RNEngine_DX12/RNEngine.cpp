@@ -11,9 +11,6 @@ namespace RNEngine {
 	Engine::Engine() : m_Window(), m_FrameRate(120.0f) { g_pInstance = this; }
 	Engine::~Engine() = default;
 
-	/// <summary>
-	/// 
-	/// </summary>
 	void Engine::EnableDebugLayer() {
 		ID3D12Debug* debugLayer = nullptr;
 		auto result = D3D12GetDebugInterface(IID_PPV_ARGS(&debugLayer));
@@ -51,7 +48,7 @@ namespace RNEngine {
 		timer.Init();
 
 		// フレームレート設定
-		SetFrameRate(120.0f);
+		SetFrameRate(FRAME_NONDEFINE);
 
 		timer.Update();
 		DebugLog::Log(u8"エンジン初期化" + to_string(timer.GetDeltaTime()));
@@ -82,19 +79,6 @@ namespace RNEngine {
 
 		inspector->SetGameObject(nullptr);
 		hierarchy->SetScene(m_CurrentScene);
-
-
-		//auto projectView = make_shared<ProjectView>("project", 64.0f);
-		//projectView->Init();
-		//m_GuiRenderer->AddGui("project", projectView);
-		//m_GuiRenderer->AddGui("debugLog", make_shared<DebugLog>("debugLog"));
-		//auto viewGui = m_GuiRenderer->AddGui("scene", make_shared<GameView>("scene"));
-		////GUI用レンダーターゲット作成
-		//auto editorRenderTarget = make_shared<RenderTarget>();
-		//editorRenderTarget->Create(
-		//	{ (float)m_Window->GetWidth(),(float)m_Window->GetHeight() },
-		//	DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, m_Renderer->GetClearColor());
-		//m_Renderer->RegisterRenderTarget("Editor", editorRenderTarget);
 #endif
 		m_Window->Show();
 

@@ -40,7 +40,6 @@ namespace RNEngine
 
 		static shared_ptr<ModelResource> RegisterMesh(const string& name,vector<Vertex>& vertices,vector<uint32_t>& indices);
 		static Mesh GetMeshData(const string& name);
-		//static shared_ptr<Material> RegisterMaterial(const string& name,)
 
 		static shared_ptr<ModelResource> CreateSquare();
 		static shared_ptr<ModelResource> CreateCube();

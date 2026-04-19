@@ -1,5 +1,9 @@
 #include "stdafx.h"
 #include "Input.h"
+#include "RnEngine.h"
+#include "Renderer.h"
+#include "Window.h"
+#include "Camera.h"
 namespace RNEngine {
 	template<>
 	bool InputActionContext::GetValue<bool>() {
@@ -110,5 +114,31 @@ namespace RNEngine {
 		}
 
 		return m_ActionMap[actionName].IsHeld();
+	}
+
+	Vector3 Input::GetMouseWorldRayDirection() {
+		POINT mousePosition = GetMousePointPosition();
+		auto window = Engine::GetWindow();
+		//マウス位置をスクリーン座標へ
+		ScreenToClient(window->GetHwnd(), &mousePosition);
+		//スクリーン座標をNDC(正規化)に変換
+		//ここで座標を-1～1に直す
+		float x = (2.0f * mousePosition.x / window->GetWidth()) - 1.0f;
+		float y = 1.0f - (2.0f * mousePosition.y / window->GetHeight());
+
+		//現在描画しているカメラ
+		auto camera = Engine::GetRenderer()->GetMainCamera();
+		Vector4 clip = Vector4(x, y, 1.0f, 1.0f);
+
+		XMMATRIX invProjection = XMMatrixInverse(nullptr,camera->GetProjectionMatrix());
+		XMMATRIX invView = XMMatrixInverse(nullptr, camera->GetViewMatrix());
+
+		Vector3 clipView = XMVector3TransformCoord(clip, invProjection);
+		clipView.z = 1.0f;
+
+		Vector3 dir = XMVector3TransformNormal(clipView, invView);
+		dir.Normalize();
+
+		return dir;
 	}
 }

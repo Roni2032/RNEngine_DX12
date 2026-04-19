@@ -259,10 +259,6 @@ namespace RNEngine {
 
 		for (float angle = 0; angle <= XM_2PI; angle += sliceAngle) {
 			Vector3 position = Vector3(cos(angle), 0.0f, sin(angle));
-
-			//‰º
-			//vertices.push_back()
-			//ã
 		}
 
 		return nullptr;
