@@ -4,11 +4,26 @@
 /// -------------------------------------------------
 
 #include "MathHeader.h"
-namespace RNEngine{
+namespace RNEngine {
 	//GPU用頂点データ
 	struct Vertex {
 		Vector3 m_Position;
+		Vector3 m_Normal;
 		Vector2 m_Uv;
+		struct {
+			float m_BoneWeights[4];
+			uint32_t m_BoneIndices[4];
+		}m_BoneData;
+
+		Vertex() {
+			::ZeroMemory(this, sizeof(Vertex));
+		}
+		Vertex(const Vector3& position, const Vector3& normal, const Vector2& uv) {
+			m_Position = position;
+			m_Normal = normal;
+			m_Uv = uv;
+			m_BoneData = {};
+		}
 	};
 	//GPU用行列データ
 	struct Matrix {
@@ -41,7 +56,7 @@ namespace RNEngine{
 		vector<uint8_t> m_Data;
 
 		EmbeddedTexture() = default;
-		EmbeddedTexture(const string& name,aiTexture* texture) {
+		EmbeddedTexture(const string& name, aiTexture* texture) {
 			m_Name = "embedded_texture_" + name;
 			m_Format = texture->achFormatHint;
 			m_Size = texture->mWidth;
@@ -69,11 +84,30 @@ namespace RNEngine{
 		Material(EmbeddedTexture& texture) :Material(TextureDataType::Embedded, texture.m_Name, texture) {}
 	};
 
+	struct PositionKeyFrame {
+		Vector3 m_Position;
+	};
+	struct QuaternionKeyFrame {
+		Quaternion m_Quaternion;
+	};
+	struct ScalingKeyFrame {
+		Vector3 m_Scaling;
+	};
+	struct Bone {
+		wstring m_Name;
+		XMMATRIX m_OffsetMatrix;
+		
+		vector<PositionKeyFrame> m_PositionKeyFrames;
+		vector<QuaternionKeyFrame> m_QuaternionKeyFrames;
+		vector<ScalingKeyFrame> m_ScalingKeyFrames;
+	};
+
 	// モデルデータ
 	struct Model {
 		vector<Mesh> m_Meshes;
 		vector<Material> m_Materials;
-
+		unordered_map<string, uint32_t> m_BoneIndexMap;
+		vector<Bone> m_Bones;
 		XMMATRIX m_AdjustMatrix;
 		// モデル全体のAABB
 		AABB m_LocalBoundingBox;

@@ -32,18 +32,18 @@ namespace RNEngine {
 
 		auto model = ResourceManager::RegisterModel("Models/kaf/kaf_fukuro_hatdown.vrm", "kaf", defaultTransform);
 		ResourceManager::RegisterTexture("Textures/test.jpg");
-		/*ResourceManager::RegisterModel("Models/Furina/Furina.fbx", "furina", defaultTransformScale);
-		ResourceManager::RegisterModel("Models/Harlequin/Harlequin.fbx", "harlequin", defaultTransformScale);*/
+		ResourceManager::RegisterModel("Models/Furina/Furina.fbx", "furina", defaultTransformScale);
+		ResourceManager::RegisterModel("Models/Harlequin/Harlequin.fbx", "harlequin", defaultTransformScale);
 		ResourceManager::RegisterModel("Models/raiden/raiden.fbx", "raiden", defaultTransformScale);
 		ResourceManager::RegisterModel("Models/toribi/toribi.fbx", "toribi", defaultTransformScale);
 		ResourceManager::RegisterModel("Models/Blastjump/Player.fbx", "player", defaultTransformScale);
-
+		ResourceManager::RegisterModel("Models/Barbarian/Barbarian_Walk.fbx","barbarian",defaultTransformScale);
 		m_Player = AddGameObject();
 		m_Player->SetName(u8"‰Ô•ˆ");
 		m_Player->SetLayer("Object");
 		auto renderer = m_Player->AddComponent<ModelRenderer>();
 		renderer->Init(GetCamera("Game"));
-		renderer->SetModel("kaf");
+		renderer->SetModel("harlequin");
 		renderer->AddRenderTargetTag("GameView");
 		auto collision = m_Player->AddComponent<CollisionCube>();
 		collision->SetScale(Vector3(1.0f, 1.8f, 1.0f));

@@ -26,6 +26,8 @@ namespace RNEngine {
 		/// <param name="scene">Assimpデータ</param>
 		static void ImportMaterial(Model& output, const aiScene* scene,const string& filePath);
 
+		static void ImportBone(Mesh& output, const aiMesh* mesh, unordered_map<string, uint32_t>& boneIndexMap);
+
 		/// <summary>
 		///	Assimpデータの初期化
 		/// </summary>
