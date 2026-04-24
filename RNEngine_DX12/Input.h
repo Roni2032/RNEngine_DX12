@@ -85,9 +85,14 @@ namespace RNEngine
 		static Vector2 GetMousePosition() {
 			return { (float)m_CurrentMousePoint.x,(float)m_CurrentMousePoint.y };
 		}
+		static POINT GetMousePointPosition() {
+			return m_CurrentMousePoint;
+		}
 		static Vector2 GetBeforeMousePosition() {
 			return { (float)m_BeforeMousePoint.x,(float)m_BeforeMousePoint.y };
 		}
+
+		static Vector3 GetMouseWorldRayDirection();
 	};
 }
 

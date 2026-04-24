@@ -13,17 +13,6 @@ namespace RNEngine {
 	class Barrier;
 	class GUIRenderer;
 
-
-	///----------------------------------------------------------------
-	/// Renderer ヘッダ
-	/// 
-	/// Renderer クラス
-	/// PipelineState クラス
-	/// CommandContext クラス
-	///		:
-	/// 
-	/// ----------------------------------------------------------------
-
 	enum CullMode {
 		NONE = D3D12_CULL_MODE_NONE,
 		FRONT = D3D12_CULL_MODE_FRONT,

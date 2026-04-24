@@ -4,6 +4,8 @@
 #include "RNEngine.h"
 #include "Renderer.h"
 #include "Window.h"
+#include "Timer.h"
+#include "Input.h"
 
 #include "TextureBuffer.h"
 #include "SRV.h"
@@ -19,6 +21,7 @@
 #include "RenderTarget.h"
 #include "RayCast.h"
 
+#include "DebugRenderer.h"
 namespace RNEngine {
 	GUIRenderer::GUIRenderer() {}
 	GUIRenderer::~GUIRenderer() {}
@@ -290,20 +293,24 @@ namespace RNEngine {
 		ShowCameraPreview();
 	}
 	void Hierarchy::Update() {
-		if (!Input::IsPressed("SelectObject")) return;
-
 		auto mainCamera = Engine::GetRenderer()->GetMainCamera();
 		if (mainCamera) {
-			Vector3 forward = mainCamera->GetDirection();
+			//Vector3 forward = mainCamera->GetDirection();
 			Vector3 position = mainCamera->GetEye();
-			Ray ray = Ray(position, forward, 100.0f);
+			auto rayDir = Input::GetMouseWorldRayDirection();
+
+			Ray ray = Ray(position, rayDir, 100.0f);
+			DebugRenderer::Get().DrawSphereWireFrame(Vector3(0,2,-2) + Vector3(0.5,0.6,0.6) * 10.0f, Vector3(0.5f), Color::Blue);
+			DebugRenderer::Get().DrawLine(Vector3(0, 2, -2), Vector3(0, 2, -2) + Vector3(0.5, 0.6, 0.6), 100.0f,Color::Green);
 			HitInfo info;
 			if (RayCast::Hit(ray, &info)) {
-				if(auto obj = info.m_Object.lock()){
-					m_SelectedGameObjectAddr = obj.get();
-					auto renderer = Engine::GetGUIRenderer();
-					auto inspector = renderer->GetGui<Inspector>("inspector");
-					inspector->SetGameObject(obj);
+				if (Input::IsPressed("SelectObject")) {
+					if (auto obj = info.m_Object.lock()) {
+						m_SelectedGameObjectAddr = obj.get();
+						auto renderer = Engine::GetGUIRenderer();
+						auto inspector = renderer->GetGui<Inspector>("inspector");
+						inspector->SetGameObject(obj);
+					}
 				}
 				
 			}
@@ -474,12 +481,19 @@ namespace RNEngine {
 		if (ImGui::Button("clear", ImVec2(64, 16))) {
 			Clear();
 		}
+
+		auto timer = Engine::GetFrameTimer();
+		float fps = timer->GetFps();
+
+		ImGui::Text("FPS : %.4f", fps);
+
 		ImGui::Separator();
 		m_BeforeScrollY = ImGui::GetScrollY() / ImGui::GetScrollMaxY();
-		string name = "Debug: ";
+		string name = "";
 		for (auto& log : g_LogData) {
 			switch (log.m_Type) {
 			case LogData::Type::Debug:
+				name = "Debug: ";
 				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
 				break;
 			case LogData::Type::Warning:

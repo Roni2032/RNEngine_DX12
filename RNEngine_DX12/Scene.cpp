@@ -4,8 +4,6 @@
 
 namespace RNEngine {
 	void Scene::Start() {
-		//CreateCameraObject("Debug");
-
 		RegisterLayer("Default", 0);
 		RegisterLayer("Object", 1);
 		RegisterLayer("UI", 2);
@@ -42,11 +40,6 @@ namespace RNEngine {
 		for (auto& camera : m_CameraMap) {
 			camera.second->DrawRenderTarget();
 		}
-		//とりあえずメインカメラだけ描画
-		//GetCamera("Game")->DrawRenderTarget();
-
-		//複数のレンダーターゲットを利用できるようになったら戻そうね
-		//renderer->DrawAll();
 	}
 
 	shared_ptr<Camera> Scene::CreateCameraObject(const string& key) {
