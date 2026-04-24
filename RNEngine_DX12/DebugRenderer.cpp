@@ -117,7 +117,6 @@ namespace RNEngine {
 		setup.m_RasterizerState->SetCullMode(CullMode::NONE);//両面表示
 		setup.m_RasterizerState->SetDepthBias(-1);//少し手前に表示
 		setup.m_RasterizerState->SetSlopeScaledDepthBias(-1.0f);//少し手前に表示
-		//setup.m_DepthEnable = false;
 		setup.m_DepthMask = D3D12_DEPTH_WRITE_MASK_ZERO;//深度書き込みしない
 
 		PipelineStatePool::RegisterPipelineState(L"WireFrame", InputLayout::PUV, setup);
