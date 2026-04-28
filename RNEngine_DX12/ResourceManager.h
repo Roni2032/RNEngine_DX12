@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "Singleton.h"
 namespace RNEngine
 {
 	class TextureBuffer;
@@ -27,6 +28,9 @@ namespace RNEngine
 
 		static string GetDefaultFilePath() { return m_DefaultFilePath; }
 		static void SetDefaultFilePath(const string& path) { m_DefaultFilePath = path; }
+
+		static void LoadAssets(const string& folder = "");
+		static void UnLoadAssets(const string& folder = "");
 
 		static shared_ptr<TextureBuffer> RegisterTexture(const string& filename);
 		static void RegisterTexture(const string& name,const shared_ptr<TextureBuffer>& texture);

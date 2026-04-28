@@ -108,9 +108,9 @@ namespace RNEngine {
 
 		PipelineStateSetup setup = {};
 		setup.m_Vs = new Shader();
-		setup.m_Vs->LoadVS(L"WireFrameVertexShader.hlsl", "VSMain");
+		setup.m_Vs->LoadVS(L"WireFrameVertexShader", "VSMain");
 		setup.m_Ps = new Shader();
-		setup.m_Ps->LoadPS(L"WireFramePixelShader.hlsl", "PSMain");
+		setup.m_Ps->LoadPS(L"WireFramePixelShader", "PSMain");
 
 		setup.m_RasterizerState = new RasterizerState();
 		setup.m_RasterizerState->SetFillMode(FillMode::WIREFRAME);//ワイヤーフレーム描画

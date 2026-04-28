@@ -35,7 +35,10 @@ namespace RNEngine {
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 		ImGui::StyleColorsDark();
-		io.Fonts->AddFontFromFileTTF("../Assets/Font/BIZUDGothic-Regular.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
+
+		string exePath = File::GetExeDirectory().generic_string();
+		exePath += "Assets/Font/BIZUDGothic-Regular.ttf";
+		io.Fonts->AddFontFromFileTTF(exePath.c_str(), 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
 
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.FramePadding = ImVec2(0,0);
@@ -191,7 +194,7 @@ namespace RNEngine {
 				convert->m_ConvertToInternal(&display, value);
 			}
 			else {
-				value = &display;
+				*value = display;
 			}
 		}
 	}
@@ -208,7 +211,7 @@ namespace RNEngine {
 				convert->m_ConvertToInternal(&display, value);
 			}
 			else {
-				value = &display;
+				*value = display;
 			}
 		}
 	}
@@ -294,18 +297,19 @@ namespace RNEngine {
 	}
 	void Hierarchy::Update() {
 		auto mainCamera = Engine::GetRenderer()->GetMainCamera();
-		if (mainCamera) {
-			//Vector3 forward = mainCamera->GetDirection();
+		if (mainCamera && !ImGui::GetIO().WantCaptureMouse) {
 			Vector3 position = mainCamera->GetEye();
 			auto rayDir = Input::GetMouseWorldRayDirection();
 
 			Ray ray = Ray(position, rayDir, 100.0f);
-			DebugRenderer::Get().DrawSphereWireFrame(Vector3(0,2,-2) + Vector3(0.5,0.6,0.6) * 10.0f, Vector3(0.5f), Color::Blue);
-			DebugRenderer::Get().DrawLine(Vector3(0, 2, -2), Vector3(0, 2, -2) + Vector3(0.5, 0.6, 0.6), 100.0f,Color::Green);
+			//DebugRenderer::Get().DrawLine(pos, dir, 100.0f,Color::Green);
 			HitInfo info;
+			DebugLog::Clear();
 			if (RayCast::Hit(ray, &info)) {
-				if (Input::IsPressed("SelectObject")) {
-					if (auto obj = info.m_Object.lock()) {
+				//DebugRenderer::Get().DrawSphereWireFrame(info.m_HitPosition, Vector3(0.5f), Color::Blue);
+				if (auto obj = info.m_Object.lock()) {
+					DebugLog::Log(obj->GetName());
+					if (Input::IsPressed("SelectObject")) {
 						m_SelectedGameObjectAddr = obj.get();
 						auto renderer = Engine::GetGUIRenderer();
 						auto inspector = renderer->GetGui<Inspector>("inspector");

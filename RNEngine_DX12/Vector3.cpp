@@ -123,6 +123,12 @@ namespace RNEngine {
 	Vector3 Vector3::Cross(const Vector3& other)const {
 		return (Vector3)XMVector3Cross(*this, other);
 	}
+	Vector3 Vector3::Transform(const XMMATRIX& matrix) const{
+		XMVECTOR vec = XMVector3Transform(*this, matrix);
+		Vector3 result;
+		XMStoreFloat3(&result, vec);
+		return result;
+	}
 	void Vector3::RandomVec(float min, float max) {
 		Set(Util::Random<float>(min, max), Util::Random<float>(min, max), Util::Random<float>(min, max));
 	}

@@ -91,6 +91,9 @@
     <Filter Include="Engine\Renderer\Header">
       <UniqueIdentifier>{4b953cd6-4d72-4853-9156-03ce02238caf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Renderer\Animation">
+      <UniqueIdentifier>{2c6941b8-fcf9-4950-8727-ff3f3770660a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -285,6 +288,9 @@
     <ClCompile Include="RendererHeader.cpp">
       <Filter>Engine\Renderer\Header</Filter>
     </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Engine\Renderer\Animation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -463,6 +469,9 @@
     </ClInclude>
     <ClInclude Include="RendererHeader.h">
       <Filter>Engine\Renderer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Engine\Renderer\Animation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

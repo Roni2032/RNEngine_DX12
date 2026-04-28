@@ -45,13 +45,14 @@ namespace RNEngine {
 				Vertex vertex = {};
 				if(sceneMesh->HasPositions())
 					::CopyMemory(&vertex.m_Position, &sceneMesh->mVertices[v], sizeof(vertex.m_Position));
-				if (sceneMesh->HasNormals()){}
-					//::CopyMemory(&vertex.m_Position, &sceneMesh->mVertices[v], sizeof(vertex.m_Position));
+				if (sceneMesh->HasNormals())
+					::CopyMemory(&vertex.m_Normal, &sceneMesh->mNormals[v], sizeof(vertex.m_Normal));
 				if (sceneMesh->HasTextureCoords(0))
 					::CopyMemory(&vertex.m_Uv, &sceneMesh->mTextureCoords[0][v], sizeof(vertex.m_Uv));
 
 				vertices.push_back(vertex);
 			}
+			ImportBone(newMesh, sceneMesh, output.m_BoneIndexMap);
 
 			for (UINT j = 0; j < faceSize; j++) {
 				auto& face = sceneMesh->mFaces[j];
@@ -67,6 +68,19 @@ namespace RNEngine {
 		}
 		output.m_Meshes = meshes;
 
+		output.m_Bones.resize(output.m_BoneIndexMap.size());
+		for (unsigned int i = 0; i < meshSize; i++) {
+			auto mesh = scene->mMeshes[i];
+			unsigned int numBones = mesh->mNumBones;
+			for (unsigned int j = 0; j < numBones; j++) {
+				auto bone = mesh->mBones[j];
+				unsigned int boneIndex = output.m_BoneIndexMap[bone->mName.C_Str()];
+
+				output.m_Bones[boneIndex].m_Name = bone->mName.C_Str();
+				::CopyMemory(&output.m_Bones[boneIndex].m_OffsetMatrix, &bone->mOffsetMatrix.Transpose(), sizeof(XMMATRIX));
+			}
+		}
+
 	}
 	void AssimpLoader::ImportMaterial(Model& output, const aiScene* scene, const string& filePath) {
 		auto numMaterials = scene->mNumMaterials;
@@ -81,7 +95,7 @@ namespace RNEngine {
 			
 			if (textureName.empty()) {
 				materials.push_back(Material());
-				return;
+				continue;
 			}
 
 			if (textureName[0] != '*') {
@@ -105,10 +119,86 @@ namespace RNEngine {
 		}
 		output.m_Materials = materials;
 	}
+
+	void AssimpLoader::ImportBone(Mesh& output, const aiMesh* mesh, unordered_map<string, uint32_t>& boneIndexMap) {
+		struct BoneData {
+			float wight;
+			uint32_t index;
+		};
+		vector<Vertex>& vertices = output.m_Vertices;
+		vector<vector<BoneData>> bones(vertices.size());
+
+		uint32_t boneIndex = 0;
+		for (UINT i = 0; i < mesh->mNumBones; i++) {
+			auto bone = mesh->mBones[i];
+			string boneName = bone->mName.C_Str();
+			if (boneIndexMap.count(boneName) <= 0) {
+				boneIndexMap[boneName] = boneIndex++;
+			}
+
+			for (UINT j = 0; j < bone->mNumWeights; j++) {
+				BoneData boneData;
+				auto weightData = bone->mWeights[j];
+				uint32_t id = weightData.mVertexId;
+
+				boneData.index = boneIndexMap[boneName];
+				boneData.wight = weightData.mWeight;
+
+
+				bones[id].push_back(boneData);
+			}
+
+			for (auto& bone : bones) {
+				sort(bone.begin(), bone.end(), [](const BoneData& a, const BoneData& b) {return a.wight > b.wight; });
+				const size_t boneMaxSize = 4;
+				if (bone.size() > boneMaxSize) {
+					bone.erase(bone.begin() + boneMaxSize, bone.end());
+				}
+
+				float sum = 0.0f;
+				for (auto& b : bone) {
+					sum += b.wight;
+				}
+				if (sum >= 1.0f) {
+					for (auto& b : bone) {
+						b.wight /= sum;
+					}
+				}
+
+			}
+		}
+
+		for (int i = 0; i < vertices.size(); i++) {
+			int j = 0;
+			auto& boneData = vertices[i].m_BoneData;
+			for (auto& bone : bones[i]) {
+				boneData.m_BoneIndices[j] = bone.index;
+				boneData.m_BoneWeights[j] = bone.wight;
+				j++;
+			}
+		}
+
+		
+	}
+	void AssimpLoader::ImportAnimations(Model& output, const aiScene* scene) {
+		UINT animationNum = scene->mNumAnimations;
+		auto rootNode = scene->mRootNode;
+		for (int i = 0; i < animationNum; i++) {
+			auto animation = scene->mAnimations[i];
+
+			ImportAnimation(output, animation, rootNode);
+		}
+	}
+	void AssimpLoader::ImportAnimation(Model& output, const aiAnimation* animation, const aiNode* node) {
+		string boneName(node->mName.C_Str());
+
+	}
 	void AssimpLoader::Import(ID3D12Device* _dev, Model& output, const wstring& filePath) {
 		if (MeshIO::IsExistMeshFile(filePath)) {
 			//meshファイルが存在するときはmeshファイルから抽出
 			MeshLoader::LoadMeshFile(_dev, output, MeshIO::GetMeshFileName(filePath));
+			MeshLoader::AdjustModelSizeMatrix(output, Vector3(1.0f, 1.0f, 1.0f));
+
 		}
 		else {
 			//meshファイルが存在しない時はAssimpからデータ抽出
@@ -117,9 +207,11 @@ namespace RNEngine {
 
 			ImportMesh(_dev, output, scene);
 			ImportMaterial(output, scene, Util::ConvertWstrToStr(filePath));
-			MeshLoader::AdjustModelSizeMatrix(output, Vector3(1.0f, 1.0f, 1.0f));
+			//ImportAnimations(output, scene);
 
 			MeshWriter::SaveMeshFile(output, MeshIO::GetMeshFileName(filePath));
+			MeshLoader::AdjustModelSizeMatrix(output, Vector3(1.0f, 1.0f, 1.0f));
+
 		}
 	}
 
@@ -135,7 +227,8 @@ namespace RNEngine {
 		}
 		name += ".mesh";
 
-		string fullPath = "../RNEngine_DX12/mesh/" + name;
+		auto exePath = File::GetExeDirectory().generic_string();
+		string fullPath = exePath + "mesh/" + name;
 
 		return Util::ConvertStrToWstr(fullPath);
 	}
@@ -213,7 +306,7 @@ namespace RNEngine {
 		}
 
 		Vector3 aabbSize = aabb.GetSize();
-		Vector3 adjustSize = size / aabbSize;
+		Vector3 adjustSize = size / aabbSize.y;
 
 		Vector3 aabbCenter = aabb.GetCenter();
 

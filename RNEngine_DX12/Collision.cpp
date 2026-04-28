@@ -17,7 +17,7 @@ namespace RNEngine {
 			const float& min = aabbMin[i];
 
 			//レイの向きが0のときは、レイの原点がAABBの範囲内にあるかどうかで判定
-			if (direction == 0) {
+			if (fabs(direction) < 1e-6f) {
 				if (originPos < min || originPos > max)return false;
 				continue;
 			}
@@ -85,6 +85,6 @@ namespace RNEngine {
 
 	void CollisionCube::Draw() {
 		auto aabb = GetAABB();
-		DebugRenderer::Get().DrawCubeWireFrame(aabb.GetCenter(), aabb.GetSize());
+		//DebugRenderer::Get().DrawCubeWireFrame(aabb.GetCenter(), aabb.GetSize());
 	}
 }
