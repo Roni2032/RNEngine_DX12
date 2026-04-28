@@ -1,18 +1,26 @@
 #include "stdafx.h"
 #include "Shader.h"
+#include "File.h"
 namespace RNEngine {
 	void Shader::Load(const wstring& filename, const string& entryPoint, const string& target) {
-		auto result = D3DCompileFromFile(
-			filename.c_str(),
-			nullptr,
-			D3D_COMPILE_STANDARD_FILE_INCLUDE,
-			entryPoint.c_str(),
-			target.c_str(),
-			D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
-			0,
-			m_Blob.GetAddressOf(),
-			m_ErrorBlob.GetAddressOf()
-		);
+		auto exePath = File::GetExeDirectory();
+		exePath += filename;
+		exePath += ".cso";
+		auto result = D3DReadFileToBlob(exePath.c_str(), m_Blob.GetAddressOf());
+		if (FAILED(result)) {
+			wstring hlslFilename = filename + L".flsl";
+			result = D3DCompileFromFile(
+				hlslFilename.c_str(),
+				nullptr,
+				D3D_COMPILE_STANDARD_FILE_INCLUDE,
+				entryPoint.c_str(),
+				target.c_str(),
+				D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+				0,
+				m_Blob.GetAddressOf(),
+				m_ErrorBlob.GetAddressOf()
+			);
+		}
 
 		if(FAILED(result)){
 			if (m_ErrorBlob) {

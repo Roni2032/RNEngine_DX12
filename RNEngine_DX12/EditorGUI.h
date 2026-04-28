@@ -86,6 +86,8 @@ namespace RNEngine {
 		}
 	};
 	class Hierarchy : public GUI {
+		Vector3 pos;
+		Vector3 dir;
 		weak_ptr<Scene> m_GameScene;
 		GameObject* m_SelectedGameObjectAddr;
 

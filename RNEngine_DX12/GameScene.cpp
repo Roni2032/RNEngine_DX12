@@ -30,6 +30,9 @@ namespace RNEngine {
 		DefaultModelTransform defaultTransform{ 1.0f,{ 0.0f,XM_PI,0.0f } ,{0.0f,0.0f,0.0f} };
 		DefaultModelTransform defaultTransformScale{ 0.1f,{ 0.0f,0.0f,0.0f } ,{0.0f,0.0f,0.0f} };
 
+		//ResouceManager::ThreadLoad(true);
+		//ResourceManager::LoadAssets();
+		//ResourceManager::UnLoadAssets("Models/Furina");
 		auto model = ResourceManager::RegisterModel("Models/kaf/kaf_fukuro_hatdown.vrm", "kaf", defaultTransform);
 		ResourceManager::RegisterTexture("Textures/test.jpg");
 		ResourceManager::RegisterModel("Models/Furina/Furina.fbx", "furina", defaultTransformScale);
@@ -89,11 +92,17 @@ namespace RNEngine {
 	}
 	void GameScene::Update() {
 		Scene::Update();
+		auto renderer = m_Player->GetComponent<ModelRenderer>();
+		Vector3 position = m_Player->GetTransform()->GetPosition();
+		auto aabb = renderer->GetModel()->GetModelData().m_LocalBoundingBox + position;
+		DebugRenderer::Get().DrawCubeWireFrame(aabb.GetCenter(), aabb.GetSize());
 
 		auto playerCollision = m_Player->GetComponent<CollisionCube>();
 		auto groundCollision = m_Ground->GetComponent<CollisionCube>();
 		if (playerCollision->IsSimpleHit(groundCollision)) {
 			DebugLog::Log("Hit!!");
 		}
+
+		DebugRenderer::Get().DrawSphereWireFrame(Vector3::Zero, Vector3::One);
 	}
 }

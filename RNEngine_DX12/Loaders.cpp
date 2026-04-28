@@ -68,6 +68,19 @@ namespace RNEngine {
 		}
 		output.m_Meshes = meshes;
 
+		output.m_Bones.resize(output.m_BoneIndexMap.size());
+		for (unsigned int i = 0; i < meshSize; i++) {
+			auto mesh = scene->mMeshes[i];
+			unsigned int numBones = mesh->mNumBones;
+			for (unsigned int j = 0; j < numBones; j++) {
+				auto bone = mesh->mBones[j];
+				unsigned int boneIndex = output.m_BoneIndexMap[bone->mName.C_Str()];
+
+				output.m_Bones[boneIndex].m_Name = bone->mName.C_Str();
+				::CopyMemory(&output.m_Bones[boneIndex].m_OffsetMatrix, &bone->mOffsetMatrix.Transpose(), sizeof(XMMATRIX));
+			}
+		}
+
 	}
 	void AssimpLoader::ImportMaterial(Model& output, const aiScene* scene, const string& filePath) {
 		auto numMaterials = scene->mNumMaterials;
@@ -164,6 +177,21 @@ namespace RNEngine {
 				j++;
 			}
 		}
+
+		
+	}
+	void AssimpLoader::ImportAnimations(Model& output, const aiScene* scene) {
+		UINT animationNum = scene->mNumAnimations;
+		auto rootNode = scene->mRootNode;
+		for (int i = 0; i < animationNum; i++) {
+			auto animation = scene->mAnimations[i];
+
+			ImportAnimation(output, animation, rootNode);
+		}
+	}
+	void AssimpLoader::ImportAnimation(Model& output, const aiAnimation* animation, const aiNode* node) {
+		string boneName(node->mName.C_Str());
+
 	}
 	void AssimpLoader::Import(ID3D12Device* _dev, Model& output, const wstring& filePath) {
 		if (MeshIO::IsExistMeshFile(filePath)) {
@@ -179,6 +207,7 @@ namespace RNEngine {
 
 			ImportMesh(_dev, output, scene);
 			ImportMaterial(output, scene, Util::ConvertWstrToStr(filePath));
+			//ImportAnimations(output, scene);
 
 			MeshWriter::SaveMeshFile(output, MeshIO::GetMeshFileName(filePath));
 			MeshLoader::AdjustModelSizeMatrix(output, Vector3(1.0f, 1.0f, 1.0f));
@@ -198,7 +227,8 @@ namespace RNEngine {
 		}
 		name += ".mesh";
 
-		string fullPath = "../RNEngine_DX12/mesh/" + name;
+		auto exePath = File::GetExeDirectory().generic_string();
+		string fullPath = exePath + "mesh/" + name;
 
 		return Util::ConvertStrToWstr(fullPath);
 	}

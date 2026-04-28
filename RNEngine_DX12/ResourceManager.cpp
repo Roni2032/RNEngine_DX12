@@ -17,6 +17,13 @@ namespace RNEngine {
 	unordered_map<string, shared_ptr<TextureBuffer>> ResourceManager::m_TextureBufferMap = {};
 	unordered_map<string, shared_ptr<Material>> ResourceManager::m_MaterialMap = {};
 
+	void ResourceManager::LoadAssets(const string& folder) {
+		
+	}
+	void ResourceManager::UnLoadAssets(const string& folder) {
+
+	}
+
 	shared_ptr<TextureBuffer> ResourceManager::RegisterTexture(const string& filename) {
 		if (filename.empty()) return nullptr;
 

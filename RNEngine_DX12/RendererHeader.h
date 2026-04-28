@@ -94,12 +94,8 @@ namespace RNEngine {
 		Vector3 m_Scaling;
 	};
 	struct Bone {
-		wstring m_Name;
+		string m_Name;
 		XMMATRIX m_OffsetMatrix;
-		
-		vector<PositionKeyFrame> m_PositionKeyFrames;
-		vector<QuaternionKeyFrame> m_QuaternionKeyFrames;
-		vector<ScalingKeyFrame> m_ScalingKeyFrames;
 	};
 
 	// モデルデータ

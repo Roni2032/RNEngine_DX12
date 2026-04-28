@@ -27,7 +27,8 @@ namespace RNEngine {
 		static void ImportMaterial(Model& output, const aiScene* scene,const string& filePath);
 
 		static void ImportBone(Mesh& output, const aiMesh* mesh, unordered_map<string, uint32_t>& boneIndexMap);
-
+		static void ImportAnimations(Model& output, const aiScene* scene);
+		static void ImportAnimation(Model& output, const aiAnimation* animation, const aiNode* node);
 		/// <summary>
 		///	Assimpƒf[ƒ^‚Ì‰Šú‰»
 		/// </summary>

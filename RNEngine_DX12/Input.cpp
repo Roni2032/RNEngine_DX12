@@ -133,7 +133,7 @@ namespace RNEngine {
 		XMMATRIX invProjection = XMMatrixInverse(nullptr,camera->GetProjectionMatrix());
 		XMMATRIX invView = XMMatrixInverse(nullptr, camera->GetViewMatrix());
 
-		Vector3 clipView = XMVector3TransformCoord(clip, invProjection);
+		Vector3 clipView = XMVector3Transform(clip, invProjection);
 		clipView.z = 1.0f;
 
 		Vector3 dir = XMVector3TransformNormal(clipView, invView);

@@ -28,7 +28,9 @@ namespace RNEngine {
 		EnableDebugLayer();
 #endif
 		// リソースマネージャー初期化
-		ResourceManager::SetDefaultFilePath("../Assets/");
+		auto exePath = File::GetExeDirectory();
+		exePath += "Assets/";
+		ResourceManager::SetDefaultFilePath(exePath.generic_string());
 
 		// デバイス、レンダラー初期化
 		m_Device = make_unique<Device>();
@@ -55,7 +57,7 @@ namespace RNEngine {
 
 		ResourceManager::CreateSquare();
 		ResourceManager::CreateCube();
-		ResourceManager::CreateSphere(20, 20);
+		ResourceManager::CreateSphere(2, 20);
 		ResourceManager::CreateLine();
 
 		// テスト用リソース登録
