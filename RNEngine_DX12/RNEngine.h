@@ -65,7 +65,7 @@ namespace RNEngine {
 		}
 
 		void OnMove(InputActionContext& context) {
-			//position.x -= 0.01f;
+			
 		}
 	};
 }

@@ -57,7 +57,7 @@ namespace RNEngine {
 
 		ResourceManager::CreateSquare();
 		ResourceManager::CreateCube();
-		ResourceManager::CreateSphere(2, 20);
+		ResourceManager::CreateSphere(20, 20);
 		ResourceManager::CreateLine();
 
 		// テスト用リソース登録
@@ -102,7 +102,7 @@ namespace RNEngine {
 
 		//テスト入力設定
 		Input::BindAction("right", [&](InputActionContext& context) {});//ラムダ式での設定
-		Input::BindAction("left", &Engine::OnMove, this);//メンバ関数での設定(shared_ptrでも可能。uniqueとかは黙ってget()してくれ)
+		Input::BindAction("left", &Engine::OnMove, this);//メンバ関数での設定(shared_ptrでも可能。uniqueとかはget())
 	}
 	void Engine::Destroy() {
 		m_GuiRenderer->Destroy();
