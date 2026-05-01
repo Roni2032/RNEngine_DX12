@@ -30,10 +30,7 @@ namespace RNEngine {
 		DefaultModelTransform defaultTransform{ 1.0f,{ 0.0f,XM_PI,0.0f } ,{0.0f,0.0f,0.0f} };
 		DefaultModelTransform defaultTransformScale{ 0.1f,{ 0.0f,0.0f,0.0f } ,{0.0f,0.0f,0.0f} };
 
-		//ResouceManager::ThreadLoad(true);
-		//ResourceManager::LoadAssets();
-		//ResourceManager::UnLoadAssets("Models/Furina");
-		auto model = ResourceManager::RegisterModel("Models/kaf/kaf_fukuro_hatdown.vrm", "kaf", defaultTransform);
+		auto model = ResourceManager::RegisterModel("Models/kaf/kaf_fukuro_hatdown.vrm", "kaf");
 		ResourceManager::RegisterTexture("Textures/test.jpg");
 		ResourceManager::RegisterModel("Models/Furina/Furina.fbx", "furina", defaultTransformScale);
 		ResourceManager::RegisterModel("Models/Harlequin/Harlequin.fbx", "harlequin", defaultTransformScale);
@@ -46,7 +43,7 @@ namespace RNEngine {
 		m_Player->SetLayer("Object");
 		auto renderer = m_Player->AddComponent<ModelRenderer>();
 		renderer->Init(GetCamera("Game"));
-		renderer->SetModel("harlequin");
+		renderer->SetModel("kaf");
 		renderer->AddRenderTargetTag("GameView");
 		auto collision = m_Player->AddComponent<CollisionCube>();
 		collision->SetScale(Vector3(1.0f, 1.8f, 1.0f));
@@ -102,7 +99,5 @@ namespace RNEngine {
 		if (playerCollision->IsSimpleHit(groundCollision)) {
 			DebugLog::Log("Hit!!");
 		}
-
-		DebugRenderer::Get().DrawSphereWireFrame(Vector3::Zero, Vector3::One);
 	}
 }
