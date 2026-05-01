@@ -17,6 +17,13 @@ namespace RNEngine {
 	unordered_map<string, shared_ptr<TextureBuffer>> ResourceManager::m_TextureBufferMap = {};
 	unordered_map<string, shared_ptr<Material>> ResourceManager::m_MaterialMap = {};
 
+	void ResourceManager::LoadAssets(const string& folder) {
+		
+	}
+	void ResourceManager::UnLoadAssets(const string& folder) {
+
+	}
+
 	shared_ptr<TextureBuffer> ResourceManager::RegisterTexture(const string& filename) {
 		if (filename.empty()) return nullptr;
 
@@ -140,10 +147,10 @@ namespace RNEngine {
 
 	shared_ptr<ModelResource> ResourceManager::CreateSquare() {
 		vector<Vertex> vertices = {
-			{{-0.5f, 0.5f,0.0f},{0.0f,1.0f}},
-			{{ 0.5f, 0.5f,0.0f},{1.0f,1.0f}},
-			{{-0.5f,-0.5f,0.0f},{0.0f,0.0f}},
-			{{ 0.5f,-0.5f,0.0f},{1.0f,0.0f}}
+			{{-0.5f, 0.5f,0.0f},{0.0f,0.0f,1.0f},{0.0f,1.0f}},
+			{{ 0.5f, 0.5f,0.0f},{0.0f,0.0f,1.0f},{1.0f,1.0f}},
+			{{-0.5f,-0.5f,0.0f},{0.0f,0.0f,1.0f},{0.0f,0.0f}},
+			{{ 0.5f,-0.5f,0.0f},{0.0f,0.0f,1.0f},{1.0f,0.0f}}
 		};
 		vector<uint32_t> indices{
 			0,1,2,2,1,3
@@ -154,40 +161,40 @@ namespace RNEngine {
 	shared_ptr<ModelResource> ResourceManager::CreateCube() {
 		vector<Vertex> vertices = {
 			// 前面
-			{{-0.5f,  0.5f, 0.5f}, {0.0f, 0.0f}},
-			{{ 0.5f,  0.5f, 0.5f}, {1.0f, 0.0f}},
-			{{ 0.5f, -0.5f, 0.5f}, {1.0f, 1.0f}},
-			{{-0.5f, -0.5f, 0.5f}, {0.0f, 1.0f}},
+			{{-0.5f,  0.5f, 0.5f}, {0,0,1}, {0.0f, 0.0f}},
+			{{ 0.5f,  0.5f, 0.5f}, {0,0,1}, {1.0f, 0.0f}},
+			{{ 0.5f, -0.5f, 0.5f}, {0,0,1}, {1.0f, 1.0f}},
+			{{-0.5f, -0.5f, 0.5f}, {0,0,1}, {0.0f, 1.0f}},
 
 			// 右面
-			{{ 0.5f,  0.5f, 0.5f}, {0.0f, 0.0f}},
-			{{ 0.5f,  0.5f,-0.5f}, {1.0f, 0.0f}},
-			{{ 0.5f, -0.5f,-0.5f}, {1.0f, 1.0f}},
-			{{ 0.5f, -0.5f, 0.5f}, {0.0f, 1.0f}},
+			{{ 0.5f,  0.5f, 0.5f}, {1,0,0}, {0.0f, 0.0f}},
+			{{ 0.5f,  0.5f,-0.5f}, {1,0,0}, {1.0f, 0.0f}},
+			{{ 0.5f, -0.5f,-0.5f}, {1,0,0}, {1.0f, 1.0f}},
+			{{ 0.5f, -0.5f, 0.5f}, {1,0,0}, {0.0f, 1.0f}},
 
 			// 背面
-			{{ 0.5f,  0.5f,-0.5f}, {0.0f, 0.0f}},
-			{{-0.5f,  0.5f,-0.5f}, {1.0f, 0.0f}},
-			{{-0.5f, -0.5f,-0.5f}, {1.0f, 1.0f}},
-			{{ 0.5f, -0.5f,-0.5f}, {0.0f, 1.0f}},
+			{{ 0.5f,  0.5f,-0.5f}, {0,0,-1}, {0.0f, 0.0f}},
+			{{-0.5f,  0.5f,-0.5f}, {0,0,-1}, {1.0f, 0.0f}},
+			{{-0.5f, -0.5f,-0.5f}, {0,0,-1}, {1.0f, 1.0f}},
+			{{ 0.5f, -0.5f,-0.5f}, {0,0,-1}, {0.0f, 1.0f}},
 
 			// 左面
-			{{-0.5f,  0.5f,-0.5f}, {0.0f, 0.0f}},
-			{{-0.5f,  0.5f, 0.5f}, {1.0f, 0.0f}},
-			{{-0.5f, -0.5f, 0.5f}, {1.0f, 1.0f}},
-			{{-0.5f, -0.5f,-0.5f}, {0.0f, 1.0f}},
+			{{-0.5f,  0.5f,-0.5f}, {-1,0,0}, {0.0f, 0.0f}},
+			{{-0.5f,  0.5f, 0.5f}, {-1,0,0}, {1.0f, 0.0f}},
+			{{-0.5f, -0.5f, 0.5f}, {-1,0,0}, {1.0f, 1.0f}},
+			{{-0.5f, -0.5f,-0.5f}, {-1,0,0}, {0.0f, 1.0f}},
 
 			// 上面
-			{{-0.5f, 0.5f,-0.5f}, {0.0f, 0.0f}},
-			{{ 0.5f, 0.5f,-0.5f}, {1.0f, 0.0f}},
-			{{ 0.5f, 0.5f, 0.5f}, {1.0f, 1.0f}},
-			{{-0.5f, 0.5f, 0.5f}, {0.0f, 1.0f}},
+			{{-0.5f, 0.5f,-0.5f}, {0,1,0}, {0.0f, 0.0f}},
+			{{ 0.5f, 0.5f,-0.5f}, {0,1,0}, {1.0f, 0.0f}},
+			{{ 0.5f, 0.5f, 0.5f}, {0,1,0}, {1.0f, 1.0f}},
+			{{-0.5f, 0.5f, 0.5f}, {0,1,0}, {0.0f, 1.0f}},
 
 			// 下面
-			{{-0.5f,-0.5f, 0.5f}, {0.0f, 0.0f}},
-			{{ 0.5f,-0.5f, 0.5f}, {1.0f, 0.0f}},
-			{{ 0.5f,-0.5f,-0.5f}, {1.0f, 1.0f}},
-			{{-0.5f,-0.5f,-0.5f}, {0.0f, 1.0f}},
+			{{-0.5f,-0.5f, 0.5f}, {0,-1,0}, {0.0f, 0.0f}},
+			{{ 0.5f,-0.5f, 0.5f}, {0,-1,0}, {1.0f, 0.0f}},
+			{{ 0.5f,-0.5f,-0.5f}, {0,-1,0}, {1.0f, 1.0f}},
+			{{-0.5f,-0.5f,-0.5f}, {0,-1,0}, {0.0f, 1.0f}},
 		};
 		vector<uint32_t> indices = {
 			0,1,2,  0,2,3,      // 前
@@ -215,7 +222,7 @@ namespace RNEngine {
 				float z = sinf(phi) * sinf(theta);
 				float u = static_cast<float>(slice) / sliceCount;
 				float v = static_cast<float>(stack) / stackCount;
-				vertices.push_back({ {x * 0.5f, y * 0.5f, z * 0.5f}, {u, v} });
+				vertices.push_back({ {x * 0.5f, y * 0.5f, z * 0.5f},{x, y, z}, {u, v} });
 			}
 		}
 		// インデックス生成
@@ -235,8 +242,8 @@ namespace RNEngine {
 	}
 	Mesh& ResourceManager::CreateLine() {
 		vector<Vertex> vertices = {
-			{{0.0f,0.0f,0.0f},{0.0f,0.0f}},
-			{{0.0f,0.0f,1.0f},{1.0f,1.0f}}
+			{{0.0f,0.0f,0.0f},{0,0,1},{0.0f,0.0f}},
+			{{0.0f,0.0f,1.0f},{0,0,1},{1.0f,1.0f}}
 		};
 		vector<uint32_t> indices{
 			0,1

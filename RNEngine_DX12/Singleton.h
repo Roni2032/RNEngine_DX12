@@ -25,7 +25,7 @@ namespace RNEngine{
 	/// 
 	/// 使用方法
 	/// ・継承によってシングルトン化
-	/// ・SingletonBaseを継承したクラスをGetInstanceで取得
+	/// ・SingletonBaseを継承したクラスをGetで取得
 	/// ・friend classでSingletonBase<T>を指定する
 	/// ・コンストラクタはdefaultで良い
 	/// ----------------------------------------------------------------

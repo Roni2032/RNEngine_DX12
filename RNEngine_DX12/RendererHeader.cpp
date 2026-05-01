@@ -13,8 +13,9 @@ namespace RNEngine {
 
 		for (auto& mesh : m_Meshes) {
 			for(auto& vertex : mesh.m_Vertices){
-				min = min.Min(vertex.m_Position);
-				max = max.Max(vertex.m_Position);
+				Vector3 adjustPosition = vertex.m_Position.Transform(m_AdjustMatrix);
+				min = min.Min(adjustPosition);
+				max = max.Max(adjustPosition);
 			}
 		}
 

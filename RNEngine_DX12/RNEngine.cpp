@@ -28,7 +28,9 @@ namespace RNEngine {
 		EnableDebugLayer();
 #endif
 		// リソースマネージャー初期化
-		ResourceManager::SetDefaultFilePath("../Assets/");
+		auto exePath = File::GetExeDirectory();
+		exePath += "Assets/";
+		ResourceManager::SetDefaultFilePath(exePath.generic_string());
 
 		// デバイス、レンダラー初期化
 		m_Device = make_unique<Device>();
@@ -100,7 +102,7 @@ namespace RNEngine {
 
 		//テスト入力設定
 		Input::BindAction("right", [&](InputActionContext& context) {});//ラムダ式での設定
-		Input::BindAction("left", &Engine::OnMove, this);//メンバ関数での設定(shared_ptrでも可能。uniqueとかは黙ってget()してくれ)
+		Input::BindAction("left", &Engine::OnMove, this);//メンバ関数での設定(shared_ptrでも可能。uniqueとかはget())
 	}
 	void Engine::Destroy() {
 		m_GuiRenderer->Destroy();

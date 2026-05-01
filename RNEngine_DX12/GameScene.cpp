@@ -30,14 +30,14 @@ namespace RNEngine {
 		DefaultModelTransform defaultTransform{ 1.0f,{ 0.0f,XM_PI,0.0f } ,{0.0f,0.0f,0.0f} };
 		DefaultModelTransform defaultTransformScale{ 0.1f,{ 0.0f,0.0f,0.0f } ,{0.0f,0.0f,0.0f} };
 
-		auto model = ResourceManager::RegisterModel("Models/kaf/kaf_fukuro_hatdown.vrm", "kaf", defaultTransform);
+		auto model = ResourceManager::RegisterModel("Models/kaf/kaf_fukuro_hatdown.vrm", "kaf");
 		ResourceManager::RegisterTexture("Textures/test.jpg");
-		/*ResourceManager::RegisterModel("Models/Furina/Furina.fbx", "furina", defaultTransformScale);
-		ResourceManager::RegisterModel("Models/Harlequin/Harlequin.fbx", "harlequin", defaultTransformScale);*/
+		ResourceManager::RegisterModel("Models/Furina/Furina.fbx", "furina", defaultTransformScale);
+		ResourceManager::RegisterModel("Models/Harlequin/Harlequin.fbx", "harlequin", defaultTransformScale);
 		ResourceManager::RegisterModel("Models/raiden/raiden.fbx", "raiden", defaultTransformScale);
 		ResourceManager::RegisterModel("Models/toribi/toribi.fbx", "toribi", defaultTransformScale);
 		ResourceManager::RegisterModel("Models/Blastjump/Player.fbx", "player", defaultTransformScale);
-
+		ResourceManager::RegisterModel("Models/Barbarian/Barbarian_Walk.fbx","barbarian",defaultTransformScale);
 		m_Player = AddGameObject();
 		m_Player->SetName(u8"‰Ô•ˆ");
 		m_Player->SetLayer("Object");
@@ -89,6 +89,10 @@ namespace RNEngine {
 	}
 	void GameScene::Update() {
 		Scene::Update();
+		auto renderer = m_Player->GetComponent<ModelRenderer>();
+		Vector3 position = m_Player->GetTransform()->GetPosition();
+		auto aabb = renderer->GetModel()->GetModelData().m_LocalBoundingBox + position;
+		DebugRenderer::Get().DrawCubeWireFrame(aabb.GetCenter(), aabb.GetSize());
 
 		auto playerCollision = m_Player->GetComponent<CollisionCube>();
 		auto groundCollision = m_Ground->GetComponent<CollisionCube>();

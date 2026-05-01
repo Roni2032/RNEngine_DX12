@@ -1,18 +1,26 @@
 #include "stdafx.h"
 #include "Shader.h"
+#include "File.h"
 namespace RNEngine {
 	void Shader::Load(const wstring& filename, const string& entryPoint, const string& target) {
-		auto result = D3DCompileFromFile(
-			filename.c_str(),
-			nullptr,
-			D3D_COMPILE_STANDARD_FILE_INCLUDE,
-			entryPoint.c_str(),
-			target.c_str(),
-			D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
-			0,
-			m_Blob.GetAddressOf(),
-			m_ErrorBlob.GetAddressOf()
-		);
+		auto exePath = File::GetExeDirectory();
+		exePath += filename;
+		exePath += ".cso";
+		auto result = D3DReadFileToBlob(exePath.c_str(), m_Blob.GetAddressOf());
+		if (FAILED(result)) {
+			wstring hlslFilename = filename + L".flsl";
+			result = D3DCompileFromFile(
+				hlslFilename.c_str(),
+				nullptr,
+				D3D_COMPILE_STANDARD_FILE_INCLUDE,
+				entryPoint.c_str(),
+				target.c_str(),
+				D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+				0,
+				m_Blob.GetAddressOf(),
+				m_ErrorBlob.GetAddressOf()
+			);
+		}
 
 		if(FAILED(result)){
 			if (m_ErrorBlob) {
@@ -51,13 +59,19 @@ namespace RNEngine {
 	const D3D12_INPUT_ELEMENT_DESC InputLayout::BINORMAL = {
 		"BINORMAL",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0
 	};
+	const D3D12_INPUT_ELEMENT_DESC InputLayout::BONEINDICES = {
+		"BONEINDICES",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0
+	};
+	const D3D12_INPUT_ELEMENT_DESC InputLayout::BONEWEIGHT = {
+		"BONEWEIGHTS",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0
+	};
 
 	const vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::P = { POSITION };//位置
 	const vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::PC = { POSITION,COLOR };//位置、色
 	const vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::PUV = { POSITION,UV };//位置、色
 	const vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::PCUV = { POSITION,COLOR,UV };//位置、色、UV
 	const vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::PN = { POSITION,NORMAL };//位置、法線
-	const vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::PNUV = { POSITION,NORMAL,UV };//位置、法線、UV
+	const vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::PNUV = { POSITION,NORMAL,UV,BONEWEIGHT,BONEINDICES };//位置、法線、UV、ボーンウェイト、ボーンインデックス
 	const vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::PCNT = { POSITION,COLOR,NORMAL,TANGENT };//位置、色、法線、接線
 	const vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::PCNUV = { POSITION,COLOR,NORMAL,UV };//位置、色、法線、UV
 	const vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::PCNTBUV = { POSITION,COLOR,NORMAL,TANGENT,BINORMAL,UV };//位置、色、法線、接線、従法線、UV

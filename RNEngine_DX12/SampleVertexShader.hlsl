@@ -1,6 +1,6 @@
 #include "Header.hlsli"
 
-OutputPUV VSMain(InputPUV In)
+OutputPUV VSMain(VertexInput In)
 {
     OutputPUV output;
     output.position = mul(mul(viewProj, world), In.position);

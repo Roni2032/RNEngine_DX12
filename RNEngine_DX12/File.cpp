@@ -46,4 +46,12 @@ namespace RNEngine {
         }
         return path;
     }
+
+    filesystem::path File::GetExeDirectory() {
+        wchar_t path[MAX_PATH];
+        GetModuleFileNameW(nullptr, path, MAX_PATH);
+        filesystem::path exePath = filesystem::path(path).parent_path();
+        exePath += "/";
+        return exePath;
+    }
 }

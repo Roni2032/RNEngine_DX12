@@ -164,10 +164,10 @@ namespace RNEngine {
 
 		PipelineStateSetup setup = {};
 		setup.m_Vs = new Shader();
-		setup.m_Vs->LoadVS(L"SampleVertexShader.hlsl", "VSMain");
+		setup.m_Vs->LoadVS(L"SampleVertexShader", "VSMain");
 		setup.m_Ps = new Shader();
-		setup.m_Ps->LoadPS(L"SamplePixelShader.hlsl", "PSMain");
-		PipelineStatePool::RegisterPipelineState(L"Sample1", InputLayout::PUV, setup);
+		setup.m_Ps->LoadPS(L"SamplePixelShader", "PSMain");
+		PipelineStatePool::RegisterPipelineState(L"Sample1", InputLayout::PNUV, setup);
 
 		m_ViewPort = make_unique<Viewport>();
 		m_Sicssor = make_unique<SicssorRect>();

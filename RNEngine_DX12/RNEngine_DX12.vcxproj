@@ -113,6 +113,13 @@
       <AdditionalLibraryDirectories>$(ProjectDir)include\assimp\lib;$(ProjectDir)include\DirectXTex\Lib\DebugLib;$(WindowsSDKDir)Lib\10.0.xxxxx.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>d3d12.lib;dxgi.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y /I /E "$(ProjectDir)..\Assets\" "$(OutDir)Assets\"
+xcopy /Y /I /E "$(ProjectDir)mesh\" "$(OutDir)mesh\"
+xcopy /Y /I /E "$(ProjectDir)ProjectSetting\" "$(OutDir)ProjectSetting\"
+xcopy /Y /I /E "$(ProjectDir)Reflections\" "$(OutDir)Reflections\"
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -132,8 +139,16 @@
       <AdditionalDependencies>d3d12.lib;dxgi.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)include\assimp\lib;$(ProjectDir)include\DirectXTex\Lib\ReleaseLib;$(WindowsSDKDir)Lib\10.0.xxxxx.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y /I /E "$(ProjectDir)..\Assets\" "$(OutDir)Assets\"
+xcopy /Y /I /E "$(ProjectDir)mesh\" "$(OutDir)mesh\"
+xcopy /Y /I /E "$(ProjectDir)ProjectSetting\" "$(OutDir)ProjectSetting\"
+xcopy /Y /I /E "$(ProjectDir)Reflections\" "$(OutDir)Reflections\"
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Animation.cpp" />
     <ClCompile Include="BVH.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="Quaternion.cpp" />
@@ -224,6 +239,7 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Animation.h" />
     <ClInclude Include="Buffer.h" />
     <ClInclude Include="BVH.h" />
     <ClInclude Include="Camera.h" />

@@ -1,0 +1,10 @@
+{
+    "texture":[
+        "png",
+        "jpg"
+    ],
+    "model":[
+        "fbx",
+        "vrm"
+    ]
+}

@@ -22,7 +22,7 @@ namespace RNEngine{
 
 			//RayAABB : 簡易テスト
 			//RayMesh : メッシュとのちゃんとした当たり判定(未実装)
-			if (HitTest::RayAABB(ray, boundingBox,info) && HitTest::RayMesh(ray,object)) {
+			if (HitTest::RayAABB(ray, boundingBox,info)/* && HitTest::RayMesh(ray,object)*/) {
 				info->m_Object = object;
 				return true;
 			}

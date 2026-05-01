@@ -42,6 +42,8 @@ namespace RNEngine {
 
 		Vector3 Cross(const Vector3& other)const;
 
+		Vector3 Transform(const XMMATRIX& matrix)const;
+
 		void RandomVec(float min, float max);
 
 		Vector3 Min(const Vector3& other)const;

@@ -10,6 +10,7 @@ namespace RNEngine {
 		static string SplitFilename(const string& filePath);
 		static wstring SplitFilePath(const wstring& filePath);
 		static string SplitFilePath(const string& filePath);
+		static filesystem::path GetExeDirectory();
 
 		//-------ƒoƒCƒiƒŠ-------
 		template<class T>
