@@ -93,11 +93,5 @@ namespace RNEngine {
 		Vector3 position = m_Player->GetTransform()->GetPosition();
 		auto aabb = renderer->GetModel()->GetModelData().m_LocalBoundingBox + position;
 		DebugRenderer::Get().DrawCubeWireFrame(aabb.GetCenter(), aabb.GetSize());
-
-		auto playerCollision = m_Player->GetComponent<CollisionCube>();
-		auto groundCollision = m_Ground->GetComponent<CollisionCube>();
-		if (playerCollision->IsSimpleHit(groundCollision)) {
-			DebugLog::Log("Hit!!");
-		}
 	}
 }

@@ -28,17 +28,41 @@ namespace RNEngine {
 		vector<WireFrameCB> m_Matrices;
 		vector<DebugCommand> m_Commands;
 	public:
-		DebugRenderer();
+        DebugRenderer();
 		~DebugRenderer();
 
+		/// <summary>
+		/// ワイヤーフレーム立方体を描画キューに追加する。
+		/// </summary>
 		void DrawCubeWireFrame(const Vector3& position, const Vector3& size,const Color& color = Color(1.0f));
+		/// <summary>
+		/// ワイヤーフレーム球を描画キューに追加する。
+		/// </summary>
 		void DrawSphereWireFrame(const Vector3& position, const Vector3& size, const Color& color = Color(1.0f));
+		/// <summary>
+		/// 線分を描画キューに追加する。
+		/// </summary>
 		void DrawLine(const Vector3& start, const Vector3& end, const float& scale, const Color& color = Color(1.0f),const bool isDepth = true);
+		/// <summary>
+		/// メッシュのワイヤーフレームを描画キューに追加する。
+		/// </summary>
 		void DrawMeshWireFrame(const string& meshName, const Vector3& position, const Vector3& scale, const Vector3& rotation);
+		/// <summary>
+		/// ワールドグリッドを描画する。
+		/// </summary>
 		void DrawWorldGridFrame(const Vector3& min, const Vector3& max, const float gridSize = 1.0f);
+		/// <summary>
+		/// トランスフォームギズモを描画する。
+		/// </summary>
 		void DrawTransformGizmo(const Vector3& position, const float size = 1.0f);
 
+		/// <summary>
+		/// 初期化処理
+		/// </summary>
 		void Initialize();
+		/// <summary>
+		/// キューにたまったワイヤーフレームをフラッシュして描画する。
+		/// </summary>
 		void FlushWireFrames();
 	};
 }
