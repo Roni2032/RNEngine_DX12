@@ -39,7 +39,7 @@ namespace RNEngine {
 		ResourceManager::RegisterModel("Models/Blastjump/Player.fbx", "player", defaultTransformScale);
 		ResourceManager::RegisterModel("Models/Barbarian/Barbarian_Walk.fbx","barbarian",defaultTransformScale);
 		m_Player = AddGameObject();
-		m_Player->SetName(L"花譜");
+		m_Player->SetName(L"花譜 ");
 		m_Player->SetLayer(L"Object");
 		auto renderer = m_Player->AddComponent<ModelRenderer>();
 		renderer->Init(GetCamera(L"Game"));

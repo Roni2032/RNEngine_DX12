@@ -69,11 +69,6 @@ namespace RNEngine {
 			XMFLOAT4X4 offsetMatrix;
 			XMFLOAT4X4 defaultMatrix;
 		};
-		struct AnimationBinary {
-			XMFLOAT4X4 globalInverseMatrix;
-			uint32_t clipCount;
-			vector<AnimationClipBinaryHeader> clipHeaders;
-		};
 		struct AnimationClipBinaryHeader {
 			float tickPerSecond;
 			float duration;
@@ -82,6 +77,12 @@ namespace RNEngine {
 			uint32_t quaternionKeyFrameCount;
 			uint32_t scalingKeyFrameCount;
 		};
+		struct AnimationBinary {
+			XMFLOAT4X4 globalInverseMatrix;
+			uint32_t clipCount;
+			vector<AnimationClipBinaryHeader> clipHeaders;
+		};
+		
 	}
 
 	class MeshIO {

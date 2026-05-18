@@ -26,7 +26,7 @@ namespace RNEngine {
 		/// </summary>
 		/// <param name="ptr">オーナーシーンの共有ポインタ</param>
 		/// <param name="name">オブジェクト名</param>
-		GameObject(const shared_ptr<Scene>& ptr, const string& name);
+		GameObject(const shared_ptr<Scene>& ptr, const wstring& name);
 		/// <summary>
 		/// デストラクタ
 		/// </summary>
@@ -53,14 +53,14 @@ namespace RNEngine {
 		/// オブジェクト名を設定する。
 		/// </summary>
 		/// <param name="name">設定する名前</param>
-		void SetName(const string& name) {
+		void SetName(const wstring& name) {
 			m_Name = name;
 		}
 		/// <summary>
 		/// オブジェクト名を取得する。
 		/// </summary>
 		/// <returns>オブジェクト名を返します。</returns>
-		string GetName() {
+		wstring GetName() {
 			return m_Name;
 		}
         /// <summary>
@@ -110,7 +110,7 @@ namespace RNEngine {
 		/// レイヤーを名前から設定する（定義により解決される）。
 		/// </summary>
 		/// <param name="layerName">レイヤー名</param>
-		void SetLayer(const string& layerName);
+		void SetLayer(const wstring& layerName);
 
 		int GetLayer()const {
 			return m_Layer;

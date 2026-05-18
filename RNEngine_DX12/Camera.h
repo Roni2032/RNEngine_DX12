@@ -197,7 +197,7 @@ namespace RNEngine {
 		/// 名前からレイヤーインデックスを解決して追加します。
 		/// </summary>
 		/// <param name="layer">追加するレイヤー名</param>
-		void AddRenderingLayer(const string& layer);
+		void AddRenderingLayer(const wstring& layer);
 		/// <summary>
 		/// レンダリング対象のレイヤーをインデックスで追加する。
 		/// </summary>
