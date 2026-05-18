@@ -49,7 +49,7 @@ namespace RNEngine {
 		/// </summary>
 		virtual void Draw()override;
 
-    /// <summary>
+		/// <summary>
 		/// オブジェクト名を設定する。
 		/// </summary>
 		/// <param name="name">設定する名前</param>
