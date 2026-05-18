@@ -179,4 +179,13 @@ namespace RNEngine {
 
 		RTVBuffer* GetFrameRTVBuffer() { return m_RTVBuffer.get(); }
 	};
+
+	class GraphicsEngine {
+		unique_ptr<RTVBuffer> m_FrameRTVBuffer;	//レンダーターゲットビュー用のヒープ
+		unique_ptr<DSVBuffer> m_FrameDSVBuffer;	//深度バッファ用のヒープ
+		unique_ptr<Viewport> m_FrameViewPort;
+		unique_ptr<SicssorRect> m_FrameSicssor;
+	public:
+
+	};
 }

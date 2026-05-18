@@ -129,7 +129,7 @@ namespace RNEngine {
 		SetTarget(eye + direction.Normalized());
 	}
 
-	void Camera::AddRenderingLayer(const string& layer) {
+	void Camera::AddRenderingLayer(const wstring& layer) {
 		auto ownerScene = GetOwner()->GetOwnerScene();
 		int num = ownerScene->GetLayer(layer);
 		m_RenderingLayers.push_back(num);

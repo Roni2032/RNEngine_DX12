@@ -62,8 +62,8 @@ namespace RNEngine
 		INSPECTOR_COMPONENT(Transform)
 		REGISTER_NAME(Transform)
 		BEGIN_REFLECT()
-			REGISTER_REFLECT(m_Position.x, FieldInfo::Type::Vec3, HeaderAttribute("Position"))
-			REGISTER_REFLECT(m_Quaternion.x, FieldInfo::Type::Vec3, HeaderAttribute("Rotation"),
+			REGISTER_REFLECT(m_Position.x, FieldInfo::Type::Vec3, HeaderAttribute(L"Position"))
+			REGISTER_REFLECT(m_Quaternion.x, FieldInfo::Type::Vec3, HeaderAttribute(L"Rotation"),
 				ConvertToAttribute(
 					[](void* internalPtr, void* displayPtr) {
 						float* displayF = reinterpret_cast<float*>(displayPtr);
@@ -88,7 +88,7 @@ namespace RNEngine
 						internalF[2] = quat.z;
 						internalF[3] = quat.w;
 					}))
-			REGISTER_REFLECT(m_Scale.x, FieldInfo::Type::Vec3, HeaderAttribute("Scale   "))
+			REGISTER_REFLECT(m_Scale.x, FieldInfo::Type::Vec3, HeaderAttribute(L"Scale   "))
 		END_REFLECT()
 	};
 }

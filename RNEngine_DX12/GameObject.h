@@ -8,7 +8,7 @@ namespace RNEngine {
 	class Transform;
 
 	class GameObject : public Object {
-		string m_Name;
+		wstring m_Name;
 		weak_ptr<Scene> m_OwnerScene;
 		shared_ptr<Transform> m_Transform;
 
@@ -17,7 +17,7 @@ namespace RNEngine {
 		int m_Layer;
 	public:
 		GameObject(const shared_ptr<Scene>& ptr);
-		GameObject(const shared_ptr<Scene>& ptr, const string& name);
+		GameObject(const shared_ptr<Scene>& ptr, const wstring& name);
 		virtual ~GameObject();
 
 		virtual void Start()override;
@@ -25,10 +25,10 @@ namespace RNEngine {
 		virtual void LastUpdate()override;
 		virtual void Draw()override;
 
-		void SetName(const string& name) {
+		void SetName(const wstring& name) {
 			m_Name = name;
 		}
-		string GetName() {
+		wstring GetName() {
 			return m_Name;
 		}
 		void AddTag(const string& tag) {
@@ -52,7 +52,7 @@ namespace RNEngine {
 		void SetLayer(int layer) {
 			m_Layer = layer;
 		}
-		void SetLayer(const string& layerName);
+		void SetLayer(const wstring& layerName);
 
 		int GetLayer()const {
 			return m_Layer;

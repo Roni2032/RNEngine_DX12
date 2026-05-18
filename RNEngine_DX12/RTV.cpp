@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "RTV.h"
 #include "Descriptor.h"
 #include "Device.h"

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "ConstantBuffer.h"
 #include "RNEngine.h"
 #include "Renderer.h"

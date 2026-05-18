@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "DSV.h"
 #include "Descriptor.h"
 #include "Window.h"

@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "project.h"
 namespace RNEngine {
-	GameObject::GameObject(const shared_ptr<Scene>& ptr) :GameObject(ptr, "GameObject") {}
-	GameObject::GameObject(const shared_ptr<Scene>& ptr, const string& name) :m_OwnerScene(ptr), m_Name(name), Object() {}
+	GameObject::GameObject(const shared_ptr<Scene>& ptr) :GameObject(ptr, L"GameObject") {}
+	GameObject::GameObject(const shared_ptr<Scene>& ptr, const wstring& name) :m_OwnerScene(ptr), m_Name(name), Object() {}
 	GameObject::~GameObject() {}
 
 	void GameObject::Start() {
@@ -29,8 +29,8 @@ namespace RNEngine {
 		auto inspector = gui->GetGui<Inspector>("inspector");
 		if (inspector && inspector->GetCurrentGameObject().get() == this) {
 			DebugRenderer::Get().DrawTransformGizmo(m_Transform->GetPosition(), 1.0f);
-#endif
 		}
+#endif
 	}
 	vector<shared_ptr<RendererComponent>> GameObject::GetRendererComponent() {
 		vector<shared_ptr<RendererComponent>> renderers;
@@ -43,7 +43,7 @@ namespace RNEngine {
 		return renderers;
 	}
 
-	void GameObject::SetLayer(const string& layerName) {
+	void GameObject::SetLayer(const wstring& layerName) {
 		auto scene = m_OwnerScene.lock();
 		if (scene) {
 			m_Layer = scene->GetLayer(layerName);
@@ -53,7 +53,7 @@ namespace RNEngine {
 	shared_ptr<Scene> GameObject::GetOwnerScene()const {
 		return m_OwnerScene.lock();
 	}
-	shared_ptr<Transform> GameObject::GetTransform() const{
+	shared_ptr<Transform> GameObject::GetTransform() const {
 		return m_Transform;
 	}
 }

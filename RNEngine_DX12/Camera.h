@@ -66,7 +66,7 @@ namespace RNEngine {
 
 		void LookAtDirection(const Vector3& direction);
 
-		void AddRenderingLayer(const string& layer);
+		void AddRenderingLayer(const wstring& layer);
 		void AddRenderingLayer(const int layer);
 		vector<int> GetRenderingLayers()const;
 

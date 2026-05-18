@@ -11,10 +11,10 @@ namespace RNEngine {
 		vector<shared_ptr<GameObject>> m_GameObjects;
 
 		//’Ç‰Á‚³‚ê‚½ƒJƒƒ‰ˆê——
-		unordered_map<string, shared_ptr<Camera>> m_CameraMap;
+		unordered_map<wstring, shared_ptr<Camera>> m_CameraMap;
 
 		//“o˜^‚³‚ê‚½ƒŒƒCƒ„[ˆê——
-		unordered_map<string, int> m_LayerMap;
+		unordered_map<wstring, int> m_LayerMap;
 	public:
 		Scene(){}
 		~Scene(){}
@@ -24,8 +24,8 @@ namespace RNEngine {
 		virtual void LastUpdate();
 		virtual void Draw();
 
-		shared_ptr<Camera> CreateCameraObject(const string& key);
-		void RegisterMainCamera(const string& key);
+		shared_ptr<Camera> CreateCameraObject(const wstring& key);
+		void RegisterMainCamera(const wstring& key);
 
 		template<class... Params>
 		shared_ptr<GameObject> AddGameObject(Params&&... params) {
@@ -37,21 +37,21 @@ namespace RNEngine {
 
 		vector<shared_ptr<GameObject>> GetGameObjects();
 
-		shared_ptr<Camera> GetCamera(const string& name);
-		void RegisterCamera(const string& name, const shared_ptr<Camera>& camera);
+		shared_ptr<Camera> GetCamera(const wstring& name);
+		void RegisterCamera(const wstring& name, const shared_ptr<Camera>& camera);
 
-		void RegisterLayer(const string& name, int layer) {
+		void RegisterLayer(const wstring& name, int layer) {
 			m_LayerMap[name] = layer;
 		}
-		string GetLayerName(int layer) {
+		wstring GetLayerName(int layer) {
 			for (auto& pair : m_LayerMap) {
 				if (pair.second == layer) {
 					return pair.first;
 				}
 			}
-			return "";
+			return L"";
 		}
-		int GetLayer(const string& name) {
+		int GetLayer(const wstring& name) {
 			auto it = m_LayerMap.find(name);
 			if (it != m_LayerMap.end()) {
 				return (*it).second;
@@ -60,8 +60,8 @@ namespace RNEngine {
 		}
 	};
 	class SceneManager {
-		unordered_map<string, shared_ptr<Scene>> m_SceneMap;
-		string m_ActiveSceneName;
+		unordered_map<wstring, shared_ptr<Scene>> m_SceneMap;
+		wstring m_ActiveSceneName;
 	};
 }
 

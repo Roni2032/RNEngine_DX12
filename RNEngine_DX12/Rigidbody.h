@@ -21,7 +21,7 @@ namespace RNEngine {
 		INSPECTOR_COMPONENT(Rigidbody)
 			REGISTER_NAME(Rigidbody)
 			BEGIN_REFLECT()
-			REGISTER_REFLECT(m_Gravity.x, FieldInfo::Type::Vec3, HeaderAttribute(u8"èdóÕ"))
+			REGISTER_REFLECT(m_Gravity.x, FieldInfo::Type::Vec3, HeaderAttribute(L"èdóÕ"))
 			END_REFLECT()
     };
 }

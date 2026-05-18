@@ -25,7 +25,7 @@ namespace RNEngine {
 	void DebugRenderer::DrawCubeWireFrame(const Vector3& position, const Vector3& size, const Color& color) {
 		DebugCommand command;
 		command.mesh = "DEFAULT_SQUARE_3D";
-		command.camera = "Game";
+		command.camera = L"Game";
 		command.position = position;
 		command.scale = size * 1.001f;
 		command.rotation = Quaternion::Identity;
@@ -36,7 +36,7 @@ namespace RNEngine {
 	void DebugRenderer::DrawSphereWireFrame(const Vector3& position, const Vector3& size, const Color& color) {
 		DebugCommand command;
 		command.mesh = "DEFAULT_SPHERE";
-		command.camera = "Game";
+		command.camera = L"Game";
 		command.position = position;
 		command.scale = size * 1.001f;
 		command.rotation = Quaternion::Identity;
@@ -47,7 +47,7 @@ namespace RNEngine {
 	void DebugRenderer::DrawLine(const Vector3& start, const Vector3& end, const float& scale, const Color& color,const bool isDepth) {
 		DebugCommand command;
 		command.mesh = "DEFAULT_LINE";
-		command.camera = "Game";
+		command.camera = L"Game";
 		command.position = start;
 		Vector3 dist = end - start;
 		command.scale = Vector3(0.0f, 0.0f, scale);

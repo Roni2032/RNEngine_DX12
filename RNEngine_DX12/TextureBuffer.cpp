@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "TextureBuffer.h"
 #include "Buffer.h"
 #include "SRV.h"
@@ -23,8 +24,8 @@ namespace RNEngine {
 			image
 		);
 		if (FAILED(result)) {
-			DebugLog::Log(u8"テクスチャの読み込みに失敗しました[" +
-				Util::ConvertWstrToStr(filename) + "]",
+			DebugLog::Log(L"テクスチャの読み込みに失敗しました[" +
+				filename + L"]",
 				LogData::Type::Error);
 			return;
 		}
@@ -40,8 +41,8 @@ namespace RNEngine {
 			(UINT)img->slicePitch
 		);
 		if (FAILED(result)) {
-			DebugLog::Log("テクスチャのアップロードに失敗しました[" +
-				Util::ConvertWstrToStr(filename) + "]",
+			DebugLog::Log(L"テクスチャのアップロードに失敗しました[" +
+				filename + L"]",
 				LogData::Type::Error);
 			return;
 		}

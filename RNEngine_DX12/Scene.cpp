@@ -4,9 +4,9 @@
 
 namespace RNEngine {
 	void Scene::Start() {
-		RegisterLayer("Default", 0);
-		RegisterLayer("Object", 1);
-		RegisterLayer("UI", 2);
+		RegisterLayer(L"Default", 0);
+		RegisterLayer(L"Object", 1);
+		RegisterLayer(L"UI", 2);
 	}
 	void Scene::Update() {
 		for (auto& object : m_GameObjects) {
@@ -42,7 +42,7 @@ namespace RNEngine {
 		}
 	}
 
-	shared_ptr<Camera> Scene::CreateCameraObject(const string& key) {
+	shared_ptr<Camera> Scene::CreateCameraObject(const wstring& key) {
 		auto object = AddGameObject();
 		object->SetName(key);
 		auto camera = object->AddComponent<Camera>();
@@ -50,7 +50,7 @@ namespace RNEngine {
 
 		return camera;
 	}
-	void Scene::RegisterMainCamera(const string& key) {
+	void Scene::RegisterMainCamera(const wstring& key) {
 		auto renderer = Engine::GetRenderer();
 		renderer->RegisterMainCamera(GetCamera(key));
 	}
@@ -59,14 +59,14 @@ namespace RNEngine {
 		return m_GameObjects;
 	}
 
-	shared_ptr<Camera> Scene::GetCamera(const string& name) {
+	shared_ptr<Camera> Scene::GetCamera(const wstring& name) {
 		auto it = m_CameraMap.find(name);
 		if (it != m_CameraMap.end()) {
 			return it->second;
 		}
 		return nullptr;
 	}
-	void Scene::RegisterCamera(const string& name, const shared_ptr<Camera>& camera) {
+	void Scene::RegisterCamera(const wstring& name, const shared_ptr<Camera>& camera) {
 		m_CameraMap[name] = camera;
 	}
 }

@@ -1,4 +1,6 @@
+#include "stdafx.h"
 #include "RNEngine.h"
+
 using namespace RNEngine;
 
 #ifdef _DEBUG

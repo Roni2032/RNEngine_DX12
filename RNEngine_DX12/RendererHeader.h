@@ -4,6 +4,7 @@
 /// -------------------------------------------------
 
 #include "MathHeader.h"
+#include "Animation.h"
 namespace RNEngine {
 	//GPU用頂点データ
 	struct Vertex {
@@ -84,18 +85,11 @@ namespace RNEngine {
 		Material(EmbeddedTexture& texture) :Material(TextureDataType::Embedded, texture.m_Name, texture) {}
 	};
 
-	struct PositionKeyFrame {
-		Vector3 m_Position;
-	};
-	struct QuaternionKeyFrame {
-		Quaternion m_Quaternion;
-	};
-	struct ScalingKeyFrame {
-		Vector3 m_Scaling;
-	};
+	
 	struct Bone {
 		string m_Name;
-		XMMATRIX m_OffsetMatrix;
+		XMMATRIX m_OffsetMatrix = {};
+		XMMATRIX m_DefaultTransform = {};
 	};
 
 	// モデルデータ
@@ -104,11 +98,13 @@ namespace RNEngine {
 		vector<Material> m_Materials;
 		unordered_map<string, uint32_t> m_BoneIndexMap;
 		vector<Bone> m_Bones;
+		Animation m_Animation;
 		XMMATRIX m_AdjustMatrix;
 		// モデル全体のAABB
 		AABB m_LocalBoundingBox;
 
 		void CalcLocalBoundingBox();
+		int FindBone(const string& name);
 	};
 
 	//モデル初期行列データ

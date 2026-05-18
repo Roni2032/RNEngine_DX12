@@ -38,9 +38,9 @@
 //imgui
 #define IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_IMPL_API
-#include "include/imgui/backends/imgui_impl_win32.h"
-#include "include/imgui/backends/imgui_impl_dx12.h"
-#include "include/imgui/imgui.h"
+#include "backends/imgui_impl_win32.h"
+#include "backends/imgui_impl_dx12.h"
+#include "imgui.h"
 
 //Json
 #include "include/json-develop/include/nlohmann/json.hpp"

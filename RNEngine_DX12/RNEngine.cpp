@@ -53,7 +53,7 @@ namespace RNEngine {
 		SetFrameRate(FRAME_NONDEFINE);
 
 		timer.Update();
-		DebugLog::Log(u8"エンジン初期化" + to_string(timer.GetDeltaTime()));
+		DebugLog::Log(L"エンジン初期化" + to_wstring(timer.GetDeltaTime()));
 
 		ResourceManager::CreateSquare();
 		ResourceManager::CreateCube();
@@ -67,7 +67,7 @@ namespace RNEngine {
 		m_CurrentScene = make_shared<GameScene>();
 		m_CurrentScene->Start();
 		timer.Update();
-		DebugLog::Log(u8"シーン読み込み" + to_string(timer.GetDeltaTime()));
+		DebugLog::Log(L"シーン読み込み" + to_wstring(timer.GetDeltaTime()));
 
 
 #if _DEBUG

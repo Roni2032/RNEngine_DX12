@@ -16,11 +16,11 @@ namespace RNEngine {
 		psoDesc.pRootSignature = m_RootSignature->GetPtr();
 
 		if (setup.m_Vs == nullptr) {
-			DebugLog::Log(u8"頂点シェーダーが登録されていません。", LogData::Type::Error);
+			DebugLog::Log(L"頂点シェーダーが登録されていません。", LogData::Type::Error);
 			return;
 		}
 		if (setup.m_Ps == nullptr) {
-			DebugLog::Log(u8"ピクセルシェーダーが登録されていません。", LogData::Type::Error);
+			DebugLog::Log(L"ピクセルシェーダーが登録されていません。", LogData::Type::Error);
 			return;
 		}
 
