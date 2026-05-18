@@ -124,7 +124,7 @@ namespace RNEngine {
 	class DSVBuffer;
 	class Camera;
 
-	//グラフィックスエンジンを作りましょう
+    //グラフィックスエンジンを作りましょう
 
 	/// <summary>
 	/// 描画処理を行うクラス
@@ -149,34 +149,107 @@ namespace RNEngine {
 		array<float, 4> m_ClearColor;
 
 
+     /// <summary>
+		/// 指定したレンダーターゲットの内容をフレームバッファへ転送する内部ユーティリティ。
+		/// </summary>
+		/// <param name="renderTarget">転送元のレンダーターゲット</param>
 		void CopyToFrameBuffer(RenderTarget* renderTarget);
 	public:
+     /// <summary>
+		/// コンストラクタ
+		/// </summary>
 		Renderer();
+		/// <summary>
+		/// デストラクタ
+		/// </summary>
 		~Renderer();
 
+		/// <summary>
+		/// レンダラーを初期化する。
+		/// </summary>
+		/// <param name="_window">描画対象のウィンドウ情報</param>
 		void Init(const Window* _window);
+		/// <summary>
+		/// GPU の完了を待つユーティリティ。
+		/// </summary>
 		void WaitGPU();
 
+		/// <summary>
+		/// フレーム描画の開始処理。
+		/// </summary>
 		void BeginRenderer();
+		/// <summary>
+		/// フレーム描画の終了処理。
+		/// </summary>
+		/// <param name="guiRenderer">GUI 描画用のレンダラ（任意）</param>
 		void EndRenderer(GUIRenderer* guiRenderer = nullptr);
 
+		/// <summary>
+		/// クリアカラーを設定する。
+		/// </summary>
+		/// <param name="r">赤成分</param>
+		/// <param name="g">緑成分</param>
+		/// <param name="b">青成分</param>
+		/// <param name="a">アルファ成分</param>
 		void SetClearColor(float r, float g, float b, float a) {
 			m_ClearColor = { r,g,b,a };
 		}
+		/// <summary>
+		/// 現在設定されているクリアカラーを取得する。
+		/// </summary>
+		/// <returns>RGBA の配列を返します。</returns>
 		array<float, 4> GetClearColor() { return m_ClearColor; }
 
+		/// <summary>
+		/// メインカメラを登録する。
+		/// </summary>
+		/// <param name="camera">登録するカメラの共有ポインタ</param>
 		void RegisterMainCamera(const shared_ptr<Camera>& camera);
+		/// <summary>
+		/// 登録されているメインカメラを取得する。
+		/// </summary>
+		/// <returns>メインカメラの生ポインタを返します（所有権は渡しません）。</returns>
 		Camera* GetMainCamera()const;
 
+		/// <summary>
+		/// テクスチャバッファを登録する。
+		/// </summary>
+		/// <param name="texBuffer">登録するテクスチャバッファのポインタ</param>
 		void RegisterTextureBuffer(TextureBuffer* texBuffer);
+		/// <summary>
+		/// 定数バッファを登録する。
+		/// </summary>
+		/// <param name="constBuffer">登録する定数バッファのポインタ</param>
 		void RegisterConstantBuffer(ConstantBuffer* constBuffer);
 
+		/// <summary>
+		/// SRV 用の GPU ディスクリプタハンドルを取得する。
+		/// </summary>
+		/// <param name="handle">ハンドルインデックス</param>
+		/// <returns>GPU ハンドルを返します。</returns>
 		CD3DX12_GPU_DESCRIPTOR_HANDLE GetSRVDescriptorGPUHandle(UINT handle);
+		/// <summary>
+		/// SRV 用の CPU ディスクリプタハンドルを取得する。
+		/// </summary>
+		/// <param name="handle">ハンドルインデックス</param>
+		/// <returns>CPU ハンドルを返します。</returns>
 		CD3DX12_CPU_DESCRIPTOR_HANDLE GetSRVDescriptorCPUHandle(UINT handle);
 
+		/// <summary>
+		/// 現在のコマンドリストを取得する。
+		/// </summary>
+		/// <returns>ID3D12GraphicsCommandList の生ポインタを返します。</returns>
 		ID3D12GraphicsCommandList* GetCommandList() { return m_CommandList.Get(); }
+		/// <summary>
+		/// SRV/CBV 用のディスクリプタヒープを取得する。
+		/// </summary>
+		/// <returns>DescriptorHeap の生ポインタを返します。</returns>
 		DescriptorHeap* GetSrvDescriptorHeap();
 
+		/// <summary>
+		/// フレーム用の RTV バッファを取得する。
+		/// </summary>
+		/// <returns>RTVBuffer の生ポインタを返します。</returns>
 		RTVBuffer* GetFrameRTVBuffer() { return m_RTVBuffer.get(); }
 	};
 

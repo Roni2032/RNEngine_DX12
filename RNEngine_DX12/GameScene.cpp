@@ -7,12 +7,12 @@ namespace RNEngine {
 
 	void GameScene::CreateCamera() {
 		auto window = Engine::GetWindow();
-		//ƒƒCƒ“ƒJƒƒ‰İ’è
+		//ãƒ¡ã‚¤ãƒ³ã‚«ãƒ¡ãƒ©è¨­å®š
 		shared_ptr<Camera> gameCamera = CreateCameraObject(L"Game");
 		gameCamera->AddRenderingLayer(L"Object");
 		gameCamera->SetEye({ 0, 2, -2 });
 		gameCamera->SetTarget({ 0,0,0 });
-		//UIƒJƒƒ‰İ’è
+		//UIã‚«ãƒ¡ãƒ©è¨­å®š
 		shared_ptr<Camera> uiCamera = CreateCameraObject(L"UI");
 		uiCamera->AddRenderingLayer(L"UI");
 		uiCamera->SetOrthographic(true);
@@ -39,7 +39,7 @@ namespace RNEngine {
 		ResourceManager::RegisterModel("Models/Blastjump/Player.fbx", "player", defaultTransformScale);
 		ResourceManager::RegisterModel("Models/Barbarian/Barbarian_Walk.fbx","barbarian",defaultTransformScale);
 		m_Player = AddGameObject();
-		m_Player->SetName(L"‰Ô•ˆ");
+		m_Player->SetName(L"èŠ±è­œ");
 		m_Player->SetLayer(L"Object");
 		auto renderer = m_Player->AddComponent<ModelRenderer>();
 		renderer->Init(GetCamera(L"Game"));
@@ -49,7 +49,7 @@ namespace RNEngine {
 		collision->SetScale(Vector3(1.0f, 1.8f, 1.0f));
 
 		m_Ground = AddGameObject();
-		m_Ground->SetName(L"’n–Ê");
+		m_Ground->SetName(L"åœ°é¢");
 		m_Ground->SetLayer(L"Object");
 
 		renderer = m_Ground->AddComponent<ModelRenderer>();
@@ -93,11 +93,5 @@ namespace RNEngine {
 		Vector3 position = m_Player->GetTransform()->GetPosition();
 		auto aabb = renderer->GetModel()->GetModelData().m_LocalBoundingBox + position;
 		DebugRenderer::Get().DrawCubeWireFrame(aabb.GetCenter(), aabb.GetSize());
-
-		auto playerCollision = m_Player->GetComponent<CollisionCube>();
-		auto groundCollision = m_Ground->GetComponent<CollisionCube>();
-		if (playerCollision->IsSimpleHit(groundCollision)) {
-			DebugLog::Log(L"Hit!!");
-		}
 	}
 }

@@ -5,12 +5,11 @@ namespace RNEngine {
 	void Shader::Load(const wstring& filename, const string& entryPoint, const string& target) {
 		auto exePath = File::GetExeDirectory();
 		exePath += filename;
-		exePath += ".cso";
-		auto result = D3DReadFileToBlob(exePath.c_str(), m_Blob.GetAddressOf());
-		if (FAILED(result)) {
-			wstring hlslFilename = filename + L".flsl";
+		HRESULT result;
+		if (IsDebuggerPresent()) {
+			exePath += ".hlsl";
 			result = D3DCompileFromFile(
-				hlslFilename.c_str(),
+				exePath.c_str(),
 				nullptr,
 				D3D_COMPILE_STANDARD_FILE_INCLUDE,
 				entryPoint.c_str(),
@@ -20,6 +19,10 @@ namespace RNEngine {
 				m_Blob.GetAddressOf(),
 				m_ErrorBlob.GetAddressOf()
 			);
+		}
+		else {
+			exePath += ".cso";
+			result = D3DReadFileToBlob(exePath.c_str(), m_Blob.GetAddressOf());
 		}
 
 		if(FAILED(result)){

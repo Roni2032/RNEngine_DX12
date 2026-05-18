@@ -37,6 +37,9 @@ namespace RNEngine {
 		ImGui::StyleColorsDark();
 
 		string exePath = File::GetExeDirectory().generic_string();
+		if (IsDebuggerPresent()) {
+			exePath += "../";
+		}
 		exePath += "Assets/Font/BIZUDGothic-Regular.ttf";
 		io.Fonts->AddFontFromFileTTF(exePath.c_str(), 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
 

@@ -16,7 +16,7 @@ namespace RNEngine{
 			Vector3 position = transform->GetPosition();
 			Vector3 scale = transform->GetScale();
 
-			auto modelData = draw->GetModel()->GetModelData();
+			auto& modelData = draw->GetModel()->GetModelData();
 			//モデルのローカル空間のAABBをワールド空間に変換
 			auto boundingBox = modelData.m_LocalBoundingBox * scale + position;
 

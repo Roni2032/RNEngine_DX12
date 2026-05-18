@@ -29,6 +29,9 @@ namespace RNEngine {
 #endif
 		// リソースマネージャー初期化
 		auto exePath = File::GetExeDirectory();
+		if (IsDebuggerPresent()) {
+			exePath += "../";
+		}
 		exePath += "Assets/";
 		ResourceManager::SetDefaultFilePath(exePath.generic_string());
 
