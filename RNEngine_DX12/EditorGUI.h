@@ -156,7 +156,7 @@ namespace RNEngine {
 
 		float m_BeforeScrollY;
 	public:
-		static void Log(const string& log, LogData::Type type = LogData::Type::Debug);
+		static void Log(const wstring& log, LogData::Type type = LogData::Type::Debug);
 		static void Clear();
 
 		DebugLog(const string& windowName);

@@ -45,8 +45,8 @@ virtual vector<FieldInfo> GetReflection()override{ \
 	/// 表示名を設定する
 	/// </summary>
 	struct HeaderAttribute : public Attribute {
-		string m_Header;
-		HeaderAttribute(const string& header) :m_Header(header) {}
+		wstring m_Header;
+		HeaderAttribute(const wstring& header) :m_Header(header) {}
 	};
 	/// <summary>
 	/// インスペクターに隠しながらシリアライズの対象にする
@@ -107,18 +107,5 @@ virtual vector<FieldInfo> GetReflection()override{ \
 		static size_t GetVariableOffset(const string& name) {
 			return 0;
 		}
-	};
-
-	class SampleReflect : public ReflectInterface {
-		int x;
-		int y;
-		int z;
-	public:
-		REGISTER_NAME(SampleReflect)
-			BEGIN_REFLECT()
-			REGISTER_REFLECT(x, FieldInfo::Type::Int)
-			REGISTER_REFLECT(y, FieldInfo::Type::Int, HeaderAttribute(u8"テスト用のY入力"))
-			REGISTER_REFLECT(z, FieldInfo::Type::Int)
-			END_REFLECT()
 	};
 }

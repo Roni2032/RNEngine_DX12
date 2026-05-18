@@ -7,19 +7,19 @@ namespace RNEngine {
 
 	void GameScene::CreateCamera() {
 		auto window = Engine::GetWindow();
-		//ƒƒCƒ“ƒJƒƒ‰İ’è
-		shared_ptr<Camera> gameCamera = CreateCameraObject("Game");
-		gameCamera->AddRenderingLayer("Object");
+		//ãƒ¡ã‚¤ãƒ³ã‚«ãƒ¡ãƒ©è¨­å®š
+		shared_ptr<Camera> gameCamera = CreateCameraObject(L"Game");
+		gameCamera->AddRenderingLayer(L"Object");
 		gameCamera->SetEye({ 0, 2, -2 });
 		gameCamera->SetTarget({ 0,0,0 });
-		//UIƒJƒƒ‰İ’è
-		shared_ptr<Camera> uiCamera = CreateCameraObject("UI");
-		uiCamera->AddRenderingLayer("UI");
+		//UIã‚«ãƒ¡ãƒ©è¨­å®š
+		shared_ptr<Camera> uiCamera = CreateCameraObject(L"UI");
+		uiCamera->AddRenderingLayer(L"UI");
 		uiCamera->SetOrthographic(true);
 		uiCamera->SetWidth((float)window->GetWidth());
 		uiCamera->SetHeight((float)window->GetHeight());
 
-		RegisterMainCamera("Game");
+		RegisterMainCamera(L"Game");
 		
 	}
 	void GameScene::Start() {
@@ -39,21 +39,21 @@ namespace RNEngine {
 		ResourceManager::RegisterModel("Models/Blastjump/Player.fbx", "player", defaultTransformScale);
 		ResourceManager::RegisterModel("Models/Barbarian/Barbarian_Walk.fbx","barbarian",defaultTransformScale);
 		m_Player = AddGameObject();
-		m_Player->SetName(u8"‰Ô•ˆ");
-		m_Player->SetLayer("Object");
+		m_Player->SetName(L"èŠ±è­œ");
+		m_Player->SetLayer(L"Object");
 		auto renderer = m_Player->AddComponent<ModelRenderer>();
-		renderer->Init(GetCamera("Game"));
+		renderer->Init(GetCamera(L"Game"));
 		renderer->SetModel("kaf");
 		renderer->AddRenderTargetTag("GameView");
 		auto collision = m_Player->AddComponent<CollisionCube>();
 		collision->SetScale(Vector3(1.0f, 1.8f, 1.0f));
 
 		m_Ground = AddGameObject();
-		m_Ground->SetName(u8"’n–Ê");
-		m_Ground->SetLayer("Object");
+		m_Ground->SetName(L"åœ°é¢");
+		m_Ground->SetLayer(L"Object");
 
 		renderer = m_Ground->AddComponent<ModelRenderer>();
-		renderer->Init(GetCamera("Game"));
+		renderer->Init(GetCamera(L"Game"));
 		renderer->SetModel("DEFAULT_SQUARE_3D");
 		renderer->AddRenderTargetTag("GameView");
 		auto transform = m_Ground->GetTransform();
@@ -65,12 +65,12 @@ namespace RNEngine {
 		collision->SetOffset({ 0.0f,-groundScale.y / 2.0f, 0.0f });
 
 		m_Ray = AddGameObject();
-		m_Ray->SetName(u8"Ray");
+		m_Ray->SetName(L"Ray");
 
 		m_Texture = AddGameObject();
-		m_Texture->SetLayer("UI");
+		m_Texture->SetLayer(L"UI");
 		auto texRenderer = m_Texture->AddComponent<ImageRenderer>();
-		texRenderer->Init(GetCamera("UI"));
+		texRenderer->Init(GetCamera(L"UI"));
 		texRenderer->SetTexture(L"Textures/test.jpg");
 		texRenderer->SetPivot(Anchor::TopLeft);
 		transform = m_Texture->GetTransform();
@@ -78,7 +78,7 @@ namespace RNEngine {
 		transform->SetScale({ 100.0f,100.0f,1.0f });
 
 
-		auto cameraObject = GetCamera("Game")->GetOwner();
+		auto cameraObject = GetCamera(L"Game")->GetOwner();
 		auto moveComp = cameraObject->AddComponent<MoveComponent>();
 		moveComp->SetApplyObjectForward(true);
 		moveComp->SetSpeed(3.0f);

@@ -55,8 +55,8 @@ namespace RNEngine {
 		INSPECTOR_COMPONENT(MoveComponent)
 		REGISTER_NAME(MoveComponent)
 		BEGIN_REFLECT()
-			REGISTER_REFLECT(m_Speed, FieldInfo::Type::Float, HeaderAttribute(u8"移動速度"))
-			REGISTER_REFLECT(m_JumpPower, FieldInfo::Type::Float, HeaderAttribute(u8"ジャンプ力"))
+			REGISTER_REFLECT(m_Speed, FieldInfo::Type::Float, HeaderAttribute(L"移動速度"))
+			REGISTER_REFLECT(m_JumpPower, FieldInfo::Type::Float, HeaderAttribute(L"ジャンプ力"))
 		END_REFLECT()
 	};
 }

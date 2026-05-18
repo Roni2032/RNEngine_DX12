@@ -161,7 +161,7 @@ namespace RNEngine {
 			ConvertToAttribute* convert = nullptr;
 			for (auto& attribute : field.m_Attribute) {
 				if (auto header = dynamic_cast<HeaderAttribute*>(attribute.get())) {
-					name = header->m_Header;
+					name = Util::ConvertWstrToStr(header->m_Header);
 				}
 				if(auto c = dynamic_cast<ConvertToAttribute*>(attribute.get())){
 					convert = c;
@@ -274,7 +274,7 @@ namespace RNEngine {
 				if (m_SelectedGameObjectAddr == gameObject.get()) {
 					bgColor = ImVec4(0.5f, 0.5f, 0.5f, 0.5f);
 				}
-				string showName = gameObject->GetName();
+				string showName = Util::ConvertWstrToStr(gameObject->GetName());
 				if (gameObject->GetComponent<Camera>()) {
 					showName = "Camera [ " + showName + " ]";
 					//選択されているカメラならカメラウィンドウも表示する
@@ -477,8 +477,8 @@ namespace RNEngine {
 	DebugLog::DebugLog(const string& windowName) : GUI(windowName), m_BeforeScrollY(1.0f) {}
 	DebugLog::~DebugLog() {}
 
-	void DebugLog::Log(const string& log, LogData::Type type) {
-		g_LogData.push_back({ log,type });
+	void DebugLog::Log(const wstring& log, LogData::Type type) {
+		g_LogData.push_back({ Util::ConvertWstrToStr(log),type });
 	}
 	void DebugLog::Clear() {
 		g_LogData.clear();

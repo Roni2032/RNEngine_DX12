@@ -6,219 +6,219 @@ namespace RNEngine {
 	class RenderTarget;
 
 	class Camera : public Component {
-       // �J�����̒����_�i�J�����������Ă���ʒu�j
+       // カメラの注視点（カメラが向いている位置）
 		Vector3 m_Target;
-       // �J�����̏�����i���[���h��ł̏�����x�N�g���j
+       // カメラの上方向（ワールド上での上向きベクトル）
 		Vector3 m_Up;
 
-        // �r���[�s��Ǝˉe�s��
+        // ビュー行列と射影行列
 		XMMATRIX m_ViewMatrix;
 		XMMATRIX m_ProjectionMatrix;
 
-        // ��ʕ��i�s�N�Z���܂��͉��z���B�ˉe�ݒ�ɗ��p�j
+        // 画面幅（ピクセルまたは仮想幅。射影設定に利用）
 		float m_Width;
-		// ��ʍ����i�s�N�Z���܂��͉��z�����B�ˉe�ݒ�ɗ��p�j
+		// 画面高さ（ピクセルまたは仮想高さ。射影設定に利用）
 		float m_Height;
 
-		// ���ˉe�iorthographic�j���ǂ����̃t���O
+		// 正射影（orthographic）かどうかのフラグ
 		bool m_IsOrthographic;
 
-		// �J�������`��ΏۂƂ��郌�C���[�̃C���f�b�N�X���X�g
+		// カメラが描画対象とするレイヤーのインデックスリスト
 		vector<int> m_RenderingLayers;
-        // �J�����ɉf�������_���[�R���|�[�l���g�̃��X�g
+        // カメラに映すレンダラーコンポーネントのリスト
 		vector<shared_ptr<RendererComponent>> m_RendererObjects;
-		// �����_�����O�^�[�Q�b�g�i�`���j
+		// レンダリングターゲット（描画先）
 		shared_ptr<RenderTarget> m_RenderTarget;
 
        /// <summary>
-		/// �����Ńr���[�s����X�V����i�ʒu�E�����_�E���������v�Z�j�B
+		/// 内部でビュー行列を更新する（位置・注視点・上方向から計算）。
 		///
-		/// �r���[�s��͓����� eye/target/up ��񂩂�v�Z����A
-		/// �`��Ɏg�p�����s����X�V���܂��B
+		/// ビュー行列は内部の eye/target/up 情報から計算され、
+		/// 描画に使用される行列を更新します。
 		/// </summary>
 		void UpdateViewMatrix();
 	public:
 		/// <summary>
-		/// �J�����R���|�[�l���g�̃R���X�g���N�^�B
+		/// カメラコンポーネントのコンストラクタ。
 		///
-		/// �I�[�i�[�ƂȂ� GameObject �̋��L�|�C���^���󂯎��A
-		/// �J���������������܂��B
+		/// オーナーとなる GameObject の共有ポインタを受け取り、
+		/// カメラを初期化します。
 		/// </summary>
-		/// <param name="ptr">�I�[�i�[�ƂȂ� GameObject �̋��L�|�C���^</param>
+		/// <param name="ptr">オーナーとなる GameObject の共有ポインタ</param>
 		Camera(const shared_ptr<GameObject>& ptr);
         /// <summary>
-		/// �J�����R���|�[�l���g�̃f�X�g���N�^�B
+		/// カメラコンポーネントのデストラクタ。
 		///
-		/// �K�v�ɉ����ē������\�[�X��������܂��B
+		/// 必要に応じて内部リソースを解放します。
 		/// </summary>
 		virtual ~Camera();
 
 		/// <summary>
-		/// �R���|�[�l���g�J�n���ɌĂ΂�鏉���������B
+		/// コンポーネント開始時に呼ばれる初期化処理。
 		///
-		/// �V�[���J�n��I�u�W�F�N�g��������ɕK�v�ȏ��������s���܂��B
+		/// シーン開始やオブジェクト生成直後に必要な初期化を行います。
 		/// </summary>
 		virtual void Start()override;
 		/// <summary>
-		/// ���t���[���̍Ō�ɌĂ΂��X�V�����B
+		/// 毎フレームの最後に呼ばれる更新処理。
 		///
-		/// �`��Ώۂ̐����⃌���_���[���X�g�̍X�V�ȂǁA�t���[�����������s���܂��B
+		/// 描画対象の整理やレンダラーリストの更新など、フレーム末処理を行います。
 		/// </summary>
 		virtual void LastUpdate()override;
 
         /// <summary>
-		/// ���ݐݒ肳��Ă��郌���_�����O�^�[�Q�b�g�ɑ΂��ĕ`�揈�����s���B
+		/// 現在設定されているレンダリングターゲットに対して描画処理を行う。
 		///
-		/// �o�^���ꂽ�����_���[�R���|�[�l���g���g���ă����_�����O�����s���܂��B
+		/// 登録されたレンダラーコンポーネントを使ってレンダリングを実行します。
 		/// </summary>
 		void DrawRenderTarget();
 
 		/// <summary>
-		/// �J�����̒����_��ݒ肷��B
+		/// カメラの注視点を設定する。
 		///
-		/// ���̒l�̓r���[�s��̌v�Z�Ɏg�p����܂��B
+		/// この値はビュー行列の計算に使用されます。
 		/// </summary>
-		/// <param name="target">�����_�̃��[���h���W</param>
+		/// <param name="target">注視点のワールド座標</param>
 		void SetTarget(const Vector3& target);
 		/// <summary>
-		/// �J�����̈ʒu�i���_�j��ݒ肷��B
+		/// カメラの位置（視点）を設定する。
 		///
-		/// ���̒l�̓r���[�s��̌v�Z�Ɏg�p����܂��B
+		/// この値はビュー行列の計算に使用されます。
 		/// </summary>
-		/// <param name="eye">���_�̃��[���h���W</param>
+		/// <param name="eye">視点のワールド座標</param>
 		void SetEye(const Vector3& eye);
 		/// <summary>
-		/// �J�����̏�����x�N�g����ݒ肷��B
+		/// カメラの上方向ベクトルを設定する。
 		///
-		/// �ʏ�� (0,1,0) �̂悤�ȃ��[���h��̏�����x�N�g�����w�肵�܂��B
+		/// 通常は (0,1,0) のようなワールド上の上向きベクトルを指定します。
 		/// </summary>
-		/// <param name="up">�������\���x�N�g��</param>
+		/// <param name="up">上方向を表すベクトル</param>
 		void SetUp(const Vector3& up);
 
 		/// <summary>
-		/// ���݂̒����_���擾����B
+		/// 現在の注視点を取得する。
 		/// </summary>
-		/// <returns>�����_�̃��[���h���W��Ԃ��܂��B</returns>
+		/// <returns>注視点のワールド座標を返します。</returns>
 		Vector3 GetTarget()const;
         /// <summary>
-		/// ���݂̎��_�i�J�����ʒu�j���擾����B
+		/// 現在の視点（カメラ位置）を取得する。
 		/// </summary>
-		/// <returns>���_�̃��[���h���W��Ԃ��܂��B</returns>
+		/// <returns>視点のワールド座標を返します。</returns>
 		Vector3 GetEye()const;
 		/// <summary>
-		/// ���݂̏�����x�N�g�����擾����B
+		/// 現在の上方向ベクトルを取得する。
 		/// </summary>
-		/// <returns>�������\���x�N�g����Ԃ��܂��B</returns>
+		/// <returns>上方向を表すベクトルを返します。</returns>
 		Vector3 GetUp()const;
 		/// <summary>
-		/// �J�����������Ă�������x�N�g���i���K���ς݁j���擾����B
+		/// カメラが向いている方向ベクトル（正規化済み）を取得する。
 		/// </summary>
-		/// <returns>�J�����̑O���������i���K���ς݁j��Ԃ��܂��B</returns>
+		/// <returns>カメラの前向き方向（正規化済み）を返します。</returns>
 		Vector3 GetDirection()const;
 
 		/// <summary>
-		/// �����I�Ƀr���[�s���ݒ肷��B
+		/// 明示的にビュー行列を設定する。
 		///
-		/// �w�肵�����_�ieye�j�A�����_�itarget�j�A������iup�j����r���[�s����\�z���܂��B
+		/// 指定した視点（eye）、注視点（target）、上方向（up）からビュー行列を構築します。
 		/// </summary>
-		/// <param name="eye">���_�̃��[���h���W</param>
-		/// <param name="target">�����_�̃��[���h���W</param>
-		/// <param name="up">�������\���x�N�g��</param>
+		/// <param name="eye">視点のワールド座標</param>
+		/// <param name="target">注視点のワールド座標</param>
+		/// <param name="up">上方向を表すベクトル</param>
 		void SetViewMatrix(const Vector3& eye, const Vector3& target, const Vector3& up);
 		/// <summary>
-		/// �����ˉe�s���ݒ肷��B
+		/// 透視射影行列を設定する。
 		///
-		/// �w�肵���p�����[�^����ˉe�s����v�Z�������ɕێ����܂��B
+		/// 指定したパラメータから射影行列を計算し内部に保持します。
 		/// </summary>
-		/// <param name="fovY">���������̎���p�i���W�A���j</param>
-		/// <param name="aspectRatio">��ʂ̃A�X�y�N�g��i��/�����j</param>
-		/// <param name="nearZ">�߃N���b�v�ʂ̋���</param>
-		/// <param name="farZ">���N���b�v�ʂ̋���</param>
+		/// <param name="fovY">垂直方向の視野角（ラジアン）</param>
+		/// <param name="aspectRatio">画面のアスペクト比（幅/高さ）</param>
+		/// <param name="nearZ">近クリップ面の距離</param>
+		/// <param name="farZ">遠クリップ面の距離</param>
 		void SetProjectionMatrix(float fovY, float aspectRatio, float nearZ, float farZ);
 
 		/// <summary>
-		/// �r���[�s����擾����B
+		/// ビュー行列を取得する。
 		/// </summary>
-		/// <returns>���݂̃r���[�s���Ԃ��܂��B</returns>
+		/// <returns>現在のビュー行列を返します。</returns>
 		XMMATRIX GetViewMatrix();
         /// <summary>
-		/// �ˉe�s����擾����B
+		/// 射影行列を取得する。
 		/// </summary>
-		/// <returns>���݂̎ˉe�s���Ԃ��܂��B</returns>
+		/// <returns>現在の射影行列を返します。</returns>
 		XMMATRIX GetProjectionMatrix()const;
         /// <summary>
-		/// �r���[�v���W�F�N�V�����s��iView * Projection�j���擾����B
+		/// ビュープロジェクション行列（View * Projection）を取得する。
 		/// </summary>
-		/// <returns>�r���[�s��Ǝˉe�s����悶���s���Ԃ��܂��B</returns>
+		/// <returns>ビュー行列と射影行列を乗じた行列を返します。</returns>
 		XMMATRIX GetViewProjectionMatrix();
 
 		/// <summary>
-		/// ���ˉe���[�h�̐؂�ւ����s���B
+		/// 正射影モードの切り替えを行う。
 		/// </summary>
-		/// <param name="flag">true �̏ꍇ�͐��ˉe�Afalse �̏ꍇ�͓������e</param>
+		/// <param name="flag">true の場合は正射影、false の場合は透視投影</param>
 		void SetOrthographic(bool flag);
 		/// <summary>
-		/// ���݂����ˉe���[�h���ǂ������m�F����B
+		/// 現在が正射影モードかどうかを確認する。
 		/// </summary>
-		/// <returns>���ˉe���[�h�Ȃ� true�A�������e�Ȃ� false ��Ԃ��܂��B</returns>
+		/// <returns>正射影モードなら true、透視投影なら false を返します。</returns>
 		bool IsOrthographic()const;
 
 		/// <summary>
-		/// �`�敝��ݒ肷��i���ˉe�⃊�T�C�Y���Ɏg�p�j�B
+		/// 描画幅を設定する（正射影やリサイズ時に使用）。
 		/// </summary>
-		/// <param name="width">�`�敝�i�s�N�Z���܂��͉��z���j</param>
+		/// <param name="width">描画幅（ピクセルまたは仮想幅）</param>
 		void SetWidth(float width);
 		/// <summary>
-		/// �`�捂����ݒ肷��i���ˉe�⃊�T�C�Y���Ɏg�p�j�B
+		/// 描画高さを設定する（正射影やリサイズ時に使用）。
 		/// </summary>
-		/// <param name="height">�`�捂���i�s�N�Z���܂��͉��z�����j</param>
+		/// <param name="height">描画高さ（ピクセルまたは仮想高さ）</param>
 		void SetHeight(float height);
 
 		/// <summary>
-		/// �`�敝���擾����B
+		/// 描画幅を取得する。
 		/// </summary>
-		/// <returns>�ݒ肳��Ă���`�敝��Ԃ��܂��B</returns>
+		/// <returns>設定されている描画幅を返します。</returns>
 		float GetWidth()const;
 		/// <summary>
-		/// �`�捂�����擾����B
+		/// 描画高さを取得する。
 		/// </summary>
-		/// <returns>�ݒ肳��Ă���`�捂����Ԃ��܂��B</returns>
+		/// <returns>設定されている描画高さを返します。</returns>
 		float GetHeight()const;
 
         /// <summary>
-		/// �w�肵�����[���h��Ԃ̕����������悤�ɃJ�����𒲐�����B
+		/// 指定したワールド空間の方向を向くようにカメラを調整する。
 		/// </summary>
-		/// <param name="direction">�������������[���h��Ԃł̕����x�N�g���i���K������Ă���K�v�͂Ȃ��j</param>
+		/// <param name="direction">向かせたいワールド空間での方向ベクトル（正規化されている必要はない）</param>
 		void LookAtDirection(const Vector3& direction);
 
-        /// <summary>
-		/// �����_�����O�Ώۂ̃��C���[�𖼑O�Œǉ�����B
+    /// <summary>
+		/// レンダリング対象のレイヤーを名前で追加する。
 		///
-		/// ���O���烌�C���[�C���f�b�N�X���������Ēǉ����܂��B
+		/// 名前からレイヤーインデックスを解決して追加します。
 		/// </summary>
-		/// <param name="layer">�ǉ����郌�C���[��</param>
+		/// <param name="layer">追加するレイヤー名</param>
 		void AddRenderingLayer(const string& layer);
 		/// <summary>
-		/// �����_�����O�Ώۂ̃��C���[���C���f�b�N�X�Œǉ�����B
+		/// レンダリング対象のレイヤーをインデックスで追加する。
 		/// </summary>
-		/// <param name="layer">�ǉ����郌�C���[�̃C���f�b�N�X</param>
+		/// <param name="layer">追加するレイヤーのインデックス</param>
 		void AddRenderingLayer(const int layer);
 		/// <summary>
-		/// �o�^����Ă��郌���_�����O���C���[�̈ꗗ���擾����B
+		/// 登録されているレンダリングレイヤーの一覧を取得する。
 		/// </summary>
-		/// <returns>�o�^�ς݂̃��C���[�C���f�b�N�X�̔z���Ԃ��܂��B</returns>
+		/// <returns>登録済みのレイヤーインデックスの配列を返します。</returns>
 		vector<int> GetRenderingLayers()const;
 
 
      /// <summary>
-		/// �����_���[�R���|�[�l���g���J�����ɒǉ�����i�J�������Ǘ����ĕ`�悷��j�B
+		/// レンダラーコンポーネントをカメラに追加する（カメラが管理して描画する）。
 		/// </summary>
-		/// <param name="renderer">�ǉ����郌���_���[�R���|�[�l���g�̋��L�|�C���^</param>
+		/// <param name="renderer">追加するレンダラーコンポーネントの共有ポインタ</param>
 		void AddRenderObject(const shared_ptr<RendererComponent>& renderer);
        /// <summary>
-		/// ���ݐݒ肳��Ă��郌���_�����O�^�[�Q�b�g���擾����B
+		/// 現在設定されているレンダリングターゲットを取得する。
 		/// </summary>
-		/// <returns>���݂̃����_�����O�^�[�Q�b�g�̐��|�C���^��Ԃ��܂��i���L���͓n���܂���j�B</returns>
+		/// <returns>現在のレンダリングターゲットの生ポインタを返します（所有権は渡しません）。</returns>
 		RenderTarget* GetRenderTarget();
 
 		INSPECTOR_COMPONENT(Camera)

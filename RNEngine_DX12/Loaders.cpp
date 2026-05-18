@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Loders.h"
 #include "EditorGUI.h"
 namespace RNEngine {
@@ -183,6 +184,8 @@ namespace RNEngine {
 	void AssimpLoader::ImportAnimations(Model& output, const aiScene* scene) {
 		UINT animationNum = scene->mNumAnimations;
 		auto rootNode = scene->mRootNode;
+		::CopyMemory(&output.m_Animation.m_GlobalInverseTransform, &rootNode->mTransformation.Inverse().Transpose(), sizeof(XMMATRIX));
+
 		for (int i = 0; i < animationNum; i++) {
 			auto animation = scene->mAnimations[i];
 
@@ -191,7 +194,43 @@ namespace RNEngine {
 	}
 	void AssimpLoader::ImportAnimation(Model& output, const aiAnimation* animation, const aiNode* node) {
 		string boneName(node->mName.C_Str());
+		XMMATRIX nodeTransform;
+		::CopyMemory(&nodeTransform, &node->mTransformation, sizeof(XMMATRIX));
+		nodeTransform = XMMatrixTranspose(nodeTransform);
 
+		int boneIndex = output.FindBone(boneName);
+		if (boneIndex == -1) return;
+		output.m_Bones[boneIndex].m_DefaultTransform = nodeTransform;
+
+		const aiNodeAnim* nodeAnimation = nullptr;
+		if (nodeAnimation) {
+			AnimationClip clip;
+			clip.m_Duration = (float)animation->mDuration / (float)animation->mTicksPerSecond;
+			
+			for (int i = 0; i < nodeAnimation->mNumPositionKeys; i++) {
+				auto aiPosition = nodeAnimation->mPositionKeys[i];
+				KeyFrame<Vector3> positionKeyFrame;
+				positionKeyFrame.m_Value = Vector3(aiPosition.mValue.x, aiPosition.mValue.y, aiPosition.mValue.z);
+				positionKeyFrame.m_Time = aiPosition.mTime;
+				clip.m_PositionKeyFrame.push_back(positionKeyFrame);
+			}
+
+			for (int i = 0; i < nodeAnimation->mNumRotationKeys; i++) {
+				auto aiQuaternion = nodeAnimation->mRotationKeys[i];
+				KeyFrame<Quaternion> quaternionKeyFrame;
+				quaternionKeyFrame.m_Value = Quaternion(aiQuaternion.mValue.x, aiQuaternion.mValue.y, aiQuaternion.mValue.z, aiQuaternion.mValue.w);
+				quaternionKeyFrame.m_Time = aiQuaternion.mTime;
+				clip.m_QuaternionKeyFrame.push_back(quaternionKeyFrame);
+			}
+
+			for (int i = 0; i < nodeAnimation->mNumScalingKeys; i++) {
+				auto aiScaling = nodeAnimation->mScalingKeys[i];
+				KeyFrame<Vector3> scalingKeyFrame;
+				scalingKeyFrame.m_Value = Vector3(aiScaling.mValue.x, aiScaling.mValue.y, aiScaling.mValue.z);
+				scalingKeyFrame.m_Time = aiScaling.mTime;
+				clip.m_ScalingKeyFrame.push_back(scalingKeyFrame);
+			}
+		}
 	}
 	void AssimpLoader::Import(ID3D12Device* _dev, Model& output, const wstring& filePath) {
 		if (MeshIO::IsExistMeshFile(filePath)) {
@@ -245,23 +284,59 @@ namespace RNEngine {
 		auto& meshes = model.m_Meshes;
 		auto& materials = model.m_Materials;
 
-		MeshFile::ModelHeader header;
+		BinaryHeaer::ModelBinaryHeader header;
+
+		//メッシュデータ
 		header.m_MeshCount = (uint32_t)meshes.size();
 		header.m_MaterialCount = (uint32_t)materials.size();
-		vector<MeshFile::MeshHeader> meshHeaders(header.m_MeshCount);
+		vector<BinaryHeaer::MeshBinaryHeader> meshHeaders(header.m_MeshCount);
 		for (uint32_t i = 0; i < header.m_MeshCount; i++) {
-			MeshFile::MeshHeader meshHeader;
+			BinaryHeaer::MeshBinaryHeader meshHeader;
 			meshHeader.m_VertexCount = (uint32_t)meshes[i].m_Vertices.size();
 			meshHeader.m_IndexCount = (uint32_t)meshes[i].m_Indices.size();
 			meshHeader.m_materialIndex = meshes[i].m_MaterialIndex;
 			meshHeaders[i] = meshHeader;
 		}
+		//マテリアルデータ
 		vector<uint32_t> materialTextureNameLength(header.m_MaterialCount);
 		for (uint32_t i = 0; i < header.m_MaterialCount; i++) {
 			string textureName = materials[i].m_TextureName;
 			DeleteDefaultFilePath(textureName);
 			materialTextureNameLength[i] = (uint32_t)textureName.size();
 		}
+		//ボーンデータ
+		vector<uint32_t> boneNameLengths;
+		vector<string> boneNames;
+		vector<uint32_t> boneIndices;
+		uint32_t boneMapSize = model.m_BoneIndexMap.size();
+		for (auto& boneMap : model.m_BoneIndexMap) {
+			boneNameLengths.push_back(boneMap.first.length());
+			boneNames.push_back(boneMap.first);
+			boneIndices.push_back(boneMap.second);
+		}
+		uint32_t boneCount = model.m_Bones.size();
+		
+		vector<BinaryHeaer::BoneBinary> boneBinaries;
+		for (auto& bone : model.m_Bones) {
+			BinaryHeaer::BoneBinary binary;
+			XMStoreFloat4x4(&binary.offsetMatrix, bone.m_OffsetMatrix);
+			XMStoreFloat4x4(&binary.defaultMatrix, bone.m_DefaultTransform);
+			binary.nameLength = bone.m_Name.length();
+			boneBinaries.push_back(binary);
+		}
+		BinaryHeaer::AnimationBinary animationBinaries;
+		XMStoreFloat4x4(&animationBinaries.globalInverseMatrix, model.m_Animation.m_GlobalInverseTransform);
+		animationBinaries.clipCount = model.m_Animation.m_Clips.size();
+		for (auto& clip : model.m_Animation.m_Clips) {
+			BinaryHeaer::AnimationClipBinaryHeader clipHeader;
+			clipHeader.tickPerSecond = clip.m_TickPerSeconds;
+			clipHeader.duration = clip.m_Duration;
+			clipHeader.positionKeyFrameCount = clip.m_PositionKeyFrame.size();
+			clipHeader.quaternionKeyFrameCount = clip.m_QuaternionKeyFrame.size();
+			clipHeader.scalingKeyFrameCount = clip.m_ScalingKeyFrame.size();
+			animationBinaries.clipHeaders.push_back(clipHeader);
+		}
+
 
 		string fullPath = Util::ConvertWstrToStr(MeshIO::GetMeshFileName(meshPath));
 		ofstream ofs(fullPath, ios_base::binary);
@@ -290,6 +365,26 @@ namespace RNEngine {
 					File::SaveBinary(ofs, &material.m_EmbeddedTexture.m_Size);
 					File::SaveBinary(ofs, material.m_EmbeddedTexture.m_Data.data(), material.m_EmbeddedTexture.m_Size);
 				}
+			}
+
+			File::SaveBinary(ofs, &boneMapSize);
+			File::SaveBinary(ofs, boneNameLengths.data(), boneMapSize);
+			File::SaveBinary(ofs, boneIndices.data(), boneMapSize);
+			for (int i = 0; i < boneMapSize; i++) {
+				File::SaveBinary(ofs, &boneNames[i], boneNameLengths[i], false);
+			}
+
+			File::SaveBinary(ofs, &boneCount);
+			File::SaveBinary(ofs, boneBinaries.data(), boneCount);
+			File::SaveBinary(ofs, &animationBinaries.globalInverseMatrix);
+			File::SaveBinary(ofs, &animationBinaries.clipCount);
+			File::SaveBinary(ofs, animationBinaries.clipHeaders.data(), animationBinaries.clipCount);
+			for (int i = 0; i < animationBinaries.clipCount; i++) {
+				auto& clipHeader = animationBinaries.clipHeaders[i];
+				auto& clip = model.m_Animation.m_Clips[i];
+				File::SaveBinary(ofs, clip.m_PositionKeyFrame.data(), clipHeader.positionKeyFrameCount);
+				File::SaveBinary(ofs, clip.m_QuaternionKeyFrame.data(), clipHeader.quaternionKeyFrameCount);
+				File::SaveBinary(ofs, clip.m_ScalingKeyFrame.data(), clipHeader.scalingKeyFrameCount);
 			}
 		}
 	}
@@ -338,9 +433,9 @@ namespace RNEngine {
 	}
 	void MeshLoader::LoadMeshFile(ID3D12Device* _dev,Model& model, const wstring& meshPath) {
 		//モデル全体の情報ヘッダー
-		MeshFile::ModelHeader modelHeader;
+		BinaryHeaer::ModelBinaryHeader modelHeader;
 		//メッシュごとの情報ヘッダー
-		vector<MeshFile::MeshHeader> meshHeaders;
+		vector<BinaryHeaer::MeshBinaryHeader> meshHeaders;
 		//マテリアルに設定されているテクスチャの名前の長さ
 		vector<uint32_t> materialTextureNameLength;
 

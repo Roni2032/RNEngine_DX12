@@ -19,7 +19,7 @@ namespace RNEngine {
 		INSPECTOR_COMPONENT(DebugCameraMove)
 		REGISTER_NAME(DebugCameraMove)
 		BEGIN_REFLECT()
-			REGISTER_REFLECT(m_MouseSensitive, FieldInfo::Type::Float, HeaderAttribute(u8"Š´“x"))
+			REGISTER_REFLECT(m_MouseSensitive, FieldInfo::Type::Float, HeaderAttribute(L"Š´“x"))
 		END_REFLECT()
 	};
 }

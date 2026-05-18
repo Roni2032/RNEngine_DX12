@@ -8,7 +8,7 @@ namespace RNEngine {
 	class Transform;
 
 	class GameObject : public Object {
-		string m_Name;
+		wstring m_Name;
 		weak_ptr<Scene> m_OwnerScene;
 		shared_ptr<Transform> m_Transform;
 
@@ -49,7 +49,7 @@ namespace RNEngine {
 		/// </summary>
 		virtual void Draw()override;
 
-      /// <summary>
+    /// <summary>
 		/// オブジェクト名を設定する。
 		/// </summary>
 		/// <param name="name">設定する名前</param>

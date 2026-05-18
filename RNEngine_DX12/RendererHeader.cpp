@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "RendererHeader.h"
 
 namespace RNEngine {
@@ -20,5 +21,11 @@ namespace RNEngine {
 		}
 
 		m_LocalBoundingBox = AABB(max, min);
+	}
+	int Model::FindBone(const string& name) {
+		if (m_BoneIndexMap.count(name) > 0) {
+			return m_BoneIndexMap[name];
+		}
+		return -1;
 	}
 }

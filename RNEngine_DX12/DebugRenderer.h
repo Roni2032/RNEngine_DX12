@@ -15,7 +15,7 @@ namespace RNEngine {
 		Vector3 scale = { 1.0f,1.0f,1.0f };
 		Quaternion rotation = Quaternion::Identity;
 		string mesh = "";
-		string camera = "Game";
+		wstring camera = L"Game";
 		Color color = Color(1.0f);
 
 		D3D_PRIMITIVE_TOPOLOGY topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;

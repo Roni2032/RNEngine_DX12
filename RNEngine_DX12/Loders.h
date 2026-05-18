@@ -53,15 +53,34 @@ namespace RNEngine {
 	};
 
 	//バイナリ用構造体
-	namespace MeshFile {
-		struct ModelHeader {
+	namespace BinaryHeaer {
+		struct ModelBinaryHeader {
 			uint32_t m_MeshCount;
 			uint32_t m_MaterialCount;
 		};
-		struct MeshHeader {
+		struct MeshBinaryHeader {
 			uint32_t m_VertexCount;
 			uint32_t m_IndexCount;
 			uint32_t m_materialIndex;
+		};
+
+		struct  BoneBinary {
+			uint32_t nameLength;
+			XMFLOAT4X4 offsetMatrix;
+			XMFLOAT4X4 defaultMatrix;
+		};
+		struct AnimationBinary {
+			XMFLOAT4X4 globalInverseMatrix;
+			uint32_t clipCount;
+			vector<AnimationClipBinaryHeader> clipHeaders;
+		};
+		struct AnimationClipBinaryHeader {
+			float tickPerSecond;
+			float duration;
+
+			uint32_t positionKeyFrameCount;
+			uint32_t quaternionKeyFrameCount;
+			uint32_t scalingKeyFrameCount;
 		};
 	}
 
@@ -71,7 +90,9 @@ namespace RNEngine {
 		static wstring GetMeshFileName(const wstring& filePath);
 	};
 	
+	
 	class MeshWriter {
+		
 		static void DeleteDefaultFilePath(string& filePath);
 	public:
 		static void SaveMeshFile(const Model& model, const wstring& meshPath);
@@ -83,4 +104,25 @@ namespace RNEngine {
 		static void LoadMeshFile(ID3D12Device* _dev,Model& model, const wstring& meshPath);
 
 	};
+
+	//現在の.meshのデータ構造
+	// 
+	//(テクスチャタイプが埋め込みの場合)
+	//[(uint32_t)メッシュ数,(uint32_t)マテリアル数]
+	//[(Vector3)頂点データ,(uint32_t)インデックスデータ,(uint32_t)マテリアルインデックス]
+	//    :
+	//[(enum)テクスチャタイプ,(uint32_t)テクスチャ名の文字数,(string)テクスチャ名,
+	// (uint32_t)テクスチャフォーマット名の文字数,(string)テクスチャフォーマット名,
+	// (uint32_t)テクスチャデータサイズ,(vector<uint32_t>)テクスチャデータ]
+	//    :
+	//
+	// 
+	//(テクスチャタイプがファイル参照の場合)
+	//[(uint32_t)メッシュ数,(uint32_t)マテリアル数]
+	//[(Vector3)頂点データ,(uint32_t)インデックスデータ,(uint32_t)マテリアルインデックス]
+	//    :
+	//[(enum)テクスチャタイプ,(uint32_t)テクスチャ名の文字数,(string)テクスチャ名]
+	//    :
+	//
+	//
 }
