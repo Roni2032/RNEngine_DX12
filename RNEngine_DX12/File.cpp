@@ -48,6 +48,11 @@ namespace RNEngine {
     }
 
     filesystem::path File::GetExeDirectory() {
+        if (IsDebuggerPresent()) {
+            auto solutionPath = filesystem::current_path();
+            solutionPath += "/";
+            return solutionPath;
+        }
         wchar_t path[MAX_PATH];
         GetModuleFileNameW(nullptr, path, MAX_PATH);
         filesystem::path exePath = filesystem::path(path).parent_path();
